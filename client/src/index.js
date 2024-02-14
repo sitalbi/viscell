@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { Sankey } from './Components/Sankey';
+import BarplotNode from './Components/Barplot';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <Sankey />
+    <BarplotNode x={200} y={10} width={200} height={100} />
   </React.StrictMode>
 );
 
