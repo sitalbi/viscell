@@ -1,0 +1,37 @@
+stages:
+  - build
+  - test
+
+build:
+  image: node:latest
+  stage: build
+  before_script:
+    - cd client
+    - npm install
+  tags:
+    - runner
+  script:
+    - echo "This is a build job"
+    - echo "Running the build job"
+    - npm run build
+
+unit-test:
+  image: node:latest
+  stage: test
+  before_script:
+    - cd client
+    - npm install
+  script:
+    - echo "This is a test job"
+    - echo "Running the test job"
+    - npm run test:ci
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  artifacts:
+    paths:
+      - client/coverage/
+    when: always
+    reports:
+      junit:
+        - client/junit.xml
+  tags:
+    - runner
