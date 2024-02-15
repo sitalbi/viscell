@@ -1,7 +1,16 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
-const BarplotNode = ({ x, y, width, height }) => {
+/**
+ * Barplot component
+ * 
+ * @param {*} x
+ * @param {*} y
+ * @param {*} width
+ * @param {*} height
+ * @returns {JSX.Element}
+ */
+const Barplot = ({ x, y, width, height }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -28,7 +37,13 @@ const BarplotNode = ({ x, y, width, height }) => {
       .attr("fill", "steelblue")
   }, [x, y, width, height]);
 
-  return <svg ref={svgRef} width={width} height={height} />;
+  // Declare style for the barplot
+  const barplotStyle = {
+    border: "1px solid #d3d3d3",
+    borderRadius: "5px",
+  };
+
+  return <svg ref={svgRef} width={width} height={height} style={barplotStyle} />;
 };
 
-export default BarplotNode;
+export default Barplot;
