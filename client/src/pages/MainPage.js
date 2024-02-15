@@ -1,5 +1,5 @@
 import React from "react";
-import {Sankey} from "../components/Sankey";
+import {Sankey} from "../components/Sankey.js";
 
 export const MainPage = () => {
     return (
