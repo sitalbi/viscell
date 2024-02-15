@@ -9,7 +9,6 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Sankey />
-    <BarplotNode x={200} y={10} width={200} height={100} />
   </React.StrictMode>
 );
 

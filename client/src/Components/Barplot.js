@@ -12,11 +12,12 @@ const BarplotNode = ({ x, y, width, height }) => {
 
     // Scale for mapping data values to pixel values
     const yScale = d3.scaleLinear().domain([0, d3.max(data)]).range([height, 0]);
-    
+
+    // Create and append <g> tag
+    const g = svg.append("g");
+
     // Draw bars
-    svg
-      .append("g")
-      .selectAll("rect")
+    g.selectAll("rect")
       .data(data)
       .enter()
       .append("rect")
@@ -24,12 +25,10 @@ const BarplotNode = ({ x, y, width, height }) => {
       .attr("y", d => yScale(d))
       .attr("width", width / data.length - 2)
       .attr("height", d => height - yScale(d))
-      .attr("fill", "steelblue");
-  }, [x,y,width, height]);
+      .attr("fill", "steelblue")
+  }, [x, y, width, height]);
 
-  return <svg ref={svgRef} width={width} height={height}>
-    <g transform={`translate(${x}, ${y})`} />
-  </svg>;
+  return <svg ref={svgRef} width={width} height={height} />;
 };
 
 export default BarplotNode;

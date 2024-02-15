@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
+import { select as d3Select } from "d3-selection";
+import ReactDOM from "react-dom/client";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import BarplotNode from "./Barplot";
 
@@ -54,36 +56,37 @@ export function Sankey() {
       .attr("stroke-opacity", 0.5)
       .attr("stroke-width", d => d.value * 10)
       .on("mouseover", function(d) {
-        // Show tooltip or information when hovering over the link
         d3.select(this)
           .attr("stroke-opacity", 1)
           .append("title")
           .text(d.info);
       })
       .on("mouseout", function() {
-        // Hide tooltip or information when mouse leaves the link
         d3.select(this)
           .attr("stroke-opacity", 0.5)
           .select("title")
           .remove();
       });
 
-    // Draw nodes
+    // Draw nodes as BarplotNode components
     svg
       .append("g")
       .selectAll(".node")
       .data(nodes)
       .join("g")
       .attr("class", "node")
-      .call(g => {
-        g.append("rect")
-          .attr("x", d => d.x0)
-          .attr("y", d => d.y0)
-          .attr("height", d => d.y1 - d.y0)
-          .attr("width", d => d.x1 - d.x0)
-          .attr("fill", "blue")
-          .attr("stroke", "blue")
-      })
+      .each(function(d) {
+        const foreignObject = d3Select(this)
+          .append("foreignObject")
+          .attr("x", d.x0)
+          .attr("y", d.y0)
+          .attr("width", d.x1 - d.x0)
+          .attr("height", d.y1 - d.y0);
+
+        const div = foreignObject.append("xhtml:div");
+        const component = <BarplotNode x={d.x0} y={d.y0} width={d.x1 - d.x0} height={d.y1 - d.y0} />;
+        ReactDOM.createRoot(div.node()).render(component);
+      });
 
   }, []);
 
