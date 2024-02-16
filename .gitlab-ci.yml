@@ -9,7 +9,7 @@ build:
     - cd client
     - npm install
   tags:
-    - runner
+    - CREMI
   script:
     - echo "This is a build job"
     - echo "Running the build job"
@@ -34,4 +34,4 @@ unit-test:
       junit:
         - client/junit.xml
   tags:
-    - runner
+    - CREMI
