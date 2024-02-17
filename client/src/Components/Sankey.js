@@ -42,7 +42,7 @@ export function Sankey() {
     const sankeyLayout = sankey()
       .nodeWidth(150)
       .nodePadding(20)
-      .extent([[1, 1], [1200, 400]]);
+      .extent([[0, 0], [1200, 400]]);
 
     const { nodes, links } = sankeyLayout(data);
 
@@ -73,15 +73,15 @@ export function Sankey() {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", 60)
-          .attr("height", 30)
+          .attr("width", 100)
+          .attr("height", 100)
           .style("background-color", "white")
           .style("border", "1px solid black")
           .style("padding", "5px")
           .style("border-radius", "5px");
 
         tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name}`);
+          .html(`${d.source.name} -> ${d.target.name}, (${d.info})`);
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", 0.5);
@@ -105,14 +105,14 @@ export function Sankey() {
           .attr("width", d.x1 - d.x0)
           .attr("height", d.y1 - d.y0);
         const div = foreignObject.append("xhtml:div");
-        const component = <Barplot x={d.x0} y={d.y0} width={d.x1 - d.x0} height={d.y1 - d.y0} />;
+        const component = <Barplot width={(d.x1 - d.x0) - 2} height={(d.y1 - d.y0)-2} />;
         ReactDOM.createRoot(div.node()).render(component);
       });
   }, []);
 
   return (
-    <svg ref={svgRef} width="100vw" height="50vh">
-      <g transform="translate(50, 20)" />
+    <svg ref={svgRef} width="100vw" height="100vh">
+      <g/>
     </svg>
   );
 }
