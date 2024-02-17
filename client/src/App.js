@@ -1,9 +1,10 @@
 import './App.css';
+import { Sankey } from './Components/Sankey.js';
 
 function App() {
   return (
     <div className="App">
-      <p>Hello World!</p>
+      <Sankey/>
     </div>
   );
 }
