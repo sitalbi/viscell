@@ -2,7 +2,6 @@ import ReactDOM from "react-dom/client";
 import React, { useRef, useEffect } from "react";
 
 import * as d3 from "d3";
-import { select as d3Select } from "d3-selection";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 
 import Barplot from "./Barplot";
@@ -20,7 +19,6 @@ export function Sankey() {
 
     const data = {
       nodes: [
-        { name: "A", value: 10 },
         { name: "B", value: 20 },
         { name: "X", value: 30 },
         { name: "Y", value: 25 },
@@ -30,19 +28,19 @@ export function Sankey() {
         { name: "Z", value: 22 }
       ],
       links: [
-        { source: 1, target: 2, value: 3, info: "Info about link 1" },
-        { source: 1, target: 3, value: 9, info: "Info about link 2" },
-        { source: 2, target: 4, value: 2, info: "Info about link 3" },
-        { source: 2, target: 5, value: 9, info: "Info about link 4" },
-        { source: 3, target: 6, value: 4, info: "Info about link 5" },
-        { source: 3, target: 7, value: 9, info: "Info about link 6" }
+        { source: 0, target: 1, value: 3, info: "Info about link 1" },
+        { source: 0, target: 2, value: 9, info: "Info about link 2" },
+        { source: 1, target: 3, value: 2, info: "Info about link 3" },
+        { source: 1, target: 4, value: 9, info: "Info about link 4" },
+        { source: 2, target: 5, value: 4, info: "Info about link 5" },
+        { source: 2, target: 6, value: 9, info: "Info about link 6" }
       ]
     };
 
     const sankeyLayout = sankey()
       .nodeWidth(150)
       .nodePadding(20)
-      .extent([[0, 0], [1200, 400]]);
+      .extent([[0, 0], [1200, 420]]);
 
     const { nodes, links } = sankeyLayout(data);
 
@@ -90,15 +88,16 @@ export function Sankey() {
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
 
+
+    const g = svg.append("g");
+
     // Draw nodes as Barplot components
-    svg
-      .append("g")
-      .selectAll(".node")
-      .data(nodes)
+    g.selectAll(".node")
+      .data(nodes.slice(1))
       .join("g")
       .attr("class", "node")
       .each(function (d) {
-        const foreignObject = d3Select(this)
+        const foreignObject = d3.select(this)
           .append("foreignObject")
           .attr("x", d.x0)
           .attr("y", d.y0)
@@ -108,11 +107,24 @@ export function Sankey() {
         const component = <Barplot width={(d.x1 - d.x0) - 2} height={(d.y1 - d.y0)-2} />;
         ReactDOM.createRoot(div.node()).render(component);
       });
+
+      const root_width = 20;
+
+      // Append a rect for the first node of nodes to g
+      g.append("rect")
+      .attr("class", "root-node")
+      .attr("x", nodes[0].x1 - root_width)
+      .attr("y", nodes[0].y0)
+      .attr("width", root_width)
+      .attr("height", nodes[0].y1 - nodes[0].y0)
+      .attr("fill", "steelblue")
+      .attr("stroke", "black")
+      .attr("stroke-width", 2);
+    
+
   }, []);
 
   return (
-    <svg ref={svgRef} width="100vw" height="100vh">
-      <g/>
-    </svg>
+    <svg className="" ref={svgRef} width="100vw" height="100vh"></svg>
   );
 }
