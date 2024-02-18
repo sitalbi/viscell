@@ -1,3 +1,11 @@
 .App {
   text-align: center;
 }
+
+.root-node {
+  border-radius: 50%;
+}
+
+.sankey {
+  margin-top: 10vh;
+}

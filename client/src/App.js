@@ -1,9 +1,11 @@
 import './App.css';
-import { MainPage } from './pages/MainPage.js';
+import { Sankey } from './Components/Sankey.js';
 
 function App() {
   return (
-    <MainPage />
+    <div className="App">
+      <Sankey />
+    </div>
   );
 }
 

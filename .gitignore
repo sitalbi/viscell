@@ -183,6 +183,7 @@ sketch
 
 ### Visual Studio Code ###
 .vscode/
+build/
 
 # Local History for Visual Studio Code
 .history/
