@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
-const Barplot = ({width, height }) => {
+const Barplot = ({ width, height }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const Barplot = ({width, height }) => {
       .append("rect")
       .attr("x", (d, i) => i * (scaledWidth / data.length))
       .attr("y", d => yScale(d))
-      .attr("width", (scaledWidth / data.length - 2 ))
+      .attr("width", (scaledWidth / data.length - 2))
       .attr("height", d => scaledHeight - yScale(d))
       .attr("fill", "steelblue");
   }, [width, height]);
@@ -43,7 +43,7 @@ const Barplot = ({width, height }) => {
     borderRadius: "5px"
   };
 
-  return <svg class="barplot" ref={svgRef} width={width} height={height} style={barplotStyle}/>;
+  return <svg className="barplot" ref={svgRef} width={width} height={height} style={barplotStyle} />;
 };
 
 export default Barplot;

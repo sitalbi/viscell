@@ -4,7 +4,7 @@ import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 
-import Barplot from "./Barplot";
+import Barplot from "./Barplot.js";
 
 /**
  * Sankey component
@@ -15,17 +15,17 @@ export function Sankey() {
   const svgRef = useRef();
 
   useEffect(() => {
-    const svg = d3.select(svgRef.current);
+    const svg = d3.select(svgRef.current).attr("display", "block");
 
     const data = {
       nodes: [
-        { name: "B", value: 20 },
-        { name: "X", value: 30 },
-        { name: "Y", value: 25 },
-        { name: "J", value: 15 },
-        { name: "K", value: 5 },
-        { name: "L", value: 18 },
-        { name: "Z", value: 22 }
+        { name: "A2M", value: 20 },
+        { name: "ABCG2", value: 30 },
+        { name: "C1S", value: 25 },
+        { name: "CCDC88A", value: 15 },
+        { name: "CCR7", value: 5 },
+        { name: "DNASE2B", value: 18 },
+        { name: "GPR183", value: 22 }
       ],
       links: [
         { source: 0, target: 1, value: 3, info: "Info about link 1" },
@@ -104,14 +104,14 @@ export function Sankey() {
           .attr("width", d.x1 - d.x0)
           .attr("height", d.y1 - d.y0);
         const div = foreignObject.append("xhtml:div");
-        const component = <Barplot width={(d.x1 - d.x0) - 2} height={(d.y1 - d.y0)-2} />;
+        const component = <Barplot width={(d.x1 - d.x0) - 2} height={(d.y1 - d.y0) - 2} />;
         ReactDOM.createRoot(div.node()).render(component);
       });
 
-      const root_width = 20;
+    const root_width = 20;
 
-      // Append a rect for the first node of nodes to g
-      g.append("rect")
+    // Append a rect for the first node of nodes to g
+    g.append("rect")
       .attr("class", "root-node")
       .attr("x", nodes[0].x1 - root_width)
       .attr("y", nodes[0].y0)
@@ -120,11 +120,11 @@ export function Sankey() {
       .attr("fill", "steelblue")
       .attr("stroke", "black")
       .attr("stroke-width", 2);
-    
-
   }, []);
 
   return (
-    <svg className="" ref={svgRef} width="100vw" height="100vh"></svg>
+    <div className="sankey">
+      <svg ref={svgRef} width="100vw" height="70vh"></svg>
+    </div>
   );
 }
