@@ -1,5 +1,5 @@
 import './App.css';
-import { Sankey } from './Components/Sankey.js';
+import { Sankey } from './components/Sankey.js';
 
 function App() {
   return (
