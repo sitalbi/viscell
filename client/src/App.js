@@ -1,25 +1,22 @@
-import './App.css';
-import { HomePage } from './pages/HomePage.js';
-import { MainPage } from './pages/MainPage.js';
-import { FileProvider } from './context/SankeyFile.js';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
 import React from 'react';
-import Box from '@mui/material/Box/Box.js';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { MenuBar } from './components/MenuBar.js';
+import { FileImport } from './components/FileImport.js';
+import { Sankey } from './components/Sankey.js';
 
+import './App.css';
 
 function App() {
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <FileProvider>
-        <Router>
+      <Router>
+        <div>
+          <MenuBar />
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/result" element={<MainPage />} />
+            <Route path="/" element={<FileImport />} />
+            <Route path="/result" element={<Sankey />} />
           </Routes>
-        </Router>
-      </FileProvider>
-    </Box>
+        </div>
+      </Router>
   );
 }
 
