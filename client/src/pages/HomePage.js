@@ -1,18 +1,14 @@
 import React from "react";
-import { Helmet } from "react-helmet"
-import "./HomePage.css";
-
+import { Helmet } from "react-helmet";
 import { ImportFile } from "../components/ImportFile.js";
-import { MenuBar } from '../components/MenuBar.js';
+import "./HomePage.css";
 
 export const HomePage = () => {
   return (
-    <div className="Home">
+    <div>
       <Helmet>
         <title>viscell</title>
       </Helmet>
-      <MenuBar />
-
       <div className="importFile">
         <ImportFile />
       </div>
