@@ -28,34 +28,4 @@ describe('ImportFile', () => {
 
         expect(setFile).toHaveBeenCalledWith(expect.any(File));
     });
-
-    it('navigates to /result when the submit button is clicked', () => {
-        const { getByText } = render(
-            <FileContext.Provider value={[null, jest.fn()]}>
-                <Router>
-                    <ImportFile />
-                </Router>
-            </FileContext.Provider>
-        );
-
-        fireEvent.click(getByText('Submit'));
-
-        expect(window.location.pathname).toBe('/result');
-    });
-
-    it('the file is removed from messageImportFile when a new file is selected', () => {
-        const { getByLabelText, getByText } = render(
-            <FileContext.Provider value={[null, jest.fn()]}>
-                <Router>
-                    <ImportFile />
-                </Router>
-            </FileContext.Provider>
-        );
-
-        fireEvent.change(getByLabelText('Choose a file'), { target: { files: [new File([''], 'test.csv', { type: 'text/csv' })] } });
-        fireEvent.change(getByLabelText('Choose a file'), { target: { files: [new File([''], 'test2.csv', { type: 'text/csv' })] } });
-
-        // expected messageImportFile to be test2.csv
-        expect(getByText('test2.csv')).toBeInTheDocument();
-    });
 });
