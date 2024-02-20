@@ -1,0 +1,9 @@
+.titleHomePage {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  background-image: linear-gradient(to left, #371595, #fcfcfc);
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+}

@@ -184,6 +184,7 @@ sketch
 ### Visual Studio Code ###
 .vscode/
 build/
+builds/
 
 # Local History for Visual Studio Code
 .history/
@@ -198,5 +199,8 @@ build/
 ### WebStorm ###
 .idea/
 
-### Misc ###
-builds
+### Testing ###
+/.pnp
+.pnp.js
+/coverage
+junit.xml
