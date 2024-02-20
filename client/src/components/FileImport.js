@@ -1,14 +1,13 @@
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { React, useContext } from 'react';
-import { FileContext } from '../context/SankeyFile.js';
+import { React, useState } from 'react';
 import { RiFileUploadLine } from 'react-icons/ri';
 
-export const ImportFile = () => {
-    const [, setFile] = useContext(FileContext);
+export const FileImport = () => {
+    const [, setFile] = useState(null);
 
     const onFileChange = (value) => {
         setFile(value.target.files[0]);
-    };
+    }
 
     const onFileClick = () => {
         alert("File uploaded successfully"); // This will change very soon
