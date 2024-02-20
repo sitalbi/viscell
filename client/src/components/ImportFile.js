@@ -1,49 +1,38 @@
+import { Button, Container, Row, Col } from 'react-bootstrap';
 import { React, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FileContext } from '../context/SankeyFile.js';
-import './ImportFile.css';
+import { RiFileUploadLine } from 'react-icons/ri';
 
 export const ImportFile = () => {
-
     const [, setFile] = useContext(FileContext);
-
-    const navigate = useNavigate();
 
     const onFileChange = (value) => {
         setFile(value.target.files[0]);
-        if (document.querySelector('.messageImportFile')) {
-            document.querySelector('.messageImportFile').remove();
-        }
-
-        // create a message with the name of the file
-        const message = document.createElement('p');
-        message.className = 'messageImportFile';
-        message.innerHTML = value.target.files[0].name;
-        message.style.color = 'black';
-        document.querySelector('.importFileDiv').appendChild(message);
-    }
+    };
 
     const onFileClick = () => {
-        // create a message to inform the user that the file has been uploaded
-        const message = document.createElement('p');
-        message.innerHTML = 'File uploaded';
-        message.style.color = 'green';
-        document.querySelector('.importFileDiv').appendChild(message);
-        navigate('/result');
-    }
+        alert("File uploaded successfully"); // This will change very soon
+    };
 
     return (
-        <div className='importFile'>
-            <h2>Import your file</h2>
-            <div className='importFileDiv'>
-                <div className='importFileButton'>
-                    <label className='fileImportBt' htmlFor="file">Choose a file</label>
-                    <input className='fileImportInput' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
-                </div>
-                <div className='div3'>
-                    <button className='buttonImport' onClick={onFileClick}>Submit</button>
-                </div>
-            </div>
-        </div>
+        <Container className="d-flex justify-content-center">
+            <Row>
+                <Col>
+                    <h2 className="text-center mt-2">Import your file</h2>
+                    <p className="text-center mt-2">Supported file types: .csv, .xlsx, .xls</p>
+                    <div className="text-center">
+                        <label className='btn btn-outline-primary' htmlFor="file">
+                            <RiFileUploadLine style={{ marginRight: '5px' }} /> Choose a file
+                        </label>
+                        <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
+                    </div>
+                    <div className="text-center mt-3">
+                        <Button variant="success" className="btn btn-primary" onClick={onFileClick}>Upload</Button>
+                    </div>
+                    <div className='info'>
+                    </div>
+                </Col>
+            </Row>
+        </Container>
     );
-}
+};
