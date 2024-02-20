@@ -9,10 +9,9 @@ export const HomePage = () => {
   return (
     <div className="Home">
       <Helmet>
-        <title>Viscell</title>
+        <title>viscell</title>
       </Helmet>
       <MenuBar />
-      <h1 className="titleHomePage">Viscell</h1>
 
       <div className="importFile">
         <ImportFile />
