@@ -13,13 +13,13 @@ export const FileImport = () => {
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data); 
 
-        const worksheets = [];
+        const worksheets = new Map();
 
         // loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
-            if (sheetName !== "cells") {
+            if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
                 const sheet = workbook.Sheets[sheetName];
-                worksheets.push(XLSX.utils.sheet_to_json(sheet));
+                worksheets.set(sheetName,XLSX.utils.sheet_to_json(sheet));
             }
         }
         console.log(worksheets);
