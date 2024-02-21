@@ -24,7 +24,7 @@ unit-test:
   script:
     - echo "This is a test job"
     - echo "Running the test job"
-    - npm run test:ci
+    - npm run ci
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     paths:

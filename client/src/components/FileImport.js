@@ -1,13 +1,31 @@
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { React, useState } from 'react';
 import { RiFileUploadLine } from 'react-icons/ri';
+import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FileImport = () => {
     const [, setFile] = useState(null);
 
-    const onFileChange = (value) => {
-        setFile(value.target.files[0]);
+    const onFileChange = async (value) => {
+        // use XLSX to read the file which is a xlss file
+        const f = value.target.files[0];
+        setFile(f);
+        const data = await f.arrayBuffer();
+        const workbook = XLSX.read(data); 
+
+        const worksheets = new Map();
+
+        // loop through each sheet in the workbook and convert it to a json object for data processing
+        for (const sheetName of workbook.SheetNames) {
+            if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
+                const sheet = workbook.Sheets[sheetName];
+                worksheets.set(sheetName,XLSX.utils.sheet_to_json(sheet));
+            }
+        }
+        console.log(worksheets);
     }
+
+
 
     const onFileClick = () => {
         alert("File uploaded successfully"); // This will change very soon
