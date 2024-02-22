@@ -11,7 +11,7 @@ export function MenuBar() {
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
                         <Nav.Link as={Link} to="/result">Result</Nav.Link>
-                        <Nav.Link as={Link} to="/">Example</Nav.Link>
+                        <Nav.Link as={Link} to="/example">Example</Nav.Link>
                         <Nav.Link as={Link} to="/">About</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
