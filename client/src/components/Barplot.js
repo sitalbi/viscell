@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
-const Barplot = ({ width, height }) => {
+export const Barplot = ({ width, height }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -45,5 +45,3 @@ const Barplot = ({ width, height }) => {
 
   return <svg className="barplot" ref={svgRef} width={width} height={height} style={barplotStyle} />;
 };
-
-export default Barplot;
