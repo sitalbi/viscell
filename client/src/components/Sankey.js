@@ -1,9 +1,9 @@
-import ReactDOM from "react-dom/client";
 import React, { useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
-
+import ReactDOM from "react-dom";
 import Barplot from "./Barplot.js";
 
 /**
@@ -13,38 +13,124 @@ import Barplot from "./Barplot.js";
  */
 export function Sankey() {
   const svgRef = useRef();
+  const location = useLocation();
+  const cellsMap = new Map();
 
   useEffect(() => {
-    const svg = d3.select(svgRef.current).attr("display", "block");
-
     const data = {
-      nodes: [
-        { name: "A2M", value: 20 },
-        { name: "ABCG2", value: 30 },
-        { name: "C1S", value: 25 },
-        { name: "CCDC88A", value: 15 },
-        { name: "CCR7", value: 5 },
-        { name: "DNASE2B", value: 18 },
-        { name: "GPR183", value: 22 }
-      ],
-      links: [
-        { source: 0, target: 1, value: 3, info: "Info about link 1" },
-        { source: 0, target: 2, value: 9, info: "Info about link 2" },
-        { source: 1, target: 3, value: 2, info: "Info about link 3" },
-        { source: 1, target: 4, value: 9, info: "Info about link 4" },
-        { source: 2, target: 5, value: 4, info: "Info about link 5" },
-        { source: 2, target: 6, value: 9, info: "Info about link 6" }
-      ]
+      nodes: [],
+      links: []
     };
 
-    const sankeyLayout = sankey()
-      .nodeWidth(150)
-      .nodePadding(20)
-      .extent([[0, 0], [1200, 420]]);
+    // Get the route parameter
+    if (location.state && location.state.data) {
+      // Retrieve data from location state
+      const worksheets = location.state.data;
 
+      // SANKEY
+      // sort by alphanumerical order the  meta worksheets by "" column which is the name of the node
+      worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
+
+
+      worksheets.get("meta").forEach((d) => {
+        data.nodes.push({ name: d[""] });
+      });
+
+      worksheets.get("meta").forEach((d) => {
+        if (d["parent"]) {
+          data.links.push({
+            source: data.nodes.findIndex((node) => node.name === d["parent"]),
+            target: data.nodes.findIndex((node) => node.name === d[""]),
+            value: d["n"]
+          });
+        }
+      });
+
+      // BARPLOT
+      for (let value of worksheets.get("markers").values()) {
+        const genesMap = new Map();
+        for (const [key, gene] of Object.entries(value)) {
+          if (key !== "") {
+            if (gene !== 0) {
+              genesMap.set(key, gene);
+            }
+          }
+        }
+        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
+      }
+    }
+
+    const svg = d3.select(svgRef.current).attr("display", "block");
+
+    const sankeyLayout = sankey()
+      .nodeWidth(200)
+      .nodePadding(55)
+      .nodeSort(d3.ascending)
+      .extent([[0, 0], [1920, 1080]]);
     const { nodes, links } = sankeyLayout(data);
 
     svg.selectAll("*").remove();
+
+    const g = svg.append("g");
+
+    // Draw nodes as Barplot components
+    g.selectAll(".node")
+      .data(nodes.slice(1))
+      .join("g")
+      .attr("class", "node")
+      .each(function (d) {
+        const barplotHeight = 70;
+        const nodeWidth = d.x1 - d.x0;
+        const nodeHeight = d.y1 - d.y0 > barplotHeight ? d.y1 - d.y0 : barplotHeight;
+
+        // Calculate center position of the node
+        const centerX = d.x0 + nodeWidth / 2;
+        const centerY = d.y0 + nodeHeight / 2;
+
+        // Calculate position for Barplot
+        const barplotX = centerX - 100; // Adjust as needed
+        const barplotY = centerY - barplotHeight / 2;
+
+        const foreignObject = d3.select(this)
+          .append("foreignObject")
+          .attr("x", barplotX)
+          .attr("y", barplotY)
+          .attr("width", 200) // Fixed width for Barplot
+          .attr("height", barplotHeight);
+
+        const div = foreignObject.append("xhtml:div");
+        const cellName = data.nodes.find((node) => node.x0 === d.x0 && node.y0 === d.y0).name;
+        const component = <Barplot width={200} height={barplotHeight} cellName={cellName} genes={cellsMap.get(cellName)} />;
+        ReactDOM.createRoot(div.node()).render(component);
+      });
+
+    // Draw nodes as rects for debug
+    /*g.selectAll(".node")
+      .data(nodes.slice(1))
+      .join("rect")
+      .attr("class", "node")
+      .attr("x", d => d.x0)
+      .attr("y", d => d.y0)
+      .attr("width", d => d.x1 - d.x0)
+      .attr("height", d => d.y1 - d.y0 > 50 ? d.y1 - d.y0 : 50)
+      .attr("fill", "steelblue")
+      .attr("stroke", "black")
+      .attr("stroke-width", 2);*/
+
+
+    const root_width = 30;
+
+    // Append a rect for the first node of nodes to g
+    g.append("rect")
+      .attr("class", "root-node")
+      .attr("x", nodes[0].x1 - root_width)
+      .attr("y", nodes[0].y0)
+      .attr("width", root_width)
+      .attr("height", nodes[0].y1 - nodes[0].y0)
+      .attr("fill", "steelblue")
+      .attr("stroke", "black")
+      .attr("stroke-width", 2);
+
 
     // Draw links
     svg
@@ -57,7 +143,7 @@ export function Sankey() {
       .attr("fill", "none")
       .attr("stroke", "#000")
       .attr("stroke-opacity", 0.5)
-      .attr("stroke-width", d => d.value * 10)
+      .attr("stroke-width", d => Math.max(2, d.width)) // width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)
@@ -76,55 +162,25 @@ export function Sankey() {
           .style("background-color", "white")
           .style("border", "1px solid black")
           .style("padding", "5px")
-          .style("border-radius", "5px");
+          .style("border-radius", "5px")
+          .style("opacity", 1);
+
 
         tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name}, (${d.info})`);
+          .html(`${d.source.name} -> ${d.target.name}`);
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", 0.5);
-
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
 
 
-    const g = svg.append("g");
-
-    // Draw nodes as Barplot components
-    g.selectAll(".node")
-      .data(nodes.slice(1))
-      .join("g")
-      .attr("class", "node")
-      .each(function (d) {
-        const foreignObject = d3.select(this)
-          .append("foreignObject")
-          .attr("x", d.x0)
-          .attr("y", d.y0)
-          .attr("width", d.x1 - d.x0)
-          .attr("height", d.y1 - d.y0);
-        const div = foreignObject.append("xhtml:div");
-        const component = <Barplot width={(d.x1 - d.x0) - 2} height={(d.y1 - d.y0) - 2} />;
-        ReactDOM.createRoot(div.node()).render(component);
-      });
-
-    const root_width = 20;
-
-    // Append a rect for the first node of nodes to g
-    g.append("rect")
-      .attr("class", "root-node")
-      .attr("x", nodes[0].x1 - root_width)
-      .attr("y", nodes[0].y0)
-      .attr("width", root_width)
-      .attr("height", nodes[0].y1 - nodes[0].y0)
-      .attr("fill", "steelblue")
-      .attr("stroke", "black")
-      .attr("stroke-width", 2);
-  }, []);
+  });
 
   return (
     <div className="sankey">
-      <svg ref={svgRef} width="100vw" height="70vh"></svg>
+      <svg ref={svgRef} width="120vw" height="200vh"></svg>
     </div>
   );
 }
