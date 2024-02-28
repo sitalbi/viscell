@@ -56,7 +56,7 @@ export function Sankey() {
             }
           }
         }
-        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
+        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 5)));
       }
     }
 
@@ -64,9 +64,9 @@ export function Sankey() {
 
     const sankeyLayout = sankey()
       .nodeWidth(200)
-      .nodePadding(55)
+      .nodePadding(50)
       .nodeSort(d3.ascending)
-      .extent([[0, 0], [1920, 1080]]);
+      .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
     const { nodes, links } = sankeyLayout(data);
 
     svg.selectAll("*").remove();
@@ -79,28 +79,35 @@ export function Sankey() {
       .join("g")
       .attr("class", "node")
       .each(function (d) {
-        const barplotHeight = 70;
         const nodeWidth = d.x1 - d.x0;
-        const nodeHeight = d.y1 - d.y0 > barplotHeight ? d.y1 - d.y0 : barplotHeight;
-
-        // Calculate center position of the node
-        const centerX = d.x0 + nodeWidth / 2;
-        const centerY = d.y0 + nodeHeight / 2;
+        const nodeHeight = d.y1 - d.y0+5;
+        const barplotWidth = nodeWidth;
+        const barplotHeight = Math.max(nodeHeight, 50); // Ensure minimum height
 
         // Calculate position for Barplot
-        const barplotX = centerX - 100; // Adjust as needed
-        const barplotY = centerY - barplotHeight / 2;
+        const barplotX = d.x0; // Adjust as needed
+        const barplotY = d.y0 + (nodeHeight - barplotHeight) / 2; // Adjust as needed
 
-        const foreignObject = d3.select(this)
+        const foreignObject = d3
+          .select(this)
           .append("foreignObject")
           .attr("x", barplotX)
           .attr("y", barplotY)
-          .attr("width", 200) // Fixed width for Barplot
+          .attr("width", barplotWidth)
           .attr("height", barplotHeight);
 
         const div = foreignObject.append("xhtml:div");
-        const cellName = data.nodes.find((node) => node.x0 === d.x0 && node.y0 === d.y0).name;
-        const component = <Barplot width={200} height={barplotHeight} cellName={cellName} genes={cellsMap.get(cellName)} />;
+        const cellName = data.nodes.find(
+          (node) => node.x0 === d.x0 && node.y0 === d.y0
+        ).name;
+        const component = (
+          <Barplot
+            width={barplotWidth}
+            height={barplotHeight}
+            cellName={cellName}
+            genes={cellsMap.get(cellName)}
+          />
+        );
         ReactDOM.createRoot(div.node()).render(component);
       });
 
@@ -158,7 +165,8 @@ export function Sankey() {
           .attr("x", x)
           .attr("y", y)
           .attr("width", 100)
-          .attr("height", 100)
+          .attr("height", 40)
+          .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
           .style("padding", "5px")
