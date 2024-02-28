@@ -3,6 +3,7 @@ import { RiFileUploadLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import Barplot from './Barplot.js';
 
 export const FileImport = () => {
     const [, setFile] = useState(null);
@@ -15,7 +16,7 @@ export const FileImport = () => {
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
 
-        const worksheets = new Map();
+        const importData = new Map();
 
         // loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
@@ -31,7 +32,7 @@ export const FileImport = () => {
     }
 
     const onFileClick = () => {
-        alert("File uploaded successfully"); // This will change very soon
+        generateBarplot(worksheets.get("markers"), 500, 500);
     };
 
     return (
@@ -50,6 +51,7 @@ export const FileImport = () => {
                         <Button variant="success" className="btn btn-primary" onClick={onFileClick}>Upload</Button>
                     </div>
                     <div className='info'>
+                        {barplot && barplot}
                     </div>
                 </Col>
             </Row>
