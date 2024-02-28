@@ -106,5 +106,3 @@ const Barplot = ({ width, height, importedData }) => {
     </div>
   );
 };
-
-export default Barplot;
