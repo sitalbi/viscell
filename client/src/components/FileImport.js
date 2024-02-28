@@ -1,20 +1,20 @@
 import { Button, Container, Row, Col } from 'react-bootstrap';
-import { React, useState } from 'react';
 import { RiFileUploadLine } from 'react-icons/ri';
+import { useNavigate } from 'react-router-dom';
+import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import Barplot from './Barplot.js';
 
 export const FileImport = () => {
     const [, setFile] = useState(null);
-    const [worksheets, setWorksheets] = useState(new Map());
-    const [barplot, setBarplot] = useState(null);
+    const navigate = useNavigate();
 
     const onFileChange = async (value) => {
         // use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
         setFile(f);
         const data = await f.arrayBuffer();
-        const workbook = XLSX.read(data); 
+        const workbook = XLSX.read(data);
 
         const importData = new Map();
 
@@ -22,14 +22,13 @@ export const FileImport = () => {
         for (const sheetName of workbook.SheetNames) {
             if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
                 const sheet = workbook.Sheets[sheetName];
-                importData.set(sheetName,XLSX.utils.sheet_to_json(sheet));
+                worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
             }
         }
-        setWorksheets(importData);
-    }
+        console.log(worksheets);
 
-    function generateBarplot(data, width, height) {
-        setBarplot(<Barplot width={width} height={height} importedData={data}/>);
+        // navigate to /result with worksheets as parameter
+        navigate('/result', { state: { data: worksheets } });
     }
 
     const onFileClick = () => {
