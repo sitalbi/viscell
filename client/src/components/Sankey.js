@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
+import ReactDOM from "react-dom";
+import Barplot from "./Barplot.js";
 
 /**
  * Sankey component
@@ -12,6 +14,7 @@ import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 export function Sankey() {
   const svgRef = useRef();
   const location = useLocation();
+  const cellsMap = new Map();
 
   useEffect(() => {
     const data = {
@@ -24,6 +27,7 @@ export function Sankey() {
       // Retrieve data from location state
       const worksheets = location.state.data;
 
+      // SANKEY
       // sort by alphanumerical order the  meta worksheets by "" column which is the name of the node
       worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
@@ -42,6 +46,18 @@ export function Sankey() {
         }
       });
 
+      // BARPLOT
+      for (let value of worksheets.get("markers").values()) {
+        const genesMap = new Map();
+        for (const [key, gene] of Object.entries(value)) {
+          if (key !== "") {
+            if (gene !== 0) {
+              genesMap.set(key, gene);
+            }
+          }
+        }
+        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
+      }
     }
 
     const svg = d3.select(svgRef.current).attr("display", "block");
@@ -55,28 +71,41 @@ export function Sankey() {
 
     svg.selectAll("*").remove();
 
-
     const g = svg.append("g");
 
     // Draw nodes as Barplot components
-    /*g.selectAll(".node")
+    g.selectAll(".node")
       .data(nodes.slice(1))
       .join("g")
       .attr("class", "node")
       .each(function (d) {
+        const barplotHeight = 70;
+        const nodeWidth = d.x1 - d.x0;
+        const nodeHeight = d.y1 - d.y0 > barplotHeight ? d.y1 - d.y0 : barplotHeight;
+
+        // Calculate center position of the node
+        const centerX = d.x0 + nodeWidth / 2;
+        const centerY = d.y0 + nodeHeight / 2;
+
+        // Calculate position for Barplot
+        const barplotX = centerX - 100; // Adjust as needed
+        const barplotY = centerY - barplotHeight / 2;
+
         const foreignObject = d3.select(this)
           .append("foreignObject")
-          .attr("x", d.x0)
-          .attr("y", d.y0)
-          .attr("width", d.x1 - d.x0)
-          .attr("height", d.y1 - d.y0);
+          .attr("x", barplotX)
+          .attr("y", barplotY)
+          .attr("width", 200) // Fixed width for Barplot
+          .attr("height", barplotHeight);
+
         const div = foreignObject.append("xhtml:div");
-        const component = <Barplot width={150} height={70} />;
+        const cellName = data.nodes.find((node) => node.x0 === d.x0 && node.y0 === d.y0).name;
+        const component = <Barplot width={200} height={barplotHeight} cellName={cellName} genes={cellsMap.get(cellName)} />;
         ReactDOM.createRoot(div.node()).render(component);
-      });*/
+      });
 
     // Draw nodes as rects for debug
-    g.selectAll(".node")
+    /*g.selectAll(".node")
       .data(nodes.slice(1))
       .join("rect")
       .attr("class", "node")
@@ -86,7 +115,7 @@ export function Sankey() {
       .attr("height", d => d.y1 - d.y0 > 50 ? d.y1 - d.y0 : 50)
       .attr("fill", "steelblue")
       .attr("stroke", "black")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 2);*/
 
 
     const root_width = 30;
@@ -135,19 +164,19 @@ export function Sankey() {
           .style("padding", "5px")
           .style("border-radius", "5px")
           .style("opacity", 1);
-        
+
 
         tooltip.append("xhtml:div")
           .html(`${d.source.name} -> ${d.target.name}`);
       })
       .on("mouseout", function () {
-          d3.select(this).attr("stroke-opacity", 0.5);
-          // Remove tooltip
-          d3.select(this.parentNode).selectAll(".tooltip").remove();
+        d3.select(this).attr("stroke-opacity", 0.5);
+        // Remove tooltip
+        d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
 
 
-  }, [location.state]);
+  });
 
   return (
     <div className="sankey">
