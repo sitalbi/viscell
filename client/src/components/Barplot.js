@@ -1,8 +1,17 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
+const colorTable = {};
 const Barplot = ({ width, height, cellName, genes }) => {
   const svgRef = useRef();
+
+  //Create a table that create a random color for each gene
+  for (let [gene] of genes.entries()) {
+    console.log(gene);
+    if (colorTable[gene] === undefined) {
+      colorTable[gene] = "#" + Math.floor(Math.random()*16777215).toString(16);
+    }
+  }
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
@@ -44,7 +53,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
         .attr("y", d => yScale(d))
         .attr("width", (scaledWidth / data.length - 4)) // Augmenter l'écart entre les colonnes
         .attr("height", d => scaledHeight - yScale(d))
-        .attr("fill", "steelblue");
+        .attr("fill", (d, i) => colorTable[labels[i]]);
 
 
       // Add legend text
