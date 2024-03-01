@@ -9,8 +9,8 @@ const Barplot = ({ width, height, cellName, genes }) => {
     svg.selectAll("*").remove();
 
     // Calculate scaling factor
-    const originalWidth = 120; // default width of the barplot
-    const originalHeight = 70; // default height of the barplot
+    const originalWidth = 100; // default width of the barplot
+    const originalHeight = 60; // default height of the barplot
 
     //Ignore First cell 
     if (cellName !== "C") {
@@ -51,21 +51,21 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
 
       // Add legend text
-      const legendFontSize = 10 * scaleFactor; // Proportional font size
+      const defaultFontSize = 10; // Default font size
+      const legendFontSize = defaultFontSize * scaleFactor * 0.6; // Proportional font size
       g.selectAll("text")
         .data(labels)
         .enter()
         .append("text")
         .text(d => d)
-        .attr("x", (d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length - 10) / 2)
+        .attr("x", (d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
         .attr("y", scaledHeight * 0.9)
         .attr("text-anchor", "middle")
-        .attr("font-size", `${legendFontSize}px`)
-        .attr("fill", "black");
+        .attr("font-size", `${legendFontSize}px`);
 
       // Add title
       g.append("text")
-        .text(`Title : ${cellName}`)
+        .text(`${cellName}`)
         .attr("x", scaledWidth / 2)
         .attr("y", scaledHeight /2)
         .attr("text-anchor", "middle")
