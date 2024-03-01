@@ -56,7 +56,7 @@ export function Sankey() {
             }
           }
         }
-        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 5)));
+        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
       }
     }
 
@@ -103,7 +103,7 @@ export function Sankey() {
         const component = (
           <Barplot
             width={barplotWidth}
-            height={barplotHeight}
+            height={barplotHeight-1}
             cellName={cellName}
             genes={cellsMap.get(cellName)}
           />
