@@ -1,6 +1,16 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
+/**
+ * Barplot component
+ * 
+ * @param {*} width The width of the barplot
+ * @param {*} height The height of the barplot
+ * @param {*} cellName The name of the cell
+ * @param {*} genes  The map of genes
+ * 
+ * @returns {JSX.Element}
+ */
 const Barplot = ({ width, height, cellName, genes }) => {
   const svgRef = useRef();
 
@@ -9,10 +19,10 @@ const Barplot = ({ width, height, cellName, genes }) => {
     svg.selectAll("*").remove();
 
     // Calculate scaling factor
-    const originalWidth = 130; // default width of the barplot
-    const originalHeight = 80; // default height of the barplot
+    const originalWidth = 100; // default width of the barplot
+    const originalHeight = 60; // default height of the barplot
 
-    //Ignore First cell 
+    // Ignore First cell 
     if (cellName !== "C") {
       const data = [];
       const labels = [];
@@ -35,6 +45,9 @@ const Barplot = ({ width, height, cellName, genes }) => {
       // Adjust positioning to center the barplot within the node
       const g = svg.append("g").attr("transform", `translate(${(width - scaledWidth) / 2}, ${(height - scaledHeight) / 2})`);
 
+
+      const space = 5; // Space between bars
+
       // Draw bars
       g.selectAll("rect")
         .data(data)
@@ -42,34 +55,35 @@ const Barplot = ({ width, height, cellName, genes }) => {
         .append("rect")
         .attr("x", (d, i) => i * (scaledWidth / data.length))
         .attr("y", d => yScale(d))
-        .attr("width", (scaledWidth / data.length - 4)) // Augmenter l'écart entre les colonnes
-        .attr("height", d => scaledHeight - yScale(d))
+        .attr("width", (scaledWidth / data.length - space))
+        .attr("height", d => scaledHeight - yScale(d) - scaledHeight * 0.2)
         .attr("fill", "steelblue");
 
 
       // Add legend text
+      const defaultFontSize = 10; // Default font size
+      const legendFontSize = defaultFontSize * scaleFactor * 0.6; // Proportional font size
       g.selectAll("text")
         .data(labels)
         .enter()
         .append("text")
         .text(d => d)
-        .attr("x", (d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length - 10) / 2) // Ajuster la position en X
-        .attr("y", scaledHeight) // Ajuster la position en Y
+        .attr("x", (d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
+        .attr("y", scaledHeight * 0.9)
         .attr("text-anchor", "middle")
-        .attr("font-size", "10px")
-        .attr("fill", "black");
+        .attr("font-size", `${legendFontSize}px`);
 
       // Add title
       g.append("text")
-        .text(`Title : ${cellName}`)
+        .text(`${cellName}`)
         .attr("x", scaledWidth / 2)
-        .attr("y", scaledHeight /2)
+        .attr("y", scaledHeight / 2)
         .attr("text-anchor", "middle")
-        .attr("font-size", "12px")
+        .attr("font-size", "15px")
         .attr("font-weight", "bold")
         .attr("fill", "black");
     }
-    
+
   }, [width, height, cellName, genes]);
 
   // Declare style for the barplot
@@ -80,7 +94,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
   return (
     <div>
-      <svg className="barplot" ref={svgRef} width={width} height={height + 30} style={barplotStyle} />
+      <svg className="barplot" ref={svgRef} width={width} height={height} style={barplotStyle} />
     </div>
   );
 };

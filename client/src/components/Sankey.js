@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 import Barplot from "./Barplot.js";
 
 /**
@@ -19,34 +19,52 @@ export function Sankey() {
   useEffect(() => {
     const data = {
       nodes: [],
-      links: []
+      links: [],
     };
 
     // Get the route parameter
     if (location.state && location.state.data) {
-      // Retrieve data from location state
-      const worksheets = location.state.data;
+      const worksheets = location.state.data; // Retrieve data from location state
 
-      // SANKEY
-      // sort by alphanumerical order the  meta worksheets by "" column which is the name of the node
+      // =====================
+      //        SANKEY
+      // =====================
+
+      // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
       worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-
+      // Create nodes
       worksheets.get("meta").forEach((d) => {
         data.nodes.push({ name: d[""] });
       });
 
+      // Create links between nodes
       worksheets.get("meta").forEach((d) => {
         if (d["parent"]) {
           data.links.push({
             source: data.nodes.findIndex((node) => node.name === d["parent"]),
             target: data.nodes.findIndex((node) => node.name === d[""]),
-            value: d["n"]
+            value: d["n"],
+            consensus: d["consensus"],
+            stroke: null
           });
         }
       });
 
-      // BARPLOT
+      // Links all have a consensus value, ranging from 0 to 1
+      // We need to find the maximum consensus value and use it to scale the stroke width of the links
+      const maxConsensus = d3.max(data.links, d => d.consensus);
+      const minConsensus = d3.min(data.links, d => d.consensus);
+      const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
+
+      // We add the scaled stroke width to the links and round to two decimals
+      data.links.forEach(d => {
+        d.stroke = scale(d.consensus).toFixed(2);
+      });
+
+      // ======================
+      //        BARPLOT
+      // ======================
       for (let value of worksheets.get("markers").values()) {
         const genesMap = new Map();
         for (const [key, gene] of Object.entries(value)) {
@@ -60,13 +78,16 @@ export function Sankey() {
       }
     }
 
+    // ===================
+    //       LAYOUT
+    // ===================
     const svg = d3.select(svgRef.current).attr("display", "block");
 
     const sankeyLayout = sankey()
       .nodeWidth(200)
-      .nodePadding(55)
+      .nodePadding(50)
       .nodeSort(d3.ascending)
-      .extent([[0, 0], [1920, 1080]]);
+      .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
     const { nodes, links } = sankeyLayout(data);
 
     svg.selectAll("*").remove();
@@ -79,44 +100,37 @@ export function Sankey() {
       .join("g")
       .attr("class", "node")
       .each(function (d) {
-        const barplotHeight = 70;
         const nodeWidth = d.x1 - d.x0;
-        const nodeHeight = d.y1 - d.y0 > barplotHeight ? d.y1 - d.y0 : barplotHeight;
-
-        // Calculate center position of the node
-        const centerX = d.x0 + nodeWidth / 2;
-        const centerY = d.y0 + nodeHeight / 2;
+        const nodeHeight = d.y1 - d.y0+5;
+        const barplotWidth = nodeWidth;
+        const barplotHeight = Math.max(nodeHeight, 50); // Ensure minimum height
 
         // Calculate position for Barplot
-        const barplotX = centerX - 100; // Adjust as needed
-        const barplotY = centerY - barplotHeight / 2;
+        const barplotX = d.x0; // Adjust as needed
+        const barplotY = d.y0 + (nodeHeight - barplotHeight) / 2; // Adjust as needed
 
-        const foreignObject = d3.select(this)
+        const foreignObject = d3
+          .select(this)
           .append("foreignObject")
           .attr("x", barplotX)
           .attr("y", barplotY)
-          .attr("width", 200) // Fixed width for Barplot
+          .attr("width", barplotWidth)
           .attr("height", barplotHeight);
 
         const div = foreignObject.append("xhtml:div");
-        const cellName = data.nodes.find((node) => node.x0 === d.x0 && node.y0 === d.y0).name;
-        const component = <Barplot width={200} height={barplotHeight} cellName={cellName} genes={cellsMap.get(cellName)} />;
+        const cellName = data.nodes.find(
+          (node) => node.x0 === d.x0 && node.y0 === d.y0
+        ).name;
+        const component = (
+          <Barplot
+            width={barplotWidth}
+            height={barplotHeight-1}
+            cellName={cellName}
+            genes={cellsMap.get(cellName)}
+          />
+        );
         ReactDOM.createRoot(div.node()).render(component);
       });
-
-    // Draw nodes as rects for debug
-    /*g.selectAll(".node")
-      .data(nodes.slice(1))
-      .join("rect")
-      .attr("class", "node")
-      .attr("x", d => d.x0)
-      .attr("y", d => d.y0)
-      .attr("width", d => d.x1 - d.x0)
-      .attr("height", d => d.y1 - d.y0 > 50 ? d.y1 - d.y0 : 50)
-      .attr("fill", "steelblue")
-      .attr("stroke", "black")
-      .attr("stroke-width", 2);*/
-
 
     const root_width = 30;
 
@@ -131,7 +145,6 @@ export function Sankey() {
       .attr("stroke", "black")
       .attr("stroke-width", 2);
 
-
     // Draw links
     svg
       .append("g")
@@ -142,7 +155,7 @@ export function Sankey() {
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
       .attr("stroke", "#000")
-      .attr("stroke-opacity", 0.5)
+      .attr("stroke-opacity", d => d.stroke)
       .attr("stroke-width", d => Math.max(2, d.width)) // width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
@@ -158,7 +171,8 @@ export function Sankey() {
           .attr("x", x)
           .attr("y", y)
           .attr("width", 100)
-          .attr("height", 100)
+          .attr("height", 40)
+          .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
           .style("padding", "5px")
@@ -174,8 +188,6 @@ export function Sankey() {
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
-
-
   });
 
   return (
