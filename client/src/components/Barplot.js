@@ -1,6 +1,16 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
+/**
+ * Barplot component
+ * 
+ * @param {*} width The width of the barplot
+ * @param {*} height The height of the barplot
+ * @param {*} cellName The name of the cell
+ * @param {*} genes  The map of genes
+ * 
+ * @returns {JSX.Element}
+ */
 const Barplot = ({ width, height, cellName, genes }) => {
   const svgRef = useRef();
 
@@ -12,7 +22,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
     const originalWidth = 100; // default width of the barplot
     const originalHeight = 60; // default height of the barplot
 
-    //Ignore First cell 
+    // Ignore First cell 
     if (cellName !== "C") {
       const data = [];
       const labels = [];
@@ -67,13 +77,13 @@ const Barplot = ({ width, height, cellName, genes }) => {
       g.append("text")
         .text(`${cellName}`)
         .attr("x", scaledWidth / 2)
-        .attr("y", scaledHeight /2)
+        .attr("y", scaledHeight / 2)
         .attr("text-anchor", "middle")
         .attr("font-size", "15px")
         .attr("font-weight", "bold")
         .attr("fill", "black");
     }
-    
+
   }, [width, height, cellName, genes]);
 
   // Declare style for the barplot
