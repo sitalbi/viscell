@@ -32,6 +32,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
     .attr("width", (scaledWidth / data.length - 4)) // Augmenter l'écart entre les colonnes
     .attr("height", d => scaledHeight - yScale(d))
     .attr("fill", "steelblue")
+    .attr("data-testid", (d, i) => `bar-${labels[i]}`); // Ajouter un data-testid basé sur le nom du gène
 
 
     // Add legend text
