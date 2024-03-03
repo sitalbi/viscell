@@ -69,7 +69,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
     // Add title
     g.append("text")
-      .text(`Title : ${cellName}`)
+      .text(`${cellName}`)
       .attr("x", scaledWidth / 2)
       .attr("y", scaledHeight / 2)
       .attr("text-anchor", "middle")

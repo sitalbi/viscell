@@ -32,7 +32,7 @@ describe('Barplot component', () => {
 
     it('renders with all genes after clicking the title', async () => {
         render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} />);
-        fireEvent.click(screen.getByText(/Title : Example/i));
+        fireEvent.click(screen.getByText(/Example/i));
 
         // Wait for the modal to be rendered
         await waitFor(() => {
@@ -40,7 +40,7 @@ describe('Barplot component', () => {
             expect(modalElement).toBeInTheDocument();
         });;
 
-        const totalGenes = screen.getByText(/Number of genes total for Example : 6/i);
+        const totalGenes = screen.getByText(/Number of total genes for Example : 6/i);
         expect(totalGenes).toBeInTheDocument();
 
         // Check if the genes are rendered
@@ -56,7 +56,7 @@ describe('Barplot component', () => {
         render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} />);
 
         // Click on the title to open the modal
-        fireEvent.click(screen.getByText(/Title : TestCell/i));
+        fireEvent.click(screen.getByText(/TestCell/i));
 
         // Check if the modal is rendered
         const modalElement = screen.getByText(/Full Barplot for TestCell/i);
@@ -68,7 +68,7 @@ describe('Barplot component', () => {
         render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} />);
 
         // Click on the title to open the modal
-        fireEvent.click(screen.getByText(/Title : TestCell/i));
+        fireEvent.click(screen.getByText(/TestCell/i));
 
         // Check if the modal is rendered
         const modalElement = screen.getByText(/Full Barplot for TestCell/i);
