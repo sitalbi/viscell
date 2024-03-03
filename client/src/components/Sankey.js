@@ -101,7 +101,7 @@ export function Sankey() {
       .attr("class", "node")
       .each(function (d) {
         const nodeWidth = d.x1 - d.x0;
-        const nodeHeight = d.y1 - d.y0+5;
+        const nodeHeight = d.y1 - d.y0 + 5;
         const barplotWidth = nodeWidth;
         const barplotHeight = Math.max(nodeHeight, 50); // Ensure minimum height
 
@@ -124,7 +124,7 @@ export function Sankey() {
         const component = (
           <Barplot
             width={barplotWidth}
-            height={barplotHeight-1}
+            height={barplotHeight - 1}
             cellName={cellName}
             genes={cellsMap.get(cellName)}
           />
@@ -184,7 +184,7 @@ export function Sankey() {
           .html(`${d.source.name} -> ${d.target.name}`);
       })
       .on("mouseout", function () {
-        d3.select(this).attr("stroke-opacity", 0.5);
+        d3.select(this).attr("stroke-opacity", d => d.stroke);
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
