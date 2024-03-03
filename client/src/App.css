@@ -1,11 +1,24 @@
+/** APP.JS **/
 .App {
   text-align: center;
 }
 
+/** SANKEY.JS **/
 .root-node {
   border-radius: 50%;
 }
 
 .sankey {
   margin-top: 10vh;
+}
+
+/* IMPORTFILE.JS */
+/* The HTML part of the file input musn't be visible */
+.import-button {
+  width: 0px;
+  height: 0px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
 }
