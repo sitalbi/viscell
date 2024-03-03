@@ -10,6 +10,20 @@ const Barplot = ({ width, height, cellName, genes }) => {
   const [popupGenes, setPopupGenes] = useState([]);
   const [clickedTitle, setClickedTitle] = useState(false);
 
+  var onBarClick = function () {
+    const geneName = d3.select(this).data()[0];
+    // go to hyperlink
+    window.open(`https://pubchem.ncbi.nlm.nih.gov/gene/${geneName}/Homo_sapiens`);
+  }
+
+  var mouseOverBar = function () {
+    d3.select(this).attr("opacity", 0.5);
+  }
+
+  var mouseOutBar = function () {
+    d3.select(this).attr("opacity", null);
+  }
+
   const renderBarplot = useCallback((data, svgReference, drawFunction) => {
     const svg = d3.select(svgReference.current);
     svg.selectAll("*").remove();
@@ -52,7 +66,17 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .attr("width", (scaledWidth / data.length - space))
       .attr("height", ([, v]) => scaledHeight - yScale(v))
       .attr("data-testid", "bar-rectangle")
+      .attr("data-testid", (d, i) => `bar-${labels[i]}`)
       .attr("fill", "steelblue");
+
+    // Add on BarClick
+    g.selectAll("rect")
+      .on("click", onBarClick)
+      .data(labels)
+      .attr("name", d => d)
+      .style("cursor", "pointer")
+      .on('mouseover', mouseOverBar)
+      .on('mouseout', mouseOutBar);
 
     // Add legend text
     g.selectAll("text")
@@ -108,6 +132,15 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .attr("height", ([, v]) => originalHeight - yScale(v) + 40)
       .attr("data-testid", "bar-rectangle")
       .attr("fill", "steelblue");
+
+    // Add on BarClick
+    svg.selectAll("rect")
+      .on("click", onBarClick)
+      .data(labels)
+      .attr("name", d => d)
+      .style("cursor", "pointer")
+      .on('mouseover', mouseOverBar)
+      .on('mouseout', mouseOutBar);
 
     // Add legend text
     svg.selectAll("text")
