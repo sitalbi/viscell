@@ -204,3 +204,7 @@ builds/
 .pnp.js
 /coverage
 junit.xml
+
+### XLSX ###
+.*.xlsx
+.~lock.*#

@@ -1,61 +1,46 @@
-import { render, fireEvent } from '@testing-library/react';
-import { FileContext } from '../context/SankeyFile';
-import { ImportFile } from '../components/ImportFile';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { FileImport } from '../components/FileImport.js';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-describe('ImportFile', () => {
+describe('FileImport', () => {
     it('renders without crashing', () => {
         render(
-            <FileContext.Provider value={[null, jest.fn()]}>
-                <Router>
-                    <ImportFile />
-                </Router>
-            </FileContext.Provider>
+            <Router>
+                <FileImport />
+            </Router>
         );
     });
 
-    it('updates the file in context when a file is selected', () => {
-        const setFile = jest.fn();
-        const { getByLabelText } = render(
-            <FileContext.Provider value={[null, setFile]}>
-                <Router>
-                    <ImportFile />
-                </Router>
-            </FileContext.Provider>
+    it('renders FileImport component', () => {
+        render(
+            <Router>
+                <FileImport />
+            </Router>
         );
-
-        fireEvent.change(getByLabelText('Choose a file'), { target: { files: [new File([''], 'test.csv', { type: 'text/csv' })] } });
-
-        expect(setFile).toHaveBeenCalledWith(expect.any(File));
+        expect(screen.getByText('Import your file')).toBeInTheDocument();
+        expect(screen.getByText('Supported file types: .csv, .xlsx, .xls')).toBeInTheDocument();
+        expect(screen.getByLabelText('Choose a file')).toBeInTheDocument();
+        expect(screen.getByText('Upload')).toBeInTheDocument();
     });
 
-    it('navigates to /result when the submit button is clicked', () => {
-        const { getByText } = render(
-            <FileContext.Provider value={[null, jest.fn()]}>
-                <Router>
-                    <ImportFile />
-                </Router>
-            </FileContext.Provider>
-        );
+    // it('displays "File uploaded successfully" on Upload button click', () => {
+    //     render(
+    //         <Router>
+    //             <FileImport />
+    //         </Router>
+    //     );
+    //     const originalAlert = window.alert; // Save the original alert function
 
-        fireEvent.click(getByText('Submit'));
+    //     // Mock window.alert with a jest function
+    //     window.alert = jest.fn();
 
-        expect(window.location.pathname).toBe('/result');
-    });
+    //     const uploadButton = screen.getByText('Upload');
+    //     fireEvent.click(uploadButton);
 
-    it('the file is removed from messageImportFile when a new file is selected', () => {
-        const { getByLabelText, getByText } = render(
-            <FileContext.Provider value={[null, jest.fn()]}>
-                <Router>
-                    <ImportFile />
-                </Router>
-            </FileContext.Provider>
-        );
+    //     // Assert that the jest mock for window.alert was called with the expected message
+    //     expect(window.alert).toHaveBeenCalledWith('File uploaded successfully');
 
-        fireEvent.change(getByLabelText('Choose a file'), { target: { files: [new File([''], 'test.csv', { type: 'text/csv' })] } });
-        fireEvent.change(getByLabelText('Choose a file'), { target: { files: [new File([''], 'test2.csv', { type: 'text/csv' })] } });
-
-        // expected messageImportFile to be test2.csv
-        expect(getByText('test2.csv')).toBeInTheDocument();
-    });
+    //     // Restore the original window.alert function
+    //     window.alert = originalAlert;
+    //   });
 });

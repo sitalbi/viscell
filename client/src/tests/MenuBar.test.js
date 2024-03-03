@@ -21,13 +21,12 @@ describe('MenuBar', () => {
         fireEvent.click(getByText('Home'));
         expect(window.location.pathname).toBe('/');
 
-        fireEvent.click(getByText('Result'));
-        expect(window.location.pathname).toBe('/result');
+        // Removed useless "Result" button as we agreed
 
         fireEvent.click(getByText('Example'));
-        expect(window.location.pathname).toBe('/');
+        expect(window.location.pathname).toBe('/example');
 
         fireEvent.click(getByText('About'));
-        expect(window.location.pathname).toBe('/');
+        expect(window.location.pathname).toBe('/about');
     });
 });

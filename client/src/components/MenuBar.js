@@ -1,39 +1,20 @@
 import React from 'react';
-import AppBar from '@mui/material/AppBar/AppBar.js';
-import Toolbar from '@mui/material/Toolbar/Toolbar.js';
-import Button from '@mui/material/Button/Button.js';
-import { useNavigate } from 'react-router-dom';
+import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
-export const MenuBar = () => {
-
-    const navigate = useNavigate();
-
-    const menuRedirection = (value) => {
-        switch (value) {
-            case "Home":
-                navigate('/');
-                break;
-            case "Resultat":
-                navigate('/result');
-                break;
-            case "Exemple":
-                navigate('/');
-                break;
-            case "About":
-                navigate('/');
-                break;
-            default:
-                break;
-        }
-    };
+export function MenuBar() {
     return (
-        <AppBar position="static">
-            <Toolbar className='appBar'>
-                <Button color="inherit" onClick={() => menuRedirection("Home")}>Home</Button>
-                <Button color="inherit" onClick={() => menuRedirection("Resultat")}>Result</Button>
-                <Button color="inherit" onClick={() => menuRedirection("Exemple")}>Example</Button>
-                <Button color="inherit" onClick={() => menuRedirection("About")}>About</Button>
-            </Toolbar>
-        </AppBar>
+        <Navbar bg="primary" variant="dark" expand="lg">
+            <Container>
+                <Navbar.Brand as={Link} to="/">Home</Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="me-auto">
+                        <Nav.Link as={Link} to="/example">Example</Nav.Link>
+                        <Nav.Link as={Link} to="/about">About</Nav.Link>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
     );
 }
