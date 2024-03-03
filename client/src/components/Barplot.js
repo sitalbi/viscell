@@ -212,7 +212,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
         className="barplot"
         ref={popupSvgRef}
         width={calculateSvgWidth()}
-        height={height * 2}
+        height={height * 3}
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
     </div>
