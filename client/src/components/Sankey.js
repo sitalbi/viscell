@@ -74,7 +74,8 @@ export function Sankey() {
             }
           }
         }
-        cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
+        //cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
+        cellsMap.set(value[""], new Map([...genesMap.entries()]));
       }
     }
 
