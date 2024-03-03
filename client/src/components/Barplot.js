@@ -3,6 +3,16 @@ import * as d3 from "d3";
 import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 
+/**
+ * Barplot component
+ * 
+ * @param {*} width The width of the barplot
+ * @param {*} height The height of the barplot
+ * @param {*} cellName The name of the cell
+ * @param {*} genes  The map of genes
+ * 
+ * @returns {JSX.Element}
+ */
 const Barplot = ({ width, height, cellName, genes }) => {
   const svgRef = useRef();
   const popupSvgRef = useRef();
@@ -29,8 +39,8 @@ const Barplot = ({ width, height, cellName, genes }) => {
     svg.selectAll("*").remove();
 
     // Calculate scaling factor
-    const originalWidth = 130; // default width of the barplot
-    const originalHeight = 80; // default height of the barplot
+    const originalWidth = 100; // default width of the barplot
+    const originalHeight = 60; // default height of the barplot
 
     // Ignore First cell
     if (cellName !== "C") {
