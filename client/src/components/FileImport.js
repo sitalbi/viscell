@@ -1,20 +1,17 @@
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
-import { React, useState } from 'react';
+import { React } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
 export const FileImport = () => {
-    const [, setFile] = useState(null);
     const navigate = useNavigate();
 
     const onFileChange = async (value) => {
         // use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
-        setFile(f);
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
-
         const worksheets = new Map();
 
         // loop through each sheet in the workbook and convert it to a json object for data processing
@@ -25,8 +22,8 @@ export const FileImport = () => {
             }
         }
 
-        // navigate to /result with worksheets as parameter
-        navigate('/result', { state: { data: worksheets } });
+        // navigate to /result with worksheets and file name as state
+        navigate('/result', { state: { data: worksheets, title: f.name } });
     }
 
     return (
