@@ -1,9 +1,12 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { BsDownload } from 'react-icons/bs';
+import { Button } from 'react-bootstrap';
+import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
-import ReactDOM from "react-dom/client";
+
 import Barplot from "./Barplot.js";
 
 /**
@@ -12,18 +15,26 @@ import Barplot from "./Barplot.js";
  * @returns {JSX.Element}
  */
 export function Sankey() {
+  // Create a reference to the SVG element
   const svgRef = useRef();
+  // Get the current location
   const location = useLocation();
-  const cellsMap = new Map();
+  // State for the title of the diagram
+  const [title, setTitle] = useState("");
 
   useEffect(() => {
+    // Create a map to store the cells data
+    const cellsMap = new Map();
+
+    // Create a data object to store the nodes and links
     const data = {
       nodes: [],
-      links: [],
+      links: []
     };
 
     // Get the route parameter
     if (location.state && location.state.data) {
+      setTitle(location.state.title.split(".")[0]); // Set the title of the diagram by removing the extension
       const worksheets = location.state.data; // Retrieve data from location state
 
       // =====================
@@ -51,6 +62,10 @@ export function Sankey() {
         }
       });
 
+      // ======================
+      //        SCALING
+      // ======================
+
       // Links all have a consensus value, ranging from 0 to 1
       // We need to find the maximum consensus value and use it to scale the stroke width of the links
       const maxConsensus = d3.max(data.links, d => d.consensus);
@@ -68,13 +83,10 @@ export function Sankey() {
       for (let value of worksheets.get("markers").values()) {
         const genesMap = new Map();
         for (const [key, gene] of Object.entries(value)) {
-          if (key !== "") {
-            if (gene !== 0) {
-              genesMap.set(key, gene);
-            }
+          if (key !== "" && gene !== 0) {
+            genesMap.set(key, gene);
           }
         }
-        //cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
         cellsMap.set(value[""], new Map([...genesMap.entries()]));
       }
     }
@@ -82,8 +94,10 @@ export function Sankey() {
     // ===================
     //       LAYOUT
     // ===================
+    // Create a new SVG element
     const svg = d3.select(svgRef.current).attr("display", "block");
 
+    // Create a Sankey layout
     const sankeyLayout = sankey()
       .nodeWidth(200)
       .nodePadding(50)
@@ -91,9 +105,9 @@ export function Sankey() {
       .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
     const { nodes, links } = sankeyLayout(data);
 
-    svg.selectAll("*").remove();
+    svg.selectAll("*").remove(); // Clear the SVG
 
-    const g = svg.append("g");
+    const g = svg.append("g"); // Append a group to the SVG
 
     // Draw nodes as Barplot components
     g.selectAll(".node")
@@ -189,10 +203,38 @@ export function Sankey() {
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
-  });
+  }, [location.state]);
+
+  /**
+   * Handle the diagram's download as SVG
+   * 
+   * @returns {void}
+   */
+  const handleDownloadSVG = () => {
+    const svg = d3.select(svgRef.current);
+    const svgString = new XMLSerializer().serializeToString(svg.node());
+    const blob = new Blob([svgString], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    // Set the name of the file by removing the previous extension and adding .svg
+    a.download = location.state.title.split(".")[0] + ".svg";
+    // Blank target to open the link in a new tab
+    a.target = "_blank";
+    // Security measure to prevent the tab from having access to the window.opener.location property
+    a.rel = "noopener noreferrer";
+    // Set the blob as the href
+    a.href = url;
+    a.click();
+  };
 
   return (
     <div className="sankey">
+      <h3 className="selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+      <div className="download-buttons-container">
+        <Button onClick={handleDownloadSVG}>
+          <BsDownload className="bs-download" /> Download SVG
+        </Button>
+      </div>
       <svg ref={svgRef} width="120vw" height="200vh"></svg>
     </div>
   );
