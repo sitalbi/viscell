@@ -112,7 +112,6 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .attr("fill", "black")
       .style("cursor", "pointer")
       .on("click", () => {
-        setPopupGenes(Array.from(genes.entries()));
         setShowModal(true);
         setClickedTitle(true);
       });
@@ -169,7 +168,9 @@ const Barplot = ({ width, height, cellName, genes }) => {
   useEffect(() => {
     // Only call drawBarplotSliced if clickedTitle is false
     if (!clickedTitle) {
-      const dataToRender = Array.from(genes.entries()).slice(0, 3);
+      const dataSort = Array.from(genes.entries()).sort((a, b) => b[1] - a[1]);
+      setPopupGenes(dataSort);
+      const dataToRender = dataSort.slice(0, 3);
       renderBarplot(dataToRender, svgRef, drawBarplotSliced);
     }
   }, [width, height, cellName, genes, clickedTitle, renderBarplot, drawBarplotSliced]);
