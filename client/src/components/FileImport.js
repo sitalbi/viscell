@@ -19,9 +19,20 @@ export const FileImport = () => {
 
         // loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
-            if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
+            if (sheetName === "meta" || sheetName === "markers") {
                 const sheet = workbook.Sheets[sheetName];
-                worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
+                const excelData = XLSX.utils.sheet_to_json(sheet);
+                //Remove EMPTY column
+                const oldKey = '__EMPTY';
+                const newKey = '';
+                const sanitizedData = excelData.map((row) => {
+                    if (oldKey in row) {
+                        row[newKey] = row[oldKey];
+                        delete row[oldKey];
+                    }
+                    return row;
+                });
+                worksheets.set(sheetName, sanitizedData);
             }
         }
 
