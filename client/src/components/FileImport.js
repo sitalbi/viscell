@@ -8,6 +8,61 @@ export const FileImport = () => {
     const [, setFile] = useState(null);
     const navigate = useNavigate();
 
+    // This function check the validity of data
+    const checkData = (data) => {
+        // check size of data
+        if (data.size !== 2) {
+            alert("Invalid data: not enough sheets");
+            return false;
+        }
+
+        // check if the 2 arrays are named "meta" and "markers"
+        if (!data.has("meta") || !data.has("markers")) {
+            alert("Invalid data: missing sheets");
+            return false;
+        }
+
+        // check that just one cell has not a parent
+        let count = 0;
+        for (const cell of data.get("meta")) {
+            if (!cell["parent"]) {
+                count++;
+            }
+        }
+        if (count !== 1) {
+            alert("Invalid data: more than one cell has no parent");
+            return false;
+        }
+
+        // check that all other cells have a parent (present in the "meta" sheet)
+        // we dont check if there is a loop in the parent-child relationship
+        for (const cell of data.get("meta")) {
+            if (cell["parent"] && !data.get("meta").find((d) => d[""] === cell["parent"])) {
+                alert("Invalid data: a cell has a parent not present in the 'meta' sheet");
+                return false;
+            }
+        }
+
+        // check that all cells have a "n" and "consensus" values
+        for (const cell of data.get("meta")) {
+            if (cell["n"] === undefined || cell["consensus"] === undefined) {
+                alert("Invalid data: a cell has no 'n' or 'consensus' value");
+                console.log(cell);
+                return false;
+            }
+        }
+
+        // check if all cells in the "markers" sheet are present in the "meta" sheet
+        for (const cell of data.get("markers")) {
+            if (!data.get("meta").find((d) => d[""] === cell[""])) {
+                alert("Invalid data: a cell in the 'markers' sheet is not present in the 'meta' sheet");
+                return false;
+            }
+        }
+        console.log("Data is valid");
+        return true;
+    }
+
     const onFileChange = async (value) => {
         // use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
@@ -19,11 +74,16 @@ export const FileImport = () => {
 
         // loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
-            if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
+            if (sheetName === "meta") {
+                const sheet = workbook.Sheets[sheetName];
+                worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
+            }
+            if (sheetName === "markers") {
                 const sheet = workbook.Sheets[sheetName];
                 worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
             }
         }
+        checkData(worksheets);
 
         // navigate to /result with worksheets as parameter
         navigate('/result', { state: { data: worksheets } });
