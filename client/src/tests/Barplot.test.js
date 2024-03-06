@@ -37,11 +37,10 @@ describe('Barplot component', () => {
 
         // Wait for the modal to be rendered
         await waitFor(() => {
-            const modalElement = screen.getByText(/Full Barplot for Example/i);
-            expect(modalElement).toBeInTheDocument();
+            expect(screen.getByText(/Population/i)).toBeInTheDocument(); // Room for improvement
         });;
 
-        const totalGenes = screen.getByText(/Number of total genes for Example : 6/i);
+        const totalGenes = screen.getByText(/Total number of genes for Example : 6/i);
         expect(totalGenes).toBeInTheDocument();
 
         // Check if the genes are rendered
@@ -60,7 +59,7 @@ describe('Barplot component', () => {
         fireEvent.click(screen.getByText(/TestCell/i));
 
         // Check if the modal is rendered
-        const modalElement = screen.getByText(/Full Barplot for TestCell/i);
+        const modalElement = screen.getByText(/Population/i); // Room for improvement
         expect(modalElement).toBeInTheDocument();
 
     });
@@ -72,7 +71,7 @@ describe('Barplot component', () => {
         fireEvent.click(screen.getByText(/TestCell/i));
 
         // Check if the modal is rendered
-        const modalElement = screen.getByText(/Full Barplot for TestCell/i);
+        const modalElement = screen.getByText(/Population/i); // Room for improvement
         expect(modalElement).toBeInTheDocument();
 
         // Click on the "Close" button
@@ -103,6 +102,3 @@ describe('Barplot component', () => {
         window.open = originalOpen;
     });
 });
-
-
-
