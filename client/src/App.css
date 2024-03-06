@@ -30,7 +30,8 @@
   margin-right: 5px;
 }
 
-.filename-span {
+.filename-span,
+.population-span {
   font-size: 0.8em;
   font-weight: bold;
   color: white;

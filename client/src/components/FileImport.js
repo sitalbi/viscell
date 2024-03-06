@@ -10,13 +10,13 @@ export const FileImport = () => {
     const [title, setTitle] = useState(null);
 
     const onFileChange = async (value) => {
-        // use XLSX to read the file which is a xlss file
+        // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
         const worksheets = new Map();
 
-        // loop through each sheet in the workbook and convert it to a json object for data processing
+        // Loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
             if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
                 const sheet = workbook.Sheets[sheetName];
@@ -24,7 +24,7 @@ export const FileImport = () => {
             }
         }
 
-        // set the states with the worksheets and the title of the file
+        // Set states with the worksheets and file title
         setWorksheets(worksheets);
         setTitle(f.name);
     }
