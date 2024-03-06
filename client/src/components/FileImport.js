@@ -1,17 +1,17 @@
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
-import { useNavigate } from 'react-router-dom';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
+import { Sankey } from './Sankey.js';
+
 export const FileImport = () => {
-    const [, setFile] = useState(null);
-    const navigate = useNavigate();
+    const [worksheets, setWorksheets] = useState(null);
+    const [title, setTitle] = useState(null);
 
     const onFileChange = async (value) => {
         // use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
-        setFile(f);
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
 
@@ -25,8 +25,9 @@ export const FileImport = () => {
             }
         }
 
-        // navigate to /result with worksheets as parameter
-        navigate('/result', { state: { data: worksheets } });
+        // set the states with the worksheets and the title of the file
+        setWorksheets(worksheets);
+        setTitle(f.name);
     }
 
     return (
@@ -41,9 +42,7 @@ export const FileImport = () => {
                         </label>
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
-                    <div className="text-center mt-3">
-                        <Button variant="success" className="btn btn-primary">Upload</Button>
-                    </div>
+                    {worksheets && title && <Sankey worksheets={worksheets} title={title} />}
                 </Col>
             </Row>
         </Container>

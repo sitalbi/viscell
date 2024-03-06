@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
@@ -8,12 +7,13 @@ import Barplot from "./Barplot.js";
 
 /**
  * Sankey component
+ * @param {Object} worksheets The sheets object
+ * @param {String} title The title of the file
  * 
  * @returns {JSX.Element}
  */
-export function Sankey() {
+export function Sankey({ worksheets, title }) {
   const svgRef = useRef();
-  const location = useLocation();
   const cellsMap = new Map();
 
   useEffect(() => {
@@ -22,61 +22,51 @@ export function Sankey() {
       links: [],
     };
 
-    // Get the route parameter
-    if (location.state && location.state.data) {
-      const worksheets = location.state.data; // Retrieve data from location state
+    // =====================
+    //        SANKEY
+    // =====================
 
-      // =====================
-      //        SANKEY
-      // =====================
+    // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
+    worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-      // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
-      worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
+    // Create nodes
+    worksheets.get("meta").forEach((d) => {
+      data.nodes.push({ name: d[""] });
+    });
 
-      // Create nodes
-      worksheets.get("meta").forEach((d) => {
-        data.nodes.push({ name: d[""] });
-      });
-
-      // Create links between nodes
-      worksheets.get("meta").forEach((d) => {
-        if (d["parent"]) {
-          data.links.push({
-            source: data.nodes.findIndex((node) => node.name === d["parent"]),
-            target: data.nodes.findIndex((node) => node.name === d[""]),
-            value: d["n"],
-            consensus: d["consensus"],
-            stroke: null
-          });
-        }
-      });
-
-      // Links all have a consensus value, ranging from 0 to 1
-      // We need to find the maximum consensus value and use it to scale the stroke width of the links
-      const maxConsensus = d3.max(data.links, d => d.consensus);
-      const minConsensus = d3.min(data.links, d => d.consensus);
-      const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
-
-      // We add the scaled stroke width to the links and round to two decimals
-      data.links.forEach(d => {
-        d.stroke = scale(d.consensus).toFixed(2);
-      });
-
-      // ======================
-      //        BARPLOT
-      // ======================
-      for (let value of worksheets.get("markers").values()) {
-        const genesMap = new Map();
-        for (const [key, gene] of Object.entries(value)) {
-          if (key !== "") {
-            if (gene !== 0) {
-              genesMap.set(key, gene);
-            }
-          }
-        }
-        //cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
-        cellsMap.set(value[""], new Map([...genesMap.entries()]));
+    // Create links between nodes
+    worksheets.get("meta").forEach((d) => {
+      if (d["parent"]) {
+        data.links.push({
+          source: data.nodes.findIndex((node) => node.name === d["parent"]),
+          target: data.nodes.findIndex((node) => node.name === d[""]),
+          value: d["n"],
+          consensus: d["consensus"],
+          stroke: null
+        });
       }
+    });
+
+    // Links all have a consensus value, ranging from 0 to 1
+    // We need to find the maximum consensus value and use it to scale the stroke width of the links
+    const maxConsensus = d3.max(data.links, d => d.consensus);
+    const minConsensus = d3.min(data.links, d => d.consensus);
+    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
+
+    // We add the scaled stroke width to the links and round to two decimals
+    data.links.forEach(d => {
+      d.stroke = scale(d.consensus).toFixed(2);
+    });
+
+    // ======================
+    //        BARPLOT
+    // ======================
+    for (let value of worksheets.get("markers").values()) {
+      const genesMap = new Map();
+      for (const [key, gene] of Object.entries(value)) {
+        if (key !== "" && gene !== 0) genesMap.set(key, gene);
+      }
+      cellsMap.set(value[""], new Map([...genesMap.entries()]));
     }
 
     // ===================
@@ -193,6 +183,7 @@ export function Sankey() {
 
   return (
     <div className="sankey">
+      <h3 className="text-center">{title}</h3>
       <svg ref={svgRef} width="120vw" height="200vh"></svg>
     </div>
   );
