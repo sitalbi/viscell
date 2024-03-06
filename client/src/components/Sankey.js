@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useRef, useEffect } from "react";
 import { BsDownload } from 'react-icons/bs';
 import { Button } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
@@ -11,93 +10,73 @@ import Barplot from "./Barplot.js";
 
 /**
  * Sankey component
+ * @param {Object} worksheets The sheets object
+ * @param {String} title The title of the file
  * 
  * @returns {JSX.Element}
  */
-export function Sankey() {
-  // Create a reference to the SVG element
+export function Sankey({ worksheets, title }) {
   const svgRef = useRef();
-  // Get the current location
-  const location = useLocation();
-  // State for the title of the diagram
-  const [title, setTitle] = useState("");
+  const cellsMap = new Map();
 
   useEffect(() => {
-    // Create a map to store the cells data
-    const cellsMap = new Map();
-
-    // Create a data object to store the nodes and links
     const data = {
       nodes: [],
-      links: []
+      links: [],
     };
 
-    // Get the route parameter
-    if (location.state && location.state.data) {
-      setTitle(location.state.title.split(".")[0]); // Set the title of the diagram by removing the extension
-      const worksheets = location.state.data; // Retrieve data from location state
+    // =====================
+    //        SANKEY
+    // =====================
 
-      // =====================
-      //        SANKEY
-      // =====================
+    // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
+    worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-      // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
-      worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
+    // Create nodes
+    worksheets.get("meta").forEach((d) => {
+      data.nodes.push({ name: d[""] });
+    });
 
-      // Create nodes
-      worksheets.get("meta").forEach((d) => {
-        data.nodes.push({ name: d[""] });
-      });
-
-      // Create links between nodes
-      worksheets.get("meta").forEach((d) => {
-        if (d["parent"]) {
-          data.links.push({
-            source: data.nodes.findIndex((node) => node.name === d["parent"]),
-            target: data.nodes.findIndex((node) => node.name === d[""]),
-            value: d["n"],
-            consensus: d["consensus"],
-            stroke: null
-          });
-        }
-      });
-
-      // ======================
-      //        SCALING
-      // ======================
-
-      // Links all have a consensus value, ranging from 0 to 1
-      // We need to find the maximum consensus value and use it to scale the stroke width of the links
-      const maxConsensus = d3.max(data.links, d => d.consensus);
-      const minConsensus = d3.min(data.links, d => d.consensus);
-      const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
-
-      // We add the scaled stroke width to the links and round to two decimals
-      data.links.forEach(d => {
-        d.stroke = scale(d.consensus).toFixed(2);
-      });
-
-      // ======================
-      //        BARPLOT
-      // ======================
-      for (let value of worksheets.get("markers").values()) {
-        const genesMap = new Map();
-        for (const [key, gene] of Object.entries(value)) {
-          if (key !== "" && gene !== 0) {
-            genesMap.set(key, gene);
-          }
-        }
-        cellsMap.set(value[""], new Map([...genesMap.entries()]));
+    // Create links between nodes
+    worksheets.get("meta").forEach((d) => {
+      if (d["parent"]) {
+        data.links.push({
+          source: data.nodes.findIndex((node) => node.name === d["parent"]),
+          target: data.nodes.findIndex((node) => node.name === d[""]),
+          value: d["n"],
+          consensus: d["consensus"],
+          stroke: null
+        });
       }
+    });
+
+    // Links all have a consensus value, ranging from 0 to 1
+    // We need to find the maximum consensus value and use it to scale the stroke width of the links
+    const maxConsensus = d3.max(data.links, d => d.consensus);
+    const minConsensus = d3.min(data.links, d => d.consensus);
+    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
+
+    // We add the scaled stroke width to the links and round to two decimals
+    data.links.forEach(d => {
+      d.stroke = scale(d.consensus).toFixed(2);
+    });
+
+    // ======================
+    //        BARPLOT
+    // ======================
+    for (let value of worksheets.get("markers").values()) {
+      const genesMap = new Map();
+      for (const [key, gene] of Object.entries(value)) {
+        if (key !== "" && gene !== 0) genesMap.set(key, gene);
+      }
+      cellsMap.set(value[""], new Map([...genesMap.entries()]));
     }
 
     // ===================
     //       LAYOUT
     // ===================
-    // Create a new SVG element
     const svg = d3.select(svgRef.current).attr("display", "block");
 
-    // Create a Sankey layout
     const sankeyLayout = sankey()
       .nodeWidth(200)
       .nodePadding(50)
@@ -105,9 +84,9 @@ export function Sankey() {
       .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
     const { nodes, links } = sankeyLayout(data);
 
-    svg.selectAll("*").remove(); // Clear the SVG
+    svg.selectAll("*").remove();
 
-    const g = svg.append("g"); // Append a group to the SVG
+    const g = svg.append("g");
 
     // Draw nodes as Barplot components
     g.selectAll(".node")
@@ -203,7 +182,8 @@ export function Sankey() {
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
-  }, [location.state]);
+  });
+
 
   /**
    * Handle the diagram's download as SVG
@@ -217,7 +197,7 @@ export function Sankey() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     // Set the name of the file by removing the previous extension and adding .svg
-    a.download = location.state.title.split(".")[0] + ".svg";
+    a.download = title.split(".").slice(0, -1).join(".") + ".svg";
     // Blank target to open the link in a new tab
     a.target = "_blank";
     // Security measure to prevent the tab from having access to the window.opener.location property
