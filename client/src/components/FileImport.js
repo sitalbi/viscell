@@ -84,6 +84,26 @@ export const FileImport = () => {
             }
         }
 
+        // Check if all cells in the "meta" sheet are present in the "markers" sheet
+        for (const cell of data.get("meta")) {
+            if (!data.get("markers").find((d) => d[""] === cell[""])) {
+                alert("[ERROR] A cell in the 'meta' sheet is not present in the 'markers' sheet");
+                return false;
+            }
+        }
+
+        // check if value on "markers" sheet are positive
+        for (const cell of data.get("markers")) {
+            for (const key in cell) {
+                if (key !== "") {
+                    if (cell[key] < 0) {
+                        alert("[ERROR] A cell in the 'markers' sheet has a negative value");
+                        return false;
+                    }
+                }
+            }
+        }
+
         // Return true if all checks passed
         return true;
     }
