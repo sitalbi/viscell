@@ -13,8 +13,17 @@ describe('Barplot component', () => {
         ['Gene6', 18],
     ]);
 
+    const colorMap = new Map([
+        ['Gene1', '#ff0000'],
+        ['Gene2', '#00ff12'],
+        ['Gene3', '#ff00ff'],
+        ['Gene4', '#00ff00'],
+        ['Gene5', '#0000ff'],
+        ['Gene6', '#ffff00'],
+    ]);
+
     it('renders Barplot component', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} />);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={new Map()} />);
 
         // Check if the component renders without crashing
         const barplotElement = screen.getByTestId('barplot');
@@ -22,7 +31,7 @@ describe('Barplot component', () => {
     });
 
     it('renders with only 3 genes initially', () => {
-        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} />);
+        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} />);
 
         // Check that only 3 genes are rendered initially
         expect(screen.queryByText('Gene1')).toBeInTheDocument();
@@ -32,7 +41,7 @@ describe('Barplot component', () => {
     });
 
     it('renders with all genes after clicking the title', async () => {
-        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} />);
+        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} />);
         fireEvent.click(screen.getByText(/Example/i));
 
         // Wait for the modal to be rendered
@@ -53,7 +62,7 @@ describe('Barplot component', () => {
     });
 
     it('renders Barplot with modal', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} />);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap}/>);
 
         // Click on the title to open the modal
         fireEvent.click(screen.getByText(/TestCell/i));
@@ -65,7 +74,7 @@ describe('Barplot component', () => {
     });
 
     it('closes the modal when "Close" button is clicked', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} />);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap}/>);
 
         // Click on the title to open the modal
         fireEvent.click(screen.getByText(/TestCell/i));
@@ -90,7 +99,7 @@ describe('Barplot component', () => {
             ["ACTC1", 1],
             ["ACTG2", 1]
         ]);
-        const { getByTestId } = render(<Barplot width={width} height={height} cellName={cellName} genes={genes} />);
+        const { getByTestId } = render(<Barplot width={width} height={height} cellName={cellName} genes={genes} colorMap={colorMap}/>);
         const barElement = getByTestId('bar-ACTA2');
         const originalOpen = window.open;
         window.open = jest.fn();
