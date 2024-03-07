@@ -16,6 +16,12 @@ export const FileImport = () => {
      * @returns {boolean} True if data is valid, false otherwise
      */
     const checkData = (data) => {
+        // Auxiliar function to search the parent of a cell (use in circularity check)
+        const getParent = (cell) => {
+            return data.get("meta").find((d) => d[""] === cell)["parent"];
+        }
+
+
         // Check data size and if it has the required sheets
         if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
             alert("[ERROR] Missing sheets");
@@ -57,7 +63,7 @@ export const FileImport = () => {
                     alert("Invalid data: circularity in the parent-child relationship");
                     return false;
                 }
-                parent = data.get("meta").find((d) => d[""] === parent)["parent"];
+                parent = getParent(parent);
             }
         }
 
