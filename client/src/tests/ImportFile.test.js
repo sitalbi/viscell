@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { FileImport } from '../components/FileImport.js';
 import { BrowserRouter as Router } from 'react-router-dom';
 
