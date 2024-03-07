@@ -24,9 +24,11 @@ export const FileImport = () => {
 
         // check that just one cell has not a parent
         let count = 0;
+        let originCell = ""; // store the origin cell (C)
         for (const cell of data.get("meta")) {
             if (!cell["parent"]) {
                 count++;
+                originCell = cell[""];
             }
         }
         if (count !== 1) {
@@ -35,11 +37,26 @@ export const FileImport = () => {
         }
 
         // check that all other cells have a parent (present in the "meta" sheet)
-        // we dont check if there is a loop in the parent-child relationship
         for (const cell of data.get("meta")) {
             if (cell["parent"] && !data.get("meta").find((d) => d[""] === cell["parent"])) {
                 alert("Invalid data: a cell has a parent not present in the 'meta' sheet");
                 return false;
+            }
+        }
+
+        // check that there is no circularity in the parent-child relationship
+        for(const cell of data.get("meta")) {
+            let currentCell = cell[""];
+            let parent = cell["parent"];
+            while(parent) {
+                if(parent === originCell) {
+                    break;
+                }
+                if(parent === currentCell) {
+                    alert("Invalid data: circularity in the parent-child relationship");
+                    return false;
+                }
+                parent = data.get("meta").find((d) => d[""] === parent)["parent"];
             }
         }
 
