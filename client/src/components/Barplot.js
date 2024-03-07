@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
+import { Button } from "react-bootstrap";
 import * as d3 from "d3";
 import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
@@ -20,17 +21,18 @@ const Barplot = ({ width, height, cellName, genes }) => {
   const [popupGenes, setPopupGenes] = useState([]);
   const [clickedTitle, setClickedTitle] = useState(false);
 
-  var onBarClick = function () {
+  const onBarClick = function () {
+    // Get the gene name from the bar
     const geneName = d3.select(this).data()[0];
-    // go to hyperlink
+    // Open a new tab with the gene page
     window.open(`https://pubchem.ncbi.nlm.nih.gov/gene/${geneName}/Homo_sapiens`);
   }
 
-  var mouseOverBar = function () {
+  const mouseOverBar = function () {
     d3.select(this).attr("opacity", 0.5);
   }
 
-  var mouseOutBar = function () {
+  const mouseOutBar = function () {
     d3.select(this).attr("opacity", null);
   }
 
@@ -39,16 +41,16 @@ const Barplot = ({ width, height, cellName, genes }) => {
     svg.selectAll("*").remove();
 
     // Calculate scaling factor
-    const originalWidth = 100; // default width of the barplot
-    const originalHeight = 60; // default height of the barplot
+    const originalWidth = 100; // Default width of the barplot
+    const originalHeight = 60; // Default height of the barplot
 
-    // Ignore First cell
+    // Ignore first cell
     if (cellName !== "C") {
       drawFunction(data, originalWidth, originalHeight, svg);
     }
   }, [cellName]);
 
-  // Draw Sliced Barplot
+  // Draw sliced Barplot
   const drawBarplotSliced = useCallback((data, originalWidth, originalHeight, svg) => {
     const labels = Array.from(data).map(([gene]) => gene);
     const scaleFactor = Math.min(width / originalWidth, height / originalHeight);
@@ -64,7 +66,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
     // Adjust positioning to center the barplot within the node
     const g = svg.append("g").attr("transform", `translate(${(width - scaledWidth) / 2}, ${(height - scaledHeight) / 2})`);
 
-    const space = 5; // Space between bars
+    const space = 5; // Space in between bars
 
     // Draw bars
     g.selectAll("rect")
@@ -118,7 +120,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
       });
   }, [width, height, cellName, genes]);
 
-  // Draw Full Barplot on click
+  // Draw full Barplot on click
   function drawBarplotFull(data, _originalWidth, originalHeight, svg) {
     const labels = Array.from(data).map(([gene]) => gene);
     const totalBarplots = popupGenes.length;
@@ -200,14 +202,8 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
   const popupContent = (
     <div>
-      <h2>Full Barplot for {cellName}</h2>
-      <p>Number of total genes for {cellName} : {popupGenes.length} </p>
-      <button
-        className="closePopupButton"
-        onClick={() => {
-          setShowModal(false);
-          setClickedTitle(false);
-        }}>Close</button>
+      <h2>Population <span className="population-span">{cellName}</span></h2>
+      <p>Total number of genes for {cellName} : {popupGenes.length} </p>
       <svg
         className="barplot"
         ref={popupSvgRef}
@@ -215,6 +211,12 @@ const Barplot = ({ width, height, cellName, genes }) => {
         height={height * 3}
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
+      <Button
+        variant="danger"
+        onClick={() => {
+          setShowModal(false);
+          setClickedTitle(false);
+        }}>Close</Button>
     </div>
   );
 

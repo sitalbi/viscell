@@ -1,16 +1,45 @@
+/* This file contains the CSS for components that don't need a separate CSS file */
+/* The CSS is divided into sections, each section is marked with a comment */
+
 /** APP.JS **/
 .App {
   text-align: center;
 }
 
+
 /** SANKEY.JS **/
+.selected-diagram {
+  margin-bottom: 2vh;
+}
+
 .root-node {
   border-radius: 50%;
 }
 
 .sankey {
-  margin-top: 10vh;
+  margin-top: 2vh;
 }
+
+.download-buttons-container {
+  display: flex;
+  justify-content: center;
+}
+
+.bs-download {
+  height: 15px;
+  margin-right: 5px;
+}
+
+.filename-span,
+.population-span {
+  font-size: 0.8em;
+  font-weight: bold;
+  color: white;
+  background-color: gray;
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+
 
 /* IMPORTFILE.JS */
 /* The HTML part of the file input musn't be visible */
