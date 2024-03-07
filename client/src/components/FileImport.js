@@ -8,63 +8,63 @@ export const FileImport = () => {
     const [, setFile] = useState(null);
     const navigate = useNavigate();
 
-    // This function check the validity of data
+    /**
+     * Check if data is valid
+     * 
+     * @param {*} data The file data
+     * 
+     * @returns {boolean} True if data is valid, false otherwise
+     */
     const checkData = (data) => {
-        // check size of data
-        if (data.size !== 2) {
-            alert("Invalid data: not enough sheets");
+        // Check data size and if it has the required sheets
+        if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
+            alert("[ERROR] Missing sheets");
             return false;
         }
 
-        // check if the 2 arrays are named "meta" and "markers"
-        if (!data.has("meta") || !data.has("markers")) {
-            alert("Invalid data: missing sheets");
-            return false;
-        }
-
-        // check that just one cell has not a parent
+        // Check that only one cell is the root (has no parent)
         let count = 0;
         for (const cell of data.get("meta")) {
-            if (!cell["parent"]) {
-                count++;
-            }
+            if (!cell["parent"]) count++;
         }
+
         if (count !== 1) {
-            alert("Invalid data: more than one cell has no parent");
+            alert("[ERROR] There should be only one root cell (no parent)");
             return false;
         }
 
-        // check that all other cells have a parent (present in the "meta" sheet)
-        // we dont check if there is a loop in the parent-child relationship
+        // Check that all other cells have a parent (present in the "meta" sheet)
+        // We dont check if there is a loop in the parent-child relationship (circular dependency)
         for (const cell of data.get("meta")) {
             if (cell["parent"] && !data.get("meta").find((d) => d[""] === cell["parent"])) {
-                alert("Invalid data: a cell has a parent not present in the 'meta' sheet");
+                alert("[ERROR] A cell has a parent that is not present in the 'meta' sheet");
                 return false;
             }
         }
 
-        // check that all cells have a "n" and "consensus" values
+        // Check that all cells have a "n" and "consensus" values
         for (const cell of data.get("meta")) {
             if (cell["n"] === undefined || cell["consensus"] === undefined) {
-                alert("Invalid data: a cell has no 'n' or 'consensus' value");
+                alert("[ERROR] A cell is missing the 'n' or 'consensus' value");
                 console.log(cell);
                 return false;
             }
         }
 
-        // check if all cells in the "markers" sheet are present in the "meta" sheet
+        // Check if all cells in the "markers" sheet are present in the "meta" sheet
         for (const cell of data.get("markers")) {
             if (!data.get("meta").find((d) => d[""] === cell[""])) {
-                alert("Invalid data: a cell in the 'markers' sheet is not present in the 'meta' sheet");
+                alert("[ERROR] A cell in the 'markers' sheet is not present in the 'meta' sheet");
                 return false;
             }
         }
-        console.log("Data is valid");
+
+        // Return true if all checks passed
         return true;
     }
 
     const onFileChange = async (value) => {
-        // use XLSX to read the file which is a xlss file
+        // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
         setFile(f);
         const data = await f.arrayBuffer();
@@ -72,7 +72,7 @@ export const FileImport = () => {
 
         const worksheets = new Map();
 
-        // loop through each sheet in the workbook and convert it to a json object for data processing
+        // Loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
             if (sheetName === "meta") {
                 const sheet = workbook.Sheets[sheetName];
@@ -83,9 +83,11 @@ export const FileImport = () => {
                 worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
             }
         }
+
+        // Check if data is valid
         checkData(worksheets);
 
-        // navigate to /result with worksheets as parameter
+        // Navigate to /result with worksheets as parameter
         navigate('/result', { state: { data: worksheets } });
     }
 
