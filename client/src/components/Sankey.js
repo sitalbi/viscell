@@ -171,8 +171,8 @@ export function Sankey() {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", 100)
-          .attr("height", 40)
+          .attr("width", 300)
+          .attr("height", 80)
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
@@ -182,7 +182,9 @@ export function Sankey() {
 
 
         tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name}`);
+          .html(`${d.source.name} -> ${d.target.name} <br>
+          Population: ${d.value} <br>
+          Consensus : ${d.consensus.toFixed(2)}` );
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", d => d.stroke);
