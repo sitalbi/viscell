@@ -4,7 +4,6 @@ import { MenuBar } from './components/MenuBar.js';
 import { FileImport } from './components/FileImport.js';
 
 import './App.css';
-import { Sankey } from './components/Sankey.js';
 
 function App() {
   return (
@@ -13,7 +12,6 @@ function App() {
         <MenuBar />
         <Routes>
           <Route path="/" element={<FileImport />} />
-          <Route path="/result" element={<Sankey />}/>
         </Routes>
       </div>
     </Router>

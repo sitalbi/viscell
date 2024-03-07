@@ -1,24 +1,24 @@
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
-import { useNavigate } from 'react-router-dom';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
+import { Sankey } from './Sankey.js';
+
 export const FileImport = () => {
-    const [, setFile] = useState(null);
-    const navigate = useNavigate();
+    const [worksheets, setWorksheets] = useState(null);
+    const [title, setTitle] = useState(null);
 
     const onFileChange = async (value) => {
-        // use XLSX to read the file which is a xlss file
+        // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
-        setFile(f);
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
         
 
         const worksheets = new Map();
 
-        // loop through each sheet in the workbook and convert it to a json object for data processing
+        // Loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
             if (sheetName !== "meta" && sheetName !== "markers") {
                 continue;
@@ -35,8 +35,9 @@ export const FileImport = () => {
             worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet)); 
         }
 
-        // navigate to /result with worksheets as parameter
-        navigate('/result', { state: { data: worksheets } });
+        // Set states with the worksheets and file title
+        setWorksheets(worksheets);
+        setTitle(f.name);
     }
 
     function transpose(matrix) {
@@ -55,9 +56,7 @@ export const FileImport = () => {
                         </label>
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
-                    <div className="text-center mt-3">
-                        <Button variant="success" className="btn btn-primary">Upload</Button>
-                    </div>
+                    {worksheets && title && <Sankey worksheets={worksheets} title={title} />}
                 </Col>
             </Row>
         </Container>
