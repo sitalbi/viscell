@@ -20,6 +20,8 @@ const Barplot = ({ width, height, cellName, genes }) => {
   const [popupGenes, setPopupGenes] = useState([]);
   const [clickedTitle, setClickedTitle] = useState(false);
 
+  const _popUpMaxSize = 150;
+
   var onBarClick = function () {
     const geneName = d3.select(this).data()[0];
     // go to hyperlink
@@ -48,10 +50,25 @@ const Barplot = ({ width, height, cellName, genes }) => {
     }
   }, [cellName]);
 
+  const legendSize = function (size) {
+
+    const maxSize = 10 // max size for text font
+    const factor = 16
+
+    const textSize = size/factor
+
+    if (textSize > maxSize)
+      return maxSize
+
+    
+    return textSize
+  }
+
   // Draw Sliced Barplot
   const drawBarplotSliced = useCallback((data, originalWidth, originalHeight, svg) => {
     const labels = Array.from(data).map(([gene]) => gene);
     const scaleFactor = Math.min(width / originalWidth, height / originalHeight);
+    
 
     // Scaled dimensions
     const scaledWidth = originalWidth * scaleFactor;
@@ -72,9 +89,9 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .enter()
       .append("rect")
       .attr("x", (_d, i) => i * (scaledWidth / data.length))
-      .attr("y", ([, v]) => yScale(v))
+      .attr("y", ([, v]) => yScale(v) + 10) //TODO : Change magic number 20
       .attr("width", (scaledWidth / data.length - space))
-      .attr("height", ([, v]) => scaledHeight - yScale(v))
+      .attr("height", ([, v]) => scaledHeight - yScale(v) - 40)
       .attr("data-testid", "bar-rectangle")
       .attr("data-testid", (d, i) => `bar-${labels[i]}`)
       .attr("fill", "steelblue");
@@ -95,19 +112,44 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .append("text")
       .text(d => d)
       .attr("x", (_d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
-      .attr("y", scaledHeight)
+      .attr("y", scaledHeight - 20)
       .attr("text-anchor", "middle")
-      .attr("font-size", "10px")
+      .attr("font-size", legendSize(scaledWidth)+"px")
       .attr("font-weight", "bold")
       .attr("fill", "black");
 
-    // Add title
+    // Title of cell
     g.append("text")
       .text(`${cellName}`)
       .attr("x", scaledWidth / 2)
-      .attr("y", scaledHeight / 2)
+      .attr("y", 10)
       .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
+      .attr("font-size", legendSize(scaledWidth)+"px")
+      .attr("font-weight", "bold")
+      .attr("fill", "black")
+
+
+
+    // Add button
+    g.append("rect")
+    .attr("x", scaledWidth / 2 - 25) // Ajuster la position x
+    .attr("y", scaledHeight - 15) // Ajuster la position y
+    // have the rectangle scaled to the size of the scaledWidth and scaledHeight
+
+    .attr("fill", "lightgray") // Couleur du bouton
+    .style("cursor", "pointer") // Style du curseur
+    .on("click", () => {
+      setShowModal(true);
+      setClickedTitle(true);
+    });
+
+    // Ajouter le texte sur le bouton
+    g.append("text")
+      .text("Open")
+      .attr("x", scaledWidth / 2)
+      .attr("y", scaledHeight - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", scaledHeight/10+"px")
       .attr("font-weight", "bold")
       .attr("fill", "black")
       .style("cursor", "pointer")
@@ -190,7 +232,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
   // Define custom styles for the popup content
   const popupStyle = {
-    width: '100%%',
+    width: '100%',
     height: '50%',
     border: '1px solid #ccc',
     borderRadius: '8px',
@@ -213,7 +255,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
         className="barplot"
         ref={popupSvgRef}
         width={calculateSvgWidth()}
-        height={height * 3}
+        height={_popUpMaxSize} 
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
     </div>
