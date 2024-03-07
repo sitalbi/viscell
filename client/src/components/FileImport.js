@@ -57,6 +57,7 @@ export const FileImport = () => {
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
                     {worksheets && title && <Sankey worksheets={worksheets} title={title} />}
+
                 </Col>
             </Row>
         </Container>

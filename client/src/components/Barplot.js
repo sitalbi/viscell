@@ -14,7 +14,7 @@ import 'reactjs-popup/dist/index.css';
  * 
  * @returns {JSX.Element}
  */
-const Barplot = ({ width, height, cellName, genes }) => {
+const Barplot = ({ width, height, cellName, genes, colorMap }) => {
   const svgRef = useRef();
   const popupSvgRef = useRef();
   const [showModal, setShowModal] = useState(false);
@@ -68,7 +68,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
     const space = 5; // Space in between bars
 
-    // Draw bars
+    // Draw bars and color them using colorMap
     g.selectAll("rect")
       .data(data)
       .enter()
@@ -79,7 +79,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .attr("height", ([, v]) => scaledHeight - yScale(v))
       .attr("data-testid", "bar-rectangle")
       .attr("data-testid", (d, i) => `bar-${labels[i]}`)
-      .attr("fill", "steelblue");
+      .attr("fill", (d, i) => colorMap.get(labels[i]));
 
     // Add on BarClick
     g.selectAll("rect")
@@ -118,7 +118,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
         setShowModal(true);
         setClickedTitle(true);
       });
-  }, [width, height, cellName, genes]);
+  }, [width, height, cellName, genes, colorMap]);
 
   // Draw full Barplot on click
   function drawBarplotFull(data, _originalWidth, originalHeight, svg) {
@@ -143,7 +143,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .attr("width", barWidth)
       .attr("height", ([, v]) => originalHeight - yScale(v) + 40)
       .attr("data-testid", "bar-rectangle")
-      .attr("fill", "steelblue");
+      .attr("fill", (d, i) => colorMap.get(labels[i]));
 
     // Add on BarClick
     svg.selectAll("rect")
@@ -174,7 +174,7 @@ const Barplot = ({ width, height, cellName, genes }) => {
       const dataToRender = Array.from(genes.entries()).slice(0, 3);
       renderBarplot(dataToRender, svgRef, drawBarplotSliced);
     }
-  }, [width, height, cellName, genes, clickedTitle, renderBarplot, drawBarplotSliced]);
+  }, [width, height, cellName, genes, colorMap, clickedTitle, renderBarplot, drawBarplotSliced]);
 
   const calculateSvgWidth = () => {
     const rectangleWidth = 50;
