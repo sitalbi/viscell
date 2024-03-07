@@ -1,12 +1,16 @@
 import React, { useRef, useEffect } from "react";
+import { BsDownload } from 'react-icons/bs';
+import { Button } from 'react-bootstrap';
+import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
-import ReactDOM from "react-dom/client";
+
 import Barplot from "./Barplot.js";
 
 /**
  * Sankey component
+ * 
  * @param {Object} worksheets The sheets object
  * @param {String} title The title of the file
  * 
@@ -17,29 +21,30 @@ export function Sankey({ worksheets, title }) {
   const cellsMap = new Map();
 
   useEffect(() => {
-    const data = {
-      nodes: [],
-      links: [],
-    };
-
     // =====================
     //        SANKEY
     // =====================
 
-    // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
+    // Create the structure for the sankey diagram
+    const sankeyStructure = {
+      nodes: [],
+      links: []
+    };
+
+    // Sort meta worksheet by alphanumerical order by the "" column which is the name of the node
     worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-    // Create nodes
+    // Create nodes into the structure
     worksheets.get("meta").forEach((d) => {
-      data.nodes.push({ name: d[""] });
+      sankeyStructure.nodes.push({ name: d[""] });
     });
 
     // Create links between nodes
     worksheets.get("meta").forEach((d) => {
       if (d["parent"]) {
-        data.links.push({
-          source: data.nodes.findIndex((node) => node.name === d["parent"]),
-          target: data.nodes.findIndex((node) => node.name === d[""]),
+        sankeyStructure.links.push({
+          source: sankeyStructure.nodes.findIndex((node) => node.name === d["parent"]),
+          target: sankeyStructure.nodes.findIndex((node) => node.name === d[""]),
           value: d["n"],
           consensus: d["consensus"],
           stroke: null
@@ -47,20 +52,26 @@ export function Sankey({ worksheets, title }) {
       }
     });
 
+    // ======================
+    //        SCALING
+    // ======================
+
     // Links all have a consensus value, ranging from 0 to 1
     // We need to find the maximum consensus value and use it to scale the stroke width of the links
-    const maxConsensus = d3.max(data.links, d => d.consensus);
-    const minConsensus = d3.min(data.links, d => d.consensus);
+    const maxConsensus = d3.max(sankeyStructure.links, d => d.consensus);
+    const minConsensus = d3.min(sankeyStructure.links, d => d.consensus);
     const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
 
     // We add the scaled stroke width to the links and round to two decimals
-    data.links.forEach(d => {
+    sankeyStructure.links.forEach(d => {
       d.stroke = scale(d.consensus).toFixed(2);
     });
 
     // ======================
     //        BARPLOT
     // ======================
+
+    // Create a map of cells and their genes
     for (let value of worksheets.get("markers").values()) {
       const genesMap = new Map();
       for (const [key, gene] of Object.entries(value)) {
@@ -72,20 +83,23 @@ export function Sankey({ worksheets, title }) {
     // ===================
     //       LAYOUT
     // ===================
-    const svg = d3.select(svgRef.current).attr("display", "block");
 
+    // Create the sankey layout
+    const svg = d3.select(svgRef.current).attr("display", "block");
     const sankeyLayout = sankey()
       .nodeWidth(200)
       .nodePadding(50)
       .nodeSort(d3.ascending)
       .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
-    const { nodes, links } = sankeyLayout(data);
+    const { nodes, links } = sankeyLayout(sankeyStructure);
 
+    // Clear the svg
     svg.selectAll("*").remove();
 
+    // Create a group for the nodes
     const g = svg.append("g");
 
-    // Draw nodes as Barplot components
+    // Draw nodes as Barplot components except for the first one
     g.selectAll(".node")
       .data(nodes.slice(1))
       .join("g")
@@ -100,6 +114,7 @@ export function Sankey({ worksheets, title }) {
         const barplotX = d.x0; // Adjust as needed
         const barplotY = d.y0 + (nodeHeight - barplotHeight) / 2; // Adjust as needed
 
+        // Append a foreignObject to the node
         const foreignObject = d3
           .select(this)
           .append("foreignObject")
@@ -109,9 +124,12 @@ export function Sankey({ worksheets, title }) {
           .attr("height", barplotHeight);
 
         const div = foreignObject.append("xhtml:div");
-        const cellName = data.nodes.find(
-          (node) => node.x0 === d.x0 && node.y0 === d.y0
-        ).name;
+
+        const cellName = sankeyStructure.nodes
+          .find((node) =>
+            node.x0 === d.x0 && node.y0 === d.y0
+          ).name;
+
         const component = (
           <Barplot
             width={barplotWidth}
@@ -123,9 +141,9 @@ export function Sankey({ worksheets, title }) {
         ReactDOM.createRoot(div.node()).render(component);
       });
 
+    // Draw the first node as a rectangle
     const root_width = 30;
 
-    // Append a rect for the first node of nodes to g
     g.append("rect")
       .attr("class", "root-node")
       .attr("x", nodes[0].x1 - root_width)
@@ -181,9 +199,36 @@ export function Sankey({ worksheets, title }) {
       });
   });
 
+  /**
+   * Handle the diagram's download as SVG
+   * 
+   * @returns {void}
+   */
+  const handleDownloadSVG = () => {
+    const svg = d3.select(svgRef.current);
+    const svgString = new XMLSerializer().serializeToString(svg.node());
+    const blob = new Blob([svgString], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    // Set the name of the file by removing the previous extension and adding .svg
+    a.download = title.split(".").slice(0, -1).join(".") + ".svg";
+    // Blank target to open the link in a new tab
+    a.target = "_blank";
+    // Security measure to prevent the tab from having access to the window.opener.location property
+    a.rel = "noopener noreferrer";
+    // Set the blob as the href
+    a.href = url;
+    a.click();
+  };
+
   return (
     <div className="sankey">
-      <h3 className="text-center">{title}</h3>
+      <h3 className="selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+      <div className="download-buttons-container">
+        <Button onClick={handleDownloadSVG}>
+          <BsDownload className="bs-download" /> Download SVG
+        </Button>
+      </div>
       <svg ref={svgRef} width="120vw" height="200vh"></svg>
     </div>
   );

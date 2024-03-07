@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 export function MenuBar() {
     return (
-        <Navbar bg="primary" variant="dark" expand="lg">
+        <Navbar bg="primary" variant="dark" expand="lg" className="shadow">
             <Container>
                 <Navbar.Brand as={Link} to="/">Home</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />

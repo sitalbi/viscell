@@ -10,24 +10,38 @@ export const FileImport = () => {
     const [title, setTitle] = useState(null);
 
     const onFileChange = async (value) => {
-        // use XLSX to read the file which is a xlss file
+        // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
+        
 
         const worksheets = new Map();
 
-        // loop through each sheet in the workbook and convert it to a json object for data processing
+        // Loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
-            if (sheetName !== "cells" && (sheetName === "meta" || sheetName === "markers")) {
-                const sheet = workbook.Sheets[sheetName];
-                worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
+            if (sheetName !== "meta" && sheetName !== "markers") {
+                continue;
             }
+
+            var sheet = workbook.Sheets[sheetName];
+            // we transpose the markers sheet to make it easier to process
+            if (sheetName === "markers") {
+                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const transposedTab = transpose(tab);
+                const transposedSheet = XLSX.utils.aoa_to_sheet(transposedTab);
+                sheet = transposedSheet;
+            }
+            worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet)); 
         }
 
-        // set the states with the worksheets and the title of the file
+        // Set states with the worksheets and file title
         setWorksheets(worksheets);
         setTitle(f.name);
+    }
+
+    function transpose(matrix) {
+        return matrix[0].map((_, columnIndex) => matrix.map(row => row[columnIndex]));
     }
 
     return (
