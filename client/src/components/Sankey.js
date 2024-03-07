@@ -101,7 +101,7 @@ export function Sankey() {
       .attr("class", "node")
       .each(function (d) {
         const nodeWidth = d.x1 - d.x0;
-        const nodeHeight = d.y1 - d.y0+5;
+        const nodeHeight = d.y1 - d.y0 + 5;
         const barplotWidth = nodeWidth;
         const barplotHeight = Math.max(nodeHeight, 50); // Ensure minimum height
 
@@ -124,7 +124,7 @@ export function Sankey() {
         const component = (
           <Barplot
             width={barplotWidth}
-            height={barplotHeight-1}
+            height={barplotHeight - 1}
             cellName={cellName}
             genes={cellsMap.get(cellName)}
           />
