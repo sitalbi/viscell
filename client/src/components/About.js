@@ -1,0 +1,84 @@
+import { React, useState } from "react";
+
+export const About = () => {
+  return (
+          <div  className="justify-content-center">
+                <h1>About</h1>
+                <h1 id="viscell">viscell</h1>
+                <p>
+                  <strong>Superviseur :</strong> Asloudj Yanis
+                  (yasloudj@u-bordeaux.fr)
+                </p>
+                <h2 id="contexte">Contexte</h2>
+                <p>
+                  La bio-informatique est un champ de recherche à
+                  l&#39;interface entre la biologie, l&#39;informatique et les
+                  statistiques. Elle vise à proposer de nouvelles méthodes pour
+                  analyser les données en biologie.
+                </p>
+                <p>
+                  Les cellules sont les blocs élémentaires du monde vivant. Chez
+                  les organismes pluricellulaires comme l&#39;être humain, les
+                  cellules se spécialisent en <em>type cellulaire</em> afin
+                  d&#39;accomplir des tâches essentielles (e.g. les neurones
+                  diffusent les signaux électriques ; les globules blancs
+                  éliminent les pathogènes). Un <em>type cellulaire</em> peut
+                  être associé à un ensembles de gènes, qui lui sont plus ou
+                  moins spécifiques.
+                </p>
+                <p>
+                  La technologie single-cell est révolutionnaire, dans le sens
+                  où elle permet de mesurer l&#39;activité des gènes à
+                  l&#39;intérieur de chaque cellule d&#39;un échantillon (e.g.
+                  tumeur). À l&#39;aide d&#39;algorithmes de clustering, ces
+                  cellules peuvent être rassemblées en population homogènes, et
+                  elles peuvent être caractérisées d&#39;après les gènes
+                  qu&#39;elles expriment spécifiquement.
+                </p>
+                <p>
+                  L&#39;interprétation des résultats d&#39;une analyse
+                  single-cell demande donc le développement de métaphores
+                  visuelles intégrant toutes les informations pertinentes à
+                  l&#39;étude des populations de cellules, i.e. leur taille,
+                  leurs gènes et leur fiabilité.
+                </p>
+                <h2 id="objectifs">Objectifs</h2>
+                <p>
+                  Pour explorer les résultats d&#39;une analyse single-cell,
+                  j&#39;ai conceptualisé une métaphore visuelle simple, axée
+                  autour de plusieurs barplots, représentant une population de
+                  cellules chacun. Le contenu d&#39;un barplot représente les
+                  gènes caractéristiques d&#39;une population, tandis que son
+                  positionnement sur l’écran représente les liens de parenté
+                  avec les autres populations.
+                </p>
+                <p>
+                  Dans le cadre de mon travail, je souhaiterais voir cette
+                  métaphore visuelle implémentée dans un outil client basé sur
+                  les nouvelles technologiques de développement du Web.
+                </p>
+                <h2 id="description-rapide-du-projet">
+                  Description rapide du projet
+                </h2>
+                <p>
+                  <code>TODO</code>
+                </p>
+                <h2 id="technologies">Technologies</h2>
+                <p>
+                  <code>TODO</code>                
+                </p>
+                <h2 id="equipe">Équipe</h2>
+                <p>
+                <ul>Développeur :
+                    <li>Nikolaï Amossé</li>
+                    <li>Martin Ithurbide</li>
+                    <li>Adrien Le Corre</li>
+                    <li>Valentin Leroy</li>
+                    <li>Yusuf Senel</li>
+                    <li>Simon Talbi</li>
+                </ul>
+                
+                </p>
+          </div>
+  );
+};
