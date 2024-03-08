@@ -21,8 +21,10 @@ const Barplot = ({ width, height, cellName, genes }) => {
   const [popupGenes, setPopupGenes] = useState([]);
   const [clickedTitle, setClickedTitle] = useState(false);
 
-  const onBarClick = function () {
-    // Get the gene name from the bar
+  const POPUP_MAX_SIZE = 300;
+  const POPUP_TOP_MARGIN = 50;
+
+  var onBarClick = function () {
     const geneName = d3.select(this).data()[0];
     // Open a new tab with the gene page
     window.open(`https://pubchem.ncbi.nlm.nih.gov/gene/${geneName}/Homo_sapiens`);
@@ -50,11 +52,22 @@ const Barplot = ({ width, height, cellName, genes }) => {
     }
   }, [cellName]);
 
-  // Draw sliced Barplot
+  const legendSize = function (size) {
+    const maxSize = 10 // max size for text font
+    const factor = 16
+    const textSize = size/factor
+
+    if (textSize > maxSize)
+      return maxSize
+
+    return textSize
+  }
+
+  // Draw Sliced Barplot
   const drawBarplotSliced = useCallback((data, originalWidth, originalHeight, svg) => {
     const labels = Array.from(data).map(([gene]) => gene);
     const scaleFactor = Math.min(width / originalWidth, height / originalHeight);
-
+    
     // Scaled dimensions
     const scaledWidth = originalWidth * scaleFactor;
     const scaledHeight = originalHeight * scaleFactor;
@@ -74,9 +87,9 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .enter()
       .append("rect")
       .attr("x", (_d, i) => i * (scaledWidth / data.length))
-      .attr("y", ([, v]) => yScale(v))
+      .attr("y", ([, v]) => yScale(v) + 10) //TODO : Change magic number 20
       .attr("width", (scaledWidth / data.length - space))
-      .attr("height", ([, v]) => scaledHeight - yScale(v))
+      .attr("height", ([, v]) => scaledHeight - yScale(v) - 40)
       .attr("data-testid", "bar-rectangle")
       .attr("data-testid", (d, i) => `bar-${labels[i]}`)
       .attr("fill", "steelblue");
@@ -91,34 +104,44 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .on('mouseout', mouseOutBar);
 
     // Add legend text
-    g.selectAll("text")
+    g.selectAll("text.legend")
       .data(labels)
       .enter()
       .append("text")
       .text(d => d)
+      .attr("class", "legend")
       .attr("x", (_d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
-      .attr("y", scaledHeight)
+      .attr("y", scaledHeight - 20)
       .attr("text-anchor", "middle")
-      .attr("font-size", "10px")
+      .attr("font-size", legendSize(scaledWidth)+"px")
       .attr("font-weight", "bold")
       .attr("fill", "black");
 
-    // Add title
+    // Title of cell
     g.append("text")
       .text(`${cellName}`)
       .attr("x", scaledWidth / 2)
-      .attr("y", scaledHeight / 2)
+      .attr("y", 10)
       .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
+      .attr("font-size", legendSize(scaledWidth)+"px")
+      .attr("font-weight", "bold")
+      .attr("fill", "black");
+
+    // Add text to open popup
+    g.append("text")
+      .text("Open")
+      .attr("x", scaledWidth / 2)
+      .attr("y", scaledHeight - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", scaledHeight/10+"px")
       .attr("font-weight", "bold")
       .attr("fill", "black")
       .style("cursor", "pointer")
       .on("click", () => {
-        setPopupGenes(Array.from(genes.entries()));
         setShowModal(true);
         setClickedTitle(true);
       });
-  }, [width, height, cellName, genes]);
+  }, [width, height, cellName]);
 
   // Draw full Barplot on click
   function drawBarplotFull(data, _originalWidth, originalHeight, svg) {
@@ -126,24 +149,54 @@ const Barplot = ({ width, height, cellName, genes }) => {
     const totalBarplots = popupGenes.length;
 
     // Scale for mapping data values to pixel values
-    const yScale = d3.scaleLinear().domain([0, d3.max(data.map(([, v]) => v))]).range([originalHeight, 0]);
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data.map(([, v]) => v))])
+      .range([originalHeight, 0]);
 
     // Calculate bar width and spacing to fit within the SVG width
     // Each bar takes an equal portion of the SVG width minus the space for spacing
     const barWidth = (calculateSvgWidth() - (totalBarplots - 1) * 5) / totalBarplots;
     const barSpacing = 5; // Spacing between bars
+    const svgMargin = 50; // Margin to not start the bars at the edge of the SVG
+
+    // Add X axis for legend
+    const xScale = d3.scaleBand()
+      .domain(labels)
+      .range([svgMargin, calculateSvgWidth() + svgMargin]);
+    const xAxis = d3.axisBottom(xScale);
+    // Add X axis to the SVG
+    const xAxisGroup = svg.append("g")
+      .attr("transform", `translate(0, ${originalHeight + svgMargin + POPUP_TOP_MARGIN})`) // Adjust the y-coordinate as needed
+      .call(xAxis);
+    // Style the X axis
+    xAxisGroup.selectAll("text")
+      .attr("font-size", "10px")
+      .attr("font-weight", "bold");
 
     // Draw bars
     svg.selectAll("rect")
       .data(data)
       .enter()
       .append("rect")
-      .attr("x", (_d, i) => i * (barWidth + barSpacing))
-      .attr("y", ([, v]) => yScale(v))
+      .attr("x", (_d, i) => i * (barWidth + barSpacing) + svgMargin)
+      .attr("y", ([, v]) => yScale(v) + POPUP_TOP_MARGIN)
       .attr("width", barWidth)
       .attr("height", ([, v]) => originalHeight - yScale(v) + 40)
       .attr("data-testid", "bar-rectangle")
       .attr("fill", "steelblue");
+
+    // Add text to each rectangle with the value
+    svg.selectAll("text.value")
+      .data(data)
+      .enter()
+      .append("text")
+      .text(d => d[1])
+      .attr("class", "value")
+      .attr("x", (_d, i) => i * (barWidth + barSpacing) + barWidth / 2 + svgMargin)
+      .attr("y", ([, v]) => yScale(v) + 30) // Adjust the y-coordinate as needed
+      .attr("text-anchor", "middle") // Center the text horizontally
+      .attr("font-weight", "bold")
+      .attr("fill", "black"); // Adjust the text color as needed
 
     // Add on BarClick
     svg.selectAll("rect")
@@ -154,24 +207,14 @@ const Barplot = ({ width, height, cellName, genes }) => {
       .on('mouseover', mouseOverBar)
       .on('mouseout', mouseOutBar);
 
-    // Add legend text
-    svg.selectAll("text")
-      .data(labels)
-      .enter()
-      .append("text")
-      .text(d => d)
-      .attr("x", (_d, i) => i * (barWidth + barSpacing) + barWidth / 2) // Center text over bars
-      .attr("y", originalHeight + 50)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "10px")
-      .attr("font-weight", "bold")
-      .attr("fill", "black");
   }
 
   useEffect(() => {
     // Only call drawBarplotSliced if clickedTitle is false
     if (!clickedTitle) {
-      const dataToRender = Array.from(genes.entries()).slice(0, 3);
+      const dataSort = Array.from(genes.entries()).sort((a, b) => b[1] - a[1]);
+      setPopupGenes(dataSort);
+      const dataToRender = dataSort.slice(0, 3);
       renderBarplot(dataToRender, svgRef, drawBarplotSliced);
     }
   }, [width, height, cellName, genes, clickedTitle, renderBarplot, drawBarplotSliced]);
@@ -191,8 +234,8 @@ const Barplot = ({ width, height, cellName, genes }) => {
 
   // Define custom styles for the popup content
   const popupStyle = {
-    width: '100%%',
-    height: '50%',
+    width: '80%',
+    height: '80%',
     border: '1px solid #ccc',
     borderRadius: '8px',
     padding: '20px',
@@ -207,8 +250,8 @@ const Barplot = ({ width, height, cellName, genes }) => {
       <svg
         className="barplot"
         ref={popupSvgRef}
-        width={calculateSvgWidth()}
-        height={height * 3}
+        width={calculateSvgWidth() + 70}
+        height={POPUP_MAX_SIZE} 
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
       <Button

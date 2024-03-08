@@ -41,7 +41,9 @@ export function Sankey({ worksheets, title }) {
 
     // Create links between nodes
     worksheets.get("meta").forEach((d) => {
-      if (d["parent"]) {
+      // "?" is really important here, it's in the files sometimes
+      // we need to add it to the verification process before transferring data to Sankey.js from FileImport.js
+      if (d["parent"] && d["parent"] !== "?") {
         sankeyStructure.links.push({
           source: sankeyStructure.nodes.findIndex((node) => node.name === d["parent"]),
           target: sankeyStructure.nodes.findIndex((node) => node.name === d[""]),
@@ -179,8 +181,8 @@ export function Sankey({ worksheets, title }) {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", 100)
-          .attr("height", 40)
+          .attr("width", 300)
+          .attr("height", 80)
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
@@ -188,9 +190,10 @@ export function Sankey({ worksheets, title }) {
           .style("border-radius", "5px")
           .style("opacity", 1);
 
-
         tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name}`);
+          .html(`${d.source.name} -> ${d.target.name} <br>
+          Population: ${d.value} <br>
+          Consensus : ${d.consensus.toFixed(2)}`);
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", d => d.stroke);
