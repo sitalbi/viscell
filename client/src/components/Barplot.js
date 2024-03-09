@@ -141,7 +141,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
         setShowModal(true);
         setClickedTitle(true);
       });
-  }, [width, height, cellName]);
+  }, [width, height, cellName, colorMap]);
 
   // Draw full Barplot on click
   function drawBarplotFull(data, _originalWidth, originalHeight, svg) {
@@ -183,7 +183,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .attr("width", barWidth)
       .attr("height", ([, v]) => originalHeight - yScale(v) + 40)
       .attr("data-testid", "bar-rectangle")
-      .attr("fill", "steelblue");
+      .attr("fill", (d, i) => colorMap.get(labels[i]));
 
     // Add text to each rectangle with the value
     svg.selectAll("text.value")

@@ -7,7 +7,7 @@ import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 
 import Barplot from "./Barplot.js";
-import {color} from "../utils/Color.js";
+import { color } from "../utils/Color.js";
 
 /**
  * Sankey component
@@ -55,8 +55,6 @@ export function Sankey({ worksheets, title }) {
       }
     });
 
-    console.log(cellsMap, colorMap, sankeyStructure);
-    
     color(sankeyStructure, cellsMap, colorMap);
 
     // ======================
@@ -78,13 +76,20 @@ export function Sankey({ worksheets, title }) {
     //        BARPLOT
     // ======================
 
-    // Create a map of cells and their genes
+    // Create a map of cells and their genes sorted by expression value
     for (let value of worksheets.get("markers").values()) {
       const genesMap = new Map();
-      for (const [key, gene] of Object.entries(value)) {
-        if (key !== "" && gene !== 0) genesMap.set(key, gene);
-      }
-      cellsMap.set(value[""], new Map([...genesMap.entries()]));
+
+      // Sort genes by expression value before adding to genesMap
+      const sortedGenes = Object.entries(value)
+        .filter(([key, gene]) => key !== "" && gene !== 0)
+        .sort((a, b) => b[1] - a[1]);
+
+      sortedGenes.forEach(([key, gene]) => {
+        genesMap.set(key, gene);
+      });
+
+      cellsMap.set(value[""], genesMap); // Add the cell name and its genes to the map
     }
 
     // ===================
@@ -171,11 +176,12 @@ export function Sankey({ worksheets, title }) {
       .attr("class", "link")
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
-      .attr("stroke", "#000")
+      .attr("stroke", d => {
+        //return the color of the first gene in the target cell with the highest expression
+        return colorMap.get(cellsMap.get(d.target.name).keys().next().value);
+      })
       .attr("stroke-opacity", d => d.stroke)
       .attr("stroke-width", d => Math.max(2, d.width)) // width of the link is a value between 2 and the width of the link
-      // color the link based on the first gene color of the child node
-      .attr("stroke", d => colorMap.get(cellsMap.get(d.target.name).keys().next().value))
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)

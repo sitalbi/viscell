@@ -8,46 +8,43 @@ import * as d3 from 'd3';
  * @returns {Map} A map containing the color for each gene
  */
 export function color(sankeyStructure, cellsMap, colorMap) {
+    const colorsUsed = new Set();
+    let randomColor;
+
     // Assign colors to the most expressed gene in each cell population
     cellsMap.forEach((genes, cellName) => {
         let maxExpression = 0;
-        let maxExpressedGene;
+        let maxExpressedGene = new Set();
         genes.forEach((expression, gene) => {
             if (expression > maxExpression) {
-                maxExpressedGene = gene;
                 maxExpression = expression; // in v2 this should be a continuous value but in v1 it is always 0 and 1
             }
         });
-        if (maxExpressedGene && !colorMap.has(maxExpressedGene)) {
-            let randomColor = d3.schemeCategory10[Math.floor(Math.random() * 10)];
-            colorMap.set(maxExpressedGene, randomColor); 
-        }
-    });
-
-    // Assign colors to non-gray genes based on parent population
-    sankeyStructure.links.forEach(link => {
-        const parentPopulation = link.source.name;
-        const parentColor = colorMap.get(parentPopulation);
-
-        if (!parentColor) return; // Skip if parent population color is not defined
-
-        const childPopulation = link.target.name;
-        const childGenes = cellsMap.get(childPopulation);
-        if (!childGenes) return; // Skip if child population genes are not defined
-
-        let i = 1; // Counter for coloring variants
-
-        childGenes.forEach((_, gene) => {
-            if (!colorMap.has(gene)) {
-                if (sankeyStructure.nodes.find(node => node.name === childPopulation).parent === sankeyStructure.nodes[0].name) { // Child of the root node
-                    let randomColor = d3.schemeCategory10[Math.floor(Math.random() * 10)];
-                    colorMap.set(gene, randomColor); 
-                } else { // Child of another population
-                    const variantColor = d3.rgb(parentColor).brighter(0.1 * i);
-                    colorMap.set(gene, variantColor);
-                    i++;
-                }
+        genes.forEach((expression, gene) => {
+            if (expression === maxExpression) {
+                maxExpressedGene.add(gene);
             }
+        });
+        do {
+            randomColor = d3.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255);
+        } while (colorsUsed.has(randomColor));
+        colorsUsed.add(randomColor);
+        maxExpressedGene.forEach(gene => {
+            sankeyStructure.links.forEach(l => {
+                let target = sankeyStructure.nodes[l.target];
+                let source = sankeyStructure.nodes[l.source];
+                if (target.name === cellName) {
+                    if(source.name === "C") { // If the population is a child of the root cell, assign a random color
+                        colorMap.set(gene, randomColor);
+                    } else { // Interpolate the color of the gene based on the color of the parent cell if it is a child population of an already colored cell
+                        let parentColor = colorMap.get(cellsMap.get(source.name).keys().next().value);
+                        let rnd = Math.floor(Math.random() * 2);
+                        let newColor = d3.interpolateRgb(parentColor, rnd === 0 ? d3.rgb(parentColor).brighter() :d3.rgb(parentColor).darker())(1);
+                        colorMap.set(gene, newColor);
+                    }
+                }
+            });
+
         });
     });
 
@@ -59,6 +56,4 @@ export function color(sankeyStructure, cellsMap, colorMap) {
             }
         });
     });
-
-    return colorMap;
 }
