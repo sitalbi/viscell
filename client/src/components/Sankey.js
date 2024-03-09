@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
 
@@ -232,7 +233,11 @@ export function Sankey({ worksheets, title }) {
           <BsDownload className="bs-download" /> Download SVG
         </Button>
       </div>
-      <svg ref={svgRef} width="120vw" height="200vh"></svg>
+        <TransformWrapper>
+          <TransformComponent>
+            <svg ref={svgRef} width="120vw" height="200vh"></svg>
+          </TransformComponent>
+        </TransformWrapper>
     </div>
   );
 }
