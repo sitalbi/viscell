@@ -1,9 +1,13 @@
-import { React, useState } from "react";
+import { React } from "react";
+import { Container, Row, Col } from 'react-bootstrap';
+
 
 export const About = () => {
   return (
+    <Container className="d-flex justify-content-center">
+            <Row>
+                <Col>
           <div  className="justify-content-center">
-                <h1>About</h1>
                 <h1 id="viscell">viscell</h1>
                 <p>
                   <strong>Superviseur :</strong> Asloudj Yanis
@@ -11,7 +15,8 @@ export const About = () => {
                 </p>
                 <h2 id="contexte">Contexte</h2>
                 <p>
-                  La bio-informatique est un champ de recherche à
+                  Dans le cadre de l'UE Projet de Fin d&#39;Études du Master 2 Informatique de l'Université de Bordeaux, cette application a été réalisée par la demande de Yanis Asloudj, doctorant en Bio-Informatique.
+                  Cette dernière est un champ de recherche à
                   l&#39;interface entre la biologie, l&#39;informatique et les
                   statistiques. Elle vise à proposer de nouvelles méthodes pour
                   analyser les données en biologie.
@@ -45,7 +50,7 @@ export const About = () => {
                 <h2 id="objectifs">Objectifs</h2>
                 <p>
                   Pour explorer les résultats d&#39;une analyse single-cell,
-                  j&#39;ai conceptualisé une métaphore visuelle simple, axée
+                  Yanis Asloudj a conceptualisé une métaphore visuelle simple, axée
                   autour de plusieurs barplots, représentant une population de
                   cellules chacun. Le contenu d&#39;un barplot représente les
                   gènes caractéristiques d&#39;une population, tandis que son
@@ -53,8 +58,7 @@ export const About = () => {
                   avec les autres populations.
                 </p>
                 <p>
-                  Dans le cadre de mon travail, je souhaiterais voir cette
-                  métaphore visuelle implémentée dans un outil client basé sur
+                  Cette métaphore visuelle a été implémentée par notre équipe de développement dans un outil client basé sur
                   les nouvelles technologiques de développement du Web.
                 </p>
                 <h2 id="description-rapide-du-projet">
@@ -69,7 +73,8 @@ export const About = () => {
                 </p>
                 <h2 id="equipe">Équipe</h2>
                 <p>
-                <ul>Développeur :
+                <strong>Développeurs :</strong>
+                <ul>
                     <li>Nikolaï Amossé</li>
                     <li>Martin Ithurbide</li>
                     <li>Adrien Le Corre</li>
@@ -80,5 +85,8 @@ export const About = () => {
                 
                 </p>
           </div>
+          </Col>
+            </Row>
+        </Container>
   );
 };
