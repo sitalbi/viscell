@@ -14,34 +14,64 @@ export const FileImport = () => {
         const f = value.target.files[0];
         const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
-        
 
         const worksheets = new Map();
 
         // Loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
+            // If the sheet is not the meta or markers sheet, skip it
             if (sheetName !== "meta" && sheetName !== "markers") {
                 continue;
             }
 
-            var sheet = workbook.Sheets[sheetName];
-            // we transpose the markers sheet to make it easier to process
+            // Get the sheet
+            let sheet = workbook.Sheets[sheetName];
+
+            // We transpose the markers sheet to make it easier to process
             if (sheetName === "markers") {
-                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }); // Convert the sheet to a 2D array with empty cells as empty strings
+                // Delete empty rows
+                for (let i = 0; i < tab.length; i++) {
+                    if (tab[i].length === 0) {
+                        tab.splice(i, 1);
+                        i--;
+                    }
+                }
+                // Transpose the 2D array
                 const transposedTab = transpose(tab);
-                const transposedSheet = XLSX.utils.aoa_to_sheet(transposedTab);
-                sheet = transposedSheet;
+                // Convert the transposed 2D array to a sheet
+                sheet = XLSX.utils.aoa_to_sheet(transposedTab);
             }
-            worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet)); 
+
+            if (sheetName === "meta" || sheetName === "markers") {
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                // Remove empty keys
+                const oldKey = '__EMPTY';
+                const newKey = '';
+
+                const sanitizedData = json.map((row) => {
+                    if (oldKey in row) {
+                        row[newKey] = row[oldKey];
+                        delete row[oldKey];
+                    }
+                    return row;
+                });
+
+                sheet = XLSX.utils.json_to_sheet(sanitizedData);
+            }
+
+            worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
         }
 
         // Set states with the worksheets and file title
         setWorksheets(worksheets);
+        // console.log(worksheets);
         setTitle(f.name);
     }
 
     function transpose(matrix) {
-        return matrix[0].map((_, columnIndex) => matrix.map(row => row[columnIndex]));
+        return matrix[0].map((_, i) => matrix.map(row => row[i]));
     }
 
     return (

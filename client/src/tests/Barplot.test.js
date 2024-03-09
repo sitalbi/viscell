@@ -34,10 +34,10 @@ describe('Barplot component', () => {
         render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} />);
 
         // Check that only 3 genes are rendered initially
-        expect(screen.queryByText('Gene1')).toBeInTheDocument();
+        expect(screen.queryByText('Gene5')).toBeInTheDocument();
+        expect(screen.queryByText('Gene4')).toBeInTheDocument();
         expect(screen.queryByText('Gene2')).toBeInTheDocument();
-        expect(screen.queryByText('Gene3')).toBeInTheDocument();
-        expect(screen.queryByText('Gene4')).not.toBeInTheDocument(); // Ensure 4th gene is not present
+        expect(screen.queryByText('Gene6')).not.toBeInTheDocument(); // Ensure 4th maximum gene is not present
     });
 
     it('renders with all genes after clicking the title', async () => {
@@ -52,20 +52,20 @@ describe('Barplot component', () => {
         const totalGenes = screen.getByText(/Total number of genes for Example : 6/i);
         expect(totalGenes).toBeInTheDocument();
 
-        // Check if the genes are rendered
-        expect(await screen.findByText('Gene1')).toBeInTheDocument();
-        expect(await screen.findByText('Gene2')).toBeInTheDocument();
-        expect(await screen.findByText('Gene3')).toBeInTheDocument();
-        expect(await screen.findByText('Gene4')).toBeInTheDocument();
+        // Check if the genes are rendered decreasingly
         expect(await screen.findByText('Gene5')).toBeInTheDocument();
+        expect(await screen.findByText('Gene4')).toBeInTheDocument();
+        expect(await screen.findByText('Gene2')).toBeInTheDocument();
         expect(await screen.findByText('Gene6')).toBeInTheDocument();
+        expect(await screen.findByText('Gene3')).toBeInTheDocument();
+        expect(await screen.findByText('Gene1')).toBeInTheDocument();
     });
 
     it('renders Barplot with modal', () => {
         render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap}/>);
 
         // Click on the title to open the modal
-        fireEvent.click(screen.getByText(/TestCell/i));
+        fireEvent.click(screen.getByText(/Open/i));
 
         // Check if the modal is rendered
         const modalElement = screen.getByText(/Population/i); // Room for improvement
@@ -77,7 +77,7 @@ describe('Barplot component', () => {
         render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap}/>);
 
         // Click on the title to open the modal
-        fireEvent.click(screen.getByText(/TestCell/i));
+        fireEvent.click(screen.getByText(/Open/i));
 
         // Check if the modal is rendered
         const modalElement = screen.getByText(/Population/i); // Room for improvement
