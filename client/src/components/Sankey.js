@@ -32,7 +32,6 @@ export function Sankey({ worksheets, title }) {
       nodes: [],
       links: []
     };
-
     // Sort meta worksheet by alphanumerical order by the "" column which is the name of the node
     worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
@@ -54,8 +53,9 @@ export function Sankey({ worksheets, title }) {
       }
     });
 
+    console.log(cellsMap, colorMap, sankeyStructure);
+    
     color(sankeyStructure, cellsMap, colorMap);
-    console.log(colorMap);
 
     // ======================
     //        SCALING
