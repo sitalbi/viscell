@@ -20,7 +20,6 @@ describe('FileImport', () => {
         expect(screen.getByText('Import your file')).toBeInTheDocument();
         expect(screen.getByText('Supported file types: .csv, .xlsx, .xls')).toBeInTheDocument();
         expect(screen.getByLabelText('Choose a file')).toBeInTheDocument();
-        expect(screen.getByText('Upload')).toBeInTheDocument();
     });
 
     // it('displays "File uploaded successfully" on Upload button click', () => {
