@@ -10,7 +10,7 @@ export function MenuBar() {
      * otherwise it will be called on every render, triggering an infinite loop.
      */
     const handleHomeClick = () => {
-        window.location.reload();
+        if(window.location.pathname === "/") window.location.reload();
     };
 
     return (
