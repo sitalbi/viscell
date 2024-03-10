@@ -163,8 +163,8 @@ export function Sankey({ worksheets, title }) {
       .attr("y", nodes[0].y0)
       .attr("width", root_width)
       .attr("height", nodes[0].y1 - nodes[0].y0)
-      .attr("fill", "steelblue")
-      .attr("stroke", "black")
+      .attr("fill", "grey")
+      .attr("stroke", "lightgrey")
       .attr("stroke-width", 2);
 
     // Draw links
