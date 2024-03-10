@@ -177,11 +177,11 @@ export function Sankey({ worksheets, title }) {
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
       .attr("stroke", d => {
-        //return the color of the first gene in the target cell with the highest expression
+        // Return the color of the first gene in the target cell with the highest expression
         return colorMap.get(cellsMap.get(d.target.name).keys().next().value);
       })
       .attr("stroke-opacity", d => d.stroke)
-      .attr("stroke-width", d => Math.max(2, d.width)) // width of the link is a value between 2 and the width of the link
+      .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)

@@ -1,4 +1,4 @@
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Toast } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
@@ -6,8 +6,125 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 import { Sankey } from './Sankey.js';
 
 export const FileImport = () => {
+    const [showToast, setShowToast] = useState(false); // State to control toast visibility
+    const [toastMessage, setToastMessage] = useState(''); // State to manage toast message
+    const handleToastClose = () => setShowToast(false); // Function to close the toast
+
     const [worksheets, setWorksheets] = useState(null);
     const [title, setTitle] = useState(null);
+
+    /**
+     * Check if data is valid
+     * 
+     * @param {*} data The filtered worksheets only containing the meta and markers sheets (total of 2)
+     * 
+     * @returns {boolean} True if data is valid, false otherwise
+     */
+    const checkData = (data) => {
+        // Auxiliar function to search the parent of a cell (use in circularity check)
+        const getParent = (cell) => {
+            return data.get("meta").find((d) => d[""] === cell)["parent"];
+        }
+
+        // Boolean to store if the data is valid
+        let valid = true;
+
+        // Error message to show in the toast
+        let toastMessage = "";
+
+        // Check data size and if it has the required sheets
+        if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
+            toastMessage += "- Missing sheets (need 'meta' and 'markers' sheets)\n";
+            valid = false;
+        }
+
+        // Check that only one cell is the root (has no parent)
+        let count = 0;
+        for (const cell of data.get("meta")) {
+            if (!cell["parent"] || cell["parent"] === "?") count++;
+        }
+        if (count !== 1) {
+            toastMessage += "- There should be only one root cell (no parent) in the 'meta' sheet\n";
+            valid = false;
+        }
+
+        // Check that all other cells have a parent (present in the "meta" sheet)
+        for (const cell of data.get("meta")) {
+            if (cell["parent"] && cell["parent"] !== "?" && !data.get("meta").find((d) => d[""] === cell["parent"])) {
+                toastMessage += "- A cell has a parent that is not present in the 'meta' sheet\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check that there is no circularity in the parent-child relationship
+        let breakFlag = false;
+        for (const cell of data.get("meta")) {
+            let parent = cell["parent"];
+            // Keep track of visited cells to detect circularity
+            const visitedCells = new Set();
+            while (parent && parent !== "?") {
+                if (visitedCells.has(parent)) {
+                    toastMessage += "- Invalid data: circularity in the parent-child relationship\n";
+                    valid = false;
+                    breakFlag = true;
+                    break;
+                }
+                visitedCells.add(parent);
+                parent = getParent(parent);
+            }
+            if (breakFlag) break;
+        }
+
+        // Check that all cells have a "n" and "consensus" values
+        for (const cell of data.get("meta")) {
+            if (cell["n"] === undefined || cell["consensus"] === undefined) {
+                toastMessage += "- A cell is missing the 'n' or 'consensus' value in the 'meta' sheet\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check if all cells in the "markers" sheet are present in the "meta" sheet
+        for (const cell of data.get("markers")) {
+            if (!data.get("meta").find((d) => d[""] === cell[""])) {
+                toastMessage += "- A cell in the 'markers' sheet is not present in the 'meta' sheet\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check if all cells in the "meta" sheet are present in the "markers" sheet
+        for (const cell of data.get("meta")) {
+            if (!data.get("markers").find((d) => d[""] === cell[""])) {
+                toastMessage += "- A cell in the 'meta' sheet is not present in the 'markers' sheet\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check if value on "markers" sheet are positive
+        breakFlag = false;
+        for (const cell of data.get("markers")) {
+            for (const key in cell) {
+                if (key !== "") {
+                    if (cell[key] < 0) {
+                        toastMessage += "\n[ERROR] A cell in the 'markers' sheet has a negative value";
+                        valid = false;
+                        breakFlag = true;
+                        break;
+                    }
+                }
+            }
+            if (breakFlag) break;
+        }
+
+        // Set the toast message
+        setToastMessage(toastMessage);
+
+        // Return true if all checks passed
+        return valid;
+    }
 
     const onFileChange = async (value) => {
         // Use XLSX to read the file which is a xlss file
@@ -60,16 +177,29 @@ export const FileImport = () => {
 
                 sheet = XLSX.utils.json_to_sheet(sanitizedData);
             }
-
             worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
         }
 
-        // Set states with the worksheets and file title
-        setWorksheets(worksheets);
-        // console.log(worksheets);
-        setTitle(f.name);
+        const isValid = checkData(worksheets);
+
+        if (isValid) {
+            // Set states with the worksheets and file title
+            setWorksheets(worksheets);
+            setTitle(f.name);
+        }
+        else {
+            // Show toast if data is not valid
+            setShowToast(true);
+        }
     }
 
+    /**
+     * Transpose a matrix
+     * 
+     * @param {*} matrix A 2D array
+     * 
+     * @returns A transposed 2D array
+     */
     function transpose(matrix) {
         return matrix[0].map((_, i) => matrix.map(row => row[i]));
     }
@@ -87,9 +217,18 @@ export const FileImport = () => {
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
                     {worksheets && title && <Sankey worksheets={worksheets} title={title} />}
-
                 </Col>
             </Row>
+            <Toast show={showToast} onClose={handleToastClose} className="position-fixed center-0 center-0 m-3">
+                <Toast.Header>
+                    <strong className="me-auto">Error(s) during the loading of the file</strong>
+                </Toast.Header>
+                <Toast.Body>
+                    {toastMessage.split("\n").map((line, index) => {
+                        return <p key={index}>{line}</p>;
+                    })}
+                </Toast.Body>
+            </Toast>
         </Container>
     );
-};
+}
