@@ -1,101 +1,118 @@
 import React, { useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { BsDownload } from 'react-icons/bs';
+import { Button } from 'react-bootstrap';
+import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
-import ReactDOM from "react-dom/client";
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+
 import Barplot from "./Barplot.js";
+import { color } from "../utils/Color.js";
 
 /**
  * Sankey component
  * 
+ * @param {Object} worksheets The sheets object
+ * @param {String} title The title of the file
+ * 
  * @returns {JSX.Element}
  */
-export function Sankey() {
+export function Sankey({ worksheets, title }) {
   const svgRef = useRef();
-  const location = useLocation();
   const cellsMap = new Map();
+  const colorMap = new Map();
 
   useEffect(() => {
-    const data = {
+    // =====================
+    //        SANKEY
+    // =====================
+
+    // Create the structure for the sankey diagram
+    const sankeyStructure = {
       nodes: [],
-      links: [],
+      links: []
     };
+    // Sort meta worksheet by alphanumerical order by the "" column which is the name of the node
+    worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-    // Get the route parameter
-    if (location.state && location.state.data) {
-      const worksheets = location.state.data; // Retrieve data from location state
+    // Create nodes into the structure
+    worksheets.get("meta").forEach((d) => {
+      sankeyStructure.nodes.push({ name: d[""] });
+    });
 
-      // =====================
-      //        SANKEY
-      // =====================
-
-      // Sort meta worksheets by alphanumerical order by the "" column which is the name of the node
-      worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
-
-      // Create nodes
-      worksheets.get("meta").forEach((d) => {
-        data.nodes.push({ name: d[""] });
-      });
-
-      // Create links between nodes
-      worksheets.get("meta").forEach((d) => {
-        if (d["parent"]) {
-          data.links.push({
-            source: data.nodes.findIndex((node) => node.name === d["parent"]),
-            target: data.nodes.findIndex((node) => node.name === d[""]),
-            value: d["n"],
-            consensus: d["consensus"],
-            stroke: null
-          });
-        }
-      });
-
-      // Links all have a consensus value, ranging from 0 to 1
-      // We need to find the maximum consensus value and use it to scale the stroke width of the links
-      const maxConsensus = d3.max(data.links, d => d.consensus);
-      const minConsensus = d3.min(data.links, d => d.consensus);
-      const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
-
-      // We add the scaled stroke width to the links and round to two decimals
-      data.links.forEach(d => {
-        d.stroke = scale(d.consensus).toFixed(2);
-      });
-
-      // ======================
-      //        BARPLOT
-      // ======================
-      for (let value of worksheets.get("markers").values()) {
-        const genesMap = new Map();
-        for (const [key, gene] of Object.entries(value)) {
-          if (key !== "") {
-            if (gene !== 0) {
-              genesMap.set(key, gene);
-            }
-          }
-        }
-        //cellsMap.set(value[""], new Map([...genesMap.entries()].slice(0, 3)));
-        cellsMap.set(value[""], new Map([...genesMap.entries()]));
+    // Create links between nodes
+    worksheets.get("meta").forEach((d) => {
+      // "?" is really important here, it's in the files sometimes
+      // we need to add it to the verification process before transferring data to Sankey.js from FileImport.js
+      if (d["parent"] && d["parent"] !== "?") {
+        sankeyStructure.links.push({
+          source: sankeyStructure.nodes.findIndex((node) => node.name === d["parent"]),
+          target: sankeyStructure.nodes.findIndex((node) => node.name === d[""]),
+          value: d["n"],
+          consensus: d["consensus"],
+          stroke: null
+        });
       }
+    });
+
+    color(sankeyStructure, cellsMap, colorMap);
+
+    // ======================
+    //        SCALING
+    // ======================
+
+    // Links all have a consensus value, ranging from 0 to 1
+    // We need to find the maximum consensus value and use it to scale the stroke width of the links
+    const maxConsensus = d3.max(sankeyStructure.links, d => d.consensus);
+    const minConsensus = d3.min(sankeyStructure.links, d => d.consensus);
+    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
+
+    // We add the scaled stroke width to the links and round to two decimals
+    sankeyStructure.links.forEach(d => {
+      d.stroke = scale(d.consensus).toFixed(2);
+    });
+
+    // ======================
+    //        BARPLOT
+    // ======================
+
+    // Create a map of cells and their genes sorted by expression value
+    for (let value of worksheets.get("markers").values()) {
+      const genesMap = new Map();
+
+      // Sort genes by expression value before adding to genesMap
+      const sortedGenes = Object.entries(value)
+        .filter(([key, gene]) => key !== "" && gene !== 0)
+        .sort((a, b) => b[1] - a[1]);
+
+      sortedGenes.forEach(([key, gene]) => {
+        genesMap.set(key, gene);
+      });
+
+      cellsMap.set(value[""], genesMap); // Add the cell name and its genes to the map
     }
 
     // ===================
     //       LAYOUT
     // ===================
-    const svg = d3.select(svgRef.current).attr("display", "block");
 
+    // Create the sankey layout
+    const svg = d3.select(svgRef.current).attr("display", "block");
     const sankeyLayout = sankey()
       .nodeWidth(200)
       .nodePadding(50)
       .nodeSort(d3.ascending)
       .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
-    const { nodes, links } = sankeyLayout(data);
+    const { nodes, links } = sankeyLayout(sankeyStructure);
 
+    // Clear the svg
     svg.selectAll("*").remove();
 
+    // Create a group for the nodes
     const g = svg.append("g");
 
-    // Draw nodes as Barplot components
+    // Draw nodes as Barplot components except for the first one
     g.selectAll(".node")
       .data(nodes.slice(1))
       .join("g")
@@ -110,6 +127,7 @@ export function Sankey() {
         const barplotX = d.x0; // Adjust as needed
         const barplotY = d.y0 + (nodeHeight - barplotHeight) / 2; // Adjust as needed
 
+        // Append a foreignObject to the node
         const foreignObject = d3
           .select(this)
           .append("foreignObject")
@@ -119,32 +137,46 @@ export function Sankey() {
           .attr("height", barplotHeight);
 
         const div = foreignObject.append("xhtml:div");
-        const cellName = data.nodes.find(
-          (node) => node.x0 === d.x0 && node.y0 === d.y0
-        ).name;
+
+        const cellName = sankeyStructure.nodes
+          .find((node) =>
+            node.x0 === d.x0 && node.y0 === d.y0
+          ).name;
+
         const component = (
           <Barplot
             width={barplotWidth}
             height={barplotHeight - 1}
             cellName={cellName}
             genes={cellsMap.get(cellName)}
+            colorMap={colorMap}
           />
         );
         ReactDOM.createRoot(div.node()).render(component);
       });
 
+    // Draw the first node as a rectangle
     const root_width = 30;
 
-    // Append a rect for the first node of nodes to g
     g.append("rect")
       .attr("class", "root-node")
       .attr("x", nodes[0].x1 - root_width)
       .attr("y", nodes[0].y0)
       .attr("width", root_width)
       .attr("height", nodes[0].y1 - nodes[0].y0)
-      .attr("fill", "steelblue")
-      .attr("stroke", "black")
+      .attr("fill", "grey")
+      .attr("stroke", "lightgrey")
       .attr("stroke-width", 2);
+
+    // Title of the first node
+    g.append("text")
+      .attr("class", "root-node-title")
+      .attr("x", nodes[0].x1 - root_width / 2)
+      .attr("y", (nodes[0].y1 + nodes[0].y0) / 2)
+      .attr("text-anchor", "middle")
+      .attr("alignment-baseline", "middle")
+      .attr("fill", "black")
+      .text(nodes[0].name);
 
     // Draw links
     svg
@@ -155,9 +187,12 @@ export function Sankey() {
       .attr("class", "link")
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
-      .attr("stroke", "#000")
+      .attr("stroke", d => {
+        // Return the color of the first gene in the target cell with the highest expression
+        return colorMap.get(cellsMap.get(d.target.name).keys().next().value);
+      })
       .attr("stroke-opacity", d => d.stroke)
-      .attr("stroke-width", d => Math.max(2, d.width)) // width of the link is a value between 2 and the width of the link
+      .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)
@@ -171,8 +206,8 @@ export function Sankey() {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", 100)
-          .attr("height", 40)
+          .attr("width", 300)
+          .attr("height", 80)
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
@@ -180,9 +215,10 @@ export function Sankey() {
           .style("border-radius", "5px")
           .style("opacity", 1);
 
-
         tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name}`);
+          .html(`${d.source.name} -> ${d.target.name} <br>
+          Population: ${d.value} <br>
+          Consensus : ${d.consensus.toFixed(2)}`);
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", d => d.stroke);
@@ -191,9 +227,55 @@ export function Sankey() {
       });
   });
 
+  /**
+   * Handle the diagram's download as SVG
+   * 
+   * @returns {void}
+   */
+  const handleDownloadSVG = () => {
+    const svg = d3.select(svgRef.current);
+
+    const originalWidth = svg.attr("width");
+    const originalHeight = svg.attr("height");
+
+    /// Grow the svg to the size of the diagram
+    svg.attr("width", "400vw");
+    svg.attr("height", "400vh");
+
+
+    const svgString = new XMLSerializer().serializeToString(svg.node());
+
+    // Reset the svg to its original size
+    svg.attr("width", originalWidth);
+    svg.attr("height", originalHeight);
+
+    const blob = new Blob([svgString], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    // Set the name of the file by removing the previous extension and adding .svg
+    a.download = title.split(".").slice(0, -1).join(".") + ".svg";
+    // Blank target to open the link in a new tab
+    a.target = "_blank";
+    // Security measure to prevent the tab from having access to the window.opener.location property
+    a.rel = "noopener noreferrer";
+    // Set the blob as the href
+    a.href = url;
+    a.click();
+  };
+
   return (
     <div className="sankey">
-      <svg ref={svgRef} width="120vw" height="200vh"></svg>
+      <h3 className="selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+      <div className="download-buttons-container">
+        <Button onClick={handleDownloadSVG}>
+          <BsDownload className="bs-download" /> Download SVG
+        </Button>
+      </div>
+        <TransformWrapper>
+          <TransformComponent>
+            <svg ref={svgRef} width="100vw" height="200vh"></svg>
+          </TransformComponent>
+        </TransformWrapper>
     </div>
   );
 }
