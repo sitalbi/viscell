@@ -157,6 +157,16 @@ export function Sankey({ worksheets, title }) {
       .attr("stroke", "black")
       .attr("stroke-width", 2);
 
+    // Title of the first node
+    g.append("text")
+      .attr("class", "root-node-title")
+      .attr("x", nodes[0].x1 - root_width / 2)
+      .attr("y", (nodes[0].y1 + nodes[0].y0) / 2)
+      .attr("text-anchor", "middle")
+      .attr("alignment-baseline", "middle")
+      .attr("fill", "black")
+      .text(nodes[0].name);
+
     // Draw links
     svg
       .append("g")
@@ -210,7 +220,21 @@ export function Sankey({ worksheets, title }) {
    */
   const handleDownloadSVG = () => {
     const svg = d3.select(svgRef.current);
+
+    const originalWidth = svg.attr("width");
+    const originalHeight = svg.attr("height");
+
+    /// Grow the svg to the size of the diagram
+    svg.attr("width", "400vw");
+    svg.attr("height", "400vh");
+
+
     const svgString = new XMLSerializer().serializeToString(svg.node());
+
+    // Reset the svg to its original size
+    svg.attr("width", originalWidth);
+    svg.attr("height", originalHeight);
+
     const blob = new Blob([svgString], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -235,7 +259,7 @@ export function Sankey({ worksheets, title }) {
       </div>
         <TransformWrapper>
           <TransformComponent>
-            <svg ref={svgRef} width="120vw" height="200vh"></svg>
+            <svg ref={svgRef} width="100vw" height="200vh"></svg>
           </TransformComponent>
         </TransformWrapper>
     </div>
