@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MenuBar } from './components/MenuBar.js';
 import { FileImport } from './components/FileImport.js';
+import { About } from './components/About.js';
 
 import './App.css';
-import { Sankey } from './components/Sankey.js';
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
         <MenuBar />
         <Routes>
           <Route path="/" element={<FileImport />} />
-          <Route path="/result" element={<Sankey />}/>
+          <Route path="/about" element={<About />} />
         </Routes>
       </div>
     </Router>
