@@ -20,6 +20,8 @@ import { color } from "../utils/Color.js";
  */
 export function Sankey({ worksheets, title }) {
   const svgRef = useRef();
+  // Moving the two maps inside the useEffect makes links and cellsMap not defined
+  // We need to keep them outside of the useEffect
   const cellsMap = new Map();
   const colorMap = new Map();
 
@@ -271,11 +273,11 @@ export function Sankey({ worksheets, title }) {
           <BsDownload className="bs-download" /> Download SVG
         </Button>
       </div>
-        <TransformWrapper>
-          <TransformComponent>
-            <svg ref={svgRef} width="100vw" height="200vh"></svg>
-          </TransformComponent>
-        </TransformWrapper>
+      <TransformWrapper>
+        <TransformComponent>
+          <svg ref={svgRef} width="100vw" height="200vh"></svg>
+        </TransformComponent>
+      </TransformWrapper>
     </div>
   );
 }

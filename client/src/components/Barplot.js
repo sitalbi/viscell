@@ -24,20 +24,31 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
   const POPUP_MAX_SIZE = 300;
   const POPUP_TOP_MARGIN = 50;
 
-  var onBarClick = function () {
+  /**
+   * Open a new tab with the gene page
+   */
+  const onBarClick = function () {
     const geneName = d3.select(this).data()[0];
-    // Open a new tab with the gene page
     window.open(`https://pubchem.ncbi.nlm.nih.gov/gene/${geneName}/Homo_sapiens`);
   }
 
+  /**
+   * Change opacity on mouse over
+   */
   const mouseOverBar = function () {
     d3.select(this).attr("opacity", 0.5);
   }
 
+  /**
+   * Reset opacity on mouse out
+   */
   const mouseOutBar = function () {
     d3.select(this).attr("opacity", null);
   }
 
+  /**
+   * Render barplot using useCallback hook
+   */
   const renderBarplot = useCallback((data, svgReference, drawFunction) => {
     const svg = d3.select(svgReference.current);
     svg.selectAll("*").remove();
@@ -52,14 +63,14 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
     }
   }, [cellName]);
 
+
   const legendSize = function (size) {
-    const maxSize = 10 // max size for text font
+    const maxSize = 10 // Max size for text font
     const factor = 16
-    const textSize = size/factor
+    const textSize = size / factor
 
     if (textSize > maxSize)
       return maxSize
-
     return textSize
   }
 
@@ -67,7 +78,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
   const drawBarplotSliced = useCallback((data, originalWidth, originalHeight, svg) => {
     const labels = Array.from(data).map(([gene]) => gene);
     const scaleFactor = Math.min(width / originalWidth, height / originalHeight);
-    
+
     // Scaled dimensions
     const scaledWidth = originalWidth * scaleFactor;
     const scaledHeight = originalHeight * scaleFactor;
@@ -113,7 +124,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .attr("x", (_d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
       .attr("y", scaledHeight - 20)
       .attr("text-anchor", "middle")
-      .attr("font-size", legendSize(scaledWidth)+"px")
+      .attr("font-size", legendSize(scaledWidth) + "px")
       .attr("font-weight", "bold")
       .attr("fill", "black");
 
@@ -123,7 +134,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .attr("x", scaledWidth / 2)
       .attr("y", 10)
       .attr("text-anchor", "middle")
-      .attr("font-size", legendSize(scaledWidth)+"px")
+      .attr("font-size", legendSize(scaledWidth) + "px")
       .attr("font-weight", "bold")
       .attr("fill", "black");
 
@@ -133,7 +144,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .attr("x", scaledWidth / 2)
       .attr("y", scaledHeight - 5)
       .attr("text-anchor", "middle")
-      .attr("font-size", scaledHeight/10+"px")
+      .attr("font-size", scaledHeight / 10 + "px")
       .attr("font-weight", "bold")
       .attr("fill", "black")
       .style("cursor", "pointer")
@@ -251,7 +262,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
         className="barplot"
         ref={popupSvgRef}
         width={calculateSvgWidth() + 70}
-        height={POPUP_MAX_SIZE} 
+        height={POPUP_MAX_SIZE}
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
       <Button

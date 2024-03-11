@@ -14,6 +14,8 @@ function App() {
         <Routes>
           <Route path="/" element={<FileImport />} />
           <Route path="/about" element={<About />} />
+          {/* Add the following line to the App.js file later */}
+          {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </div>
     </Router>
