@@ -209,7 +209,7 @@ export const FileImport = () => {
             <Row>
                 <Col>
                     <h2 className="text-center mt-2">Import your file</h2>
-                    <p className="text-center mt-2">Supported file types: .csv, .xlsx, .xls</p>
+                    <p className="text-center mt-2">Supported file types: <span className='filetype-span'>.xlsx</span> and <span className='filetype-span'>.xls</span></p>
                     <div className="text-center">
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine style={{ marginRight: '5px' }} /> Choose a file

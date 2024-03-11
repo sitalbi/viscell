@@ -10,7 +10,7 @@ export function MenuBar() {
      * otherwise it will be called on every render, triggering an infinite loop.
      */
     const handleHomeClick = () => {
-        if(window.location.pathname === "/") window.location.reload();
+        if (window.location.pathname === "/") window.location.reload();
     };
 
     return (
@@ -22,6 +22,7 @@ export function MenuBar() {
                     <Nav className="me-auto">
                         <Nav.Link as={Link} to="/example">Example</Nav.Link>
                         <Nav.Link as={Link} to="/about">About</Nav.Link>
+                        <Nav.Link as={Link} to="/input">Input</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
             </Container>

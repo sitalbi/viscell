@@ -18,7 +18,6 @@ describe('FileImport', () => {
             </Router>
         );
         expect(screen.getByText('Import your file')).toBeInTheDocument();
-        expect(screen.getByText('Supported file types: .csv, .xlsx, .xls')).toBeInTheDocument();
         expect(screen.getByLabelText('Choose a file')).toBeInTheDocument();
     });
 
