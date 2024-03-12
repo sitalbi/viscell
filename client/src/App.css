@@ -24,6 +24,11 @@
 .download-buttons-container {
   display: flex;
   justify-content: center;
+
+  /* Margin between Bootstrap buttons */
+  Button {
+    margin: 0 5px;
+  }
 }
 
 .bs-download {
