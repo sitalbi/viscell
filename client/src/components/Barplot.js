@@ -31,12 +31,38 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
     const geneName = d3.select(this).data()[0];
     window.open(`https://pubchem.ncbi.nlm.nih.gov/gene/${geneName}/Homo_sapiens`);
   }
-
   /**
-   * Change opacity on mouse over
+   * Change opacity and display gene name on mouse over
    */
-  const mouseOverBar = function () {
-    d3.select(this).attr("opacity", 0.5);
+  const mouseOverBar = function (event) {
+    d3.select(this)
+    .attr("opacity", 0.5)
+    .attr("cursor", "pointer");
+
+    const geneName = d3.select(this).attr("name");
+
+    // Mouse position
+    const mouseX = event.pageX;
+    const mouseY = event.pageY;
+  
+    // Create the tooltip
+    const tooltip = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("left", `${mouseX}px`)
+    .style("top", `${mouseY}px`)
+    .style("background-color", "white")
+    .style("border", "1px solid black")
+    .style("padding", "5px")
+    .style("border-radius", "5px")
+    .style("opacity", 0);
+
+    // Display the gene name
+    tooltip.html(`<strong>Gene:</strong> ${geneName}`)
+      .transition()
+      .duration(200)
+      .style("opacity", 1);
   }
 
   /**
@@ -44,6 +70,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
    */
   const mouseOutBar = function () {
     d3.select(this).attr("opacity", null);
+    d3.selectAll(".tooltip").remove();
   }
 
   /**
@@ -100,7 +127,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .attr("x", (_d, i) => i * (scaledWidth / data.length))
       .attr("y", ([, v]) => yScale(v) + 10) //TODO : Change magic number 20
       .attr("width", (scaledWidth / data.length - space))
-      .attr("height", ([, v]) => scaledHeight - yScale(v) - 40)
+      .attr("height", ([, v]) => scaledHeight - yScale(v))
       .attr("data-testid", "bar-rectangle")
       .attr("data-testid", (d, i) => `bar-${labels[i]}`)
       .attr("fill", (d, i) => colorMap.get(labels[i]));
@@ -112,46 +139,23 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .attr("name", d => d)
       .style("cursor", "pointer")
       .on('mouseover', mouseOverBar)
-      .on('mouseout', mouseOutBar);
+      .on('mouseout', mouseOutBar)
 
     // Add legend text
-    g.selectAll("text.legend")
-      .data(labels)
-      .enter()
-      .append("text")
-      .text(d => d)
-      .attr("class", "legend")
-      .attr("x", (_d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
-      .attr("y", scaledHeight - 20)
-      .attr("text-anchor", "middle")
-      .attr("font-size", legendSize(scaledWidth) + "px")
-      .attr("font-weight", "bold")
-      .attr("fill", "black");
+    // g.selectAll("text.legend")
+    //   .data(labels)
+    //   .enter()
+    //   .append("text")
+    //   .text(d => d)
+    //   .attr("class", "legend")
+    //   .attr("x", (_d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
+    //   .attr("y", scaledHeight - 10)
+    //   .attr("text-anchor", "middle")
+    //   .attr("font-size", legendSize(scaledWidth) + "px")
+    //   .attr("font-weight", "bold")
+    //   .attr("fill", "black");
 
-    // Title of cell
-    g.append("text")
-      .text(`${cellName}`)
-      .attr("x", scaledWidth / 2)
-      .attr("y", 10)
-      .attr("text-anchor", "middle")
-      .attr("font-size", legendSize(scaledWidth) + "px")
-      .attr("font-weight", "bold")
-      .attr("fill", "black");
-
-    // Add text to open popup
-    g.append("text")
-      .text("Open")
-      .attr("x", scaledWidth / 2)
-      .attr("y", scaledHeight - 5)
-      .attr("text-anchor", "middle")
-      .attr("font-size", scaledHeight / 10 + "px")
-      .attr("font-weight", "bold")
-      .attr("fill", "black")
-      .style("cursor", "pointer")
-      .on("click", () => {
-        setShowModal(true);
-        setClickedTitle(true);
-      });
+      
   }, [width, height, cellName, colorMap]);
 
   // Draw full Barplot on click
