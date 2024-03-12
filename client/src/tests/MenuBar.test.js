@@ -1,4 +1,4 @@
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { MenuBar } from '../components/MenuBar.js';
 
@@ -18,7 +18,7 @@ describe('MenuBar', () => {
             </Router>
         );
 
-        fireEvent.click(getByText('Home'));
+        fireEvent.click(screen.getByAltText('University of Bordeaux'));
         expect(window.location.pathname).toBe('/');
 
         // Removed useless "Result" button as we agreed
