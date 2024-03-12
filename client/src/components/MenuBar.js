@@ -1,31 +1,44 @@
-import React from 'react';
-import { Navbar, Nav, Container } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Navbar, Nav, Container } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 export function MenuBar() {
-    /**
-     * Reload the page when the home button is clicked.
-     * 
-     * Function is needed to encapsulate the window.location.reload() call
-     * otherwise it will be called on every render, triggering an infinite loop.
-     */
-    const handleHomeClick = () => {
-        if (window.location.pathname === "/") window.location.reload();
-    };
+  /**
+   * Reload the page when the home button is clicked.
+   *
+   * Function is needed to encapsulate the window.location.reload() call
+   * otherwise it will be called on every render, triggering an infinite loop.
+   */
+  const handleHomeClick = () => {
+    if (window.location.pathname === "/") window.location.reload();
+  };
 
-    return (
-        <Navbar bg="primary" variant="dark" expand="lg" className="shadow">
-            <Container>
-                <Navbar.Brand as={Link} to="/" onClick={handleHomeClick}>Home</Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="me-auto">
-                        <Nav.Link as={Link} to="/example">Example</Nav.Link>
-                        <Nav.Link as={Link} to="/about">About</Nav.Link>
-                        <Nav.Link as={Link} to="/input">Input</Nav.Link>
-                    </Nav>
-                </Navbar.Collapse>
-            </Container>
-        </Navbar>
-    );
+  return (
+    <Navbar bg="primary" variant="dark" expand="lg" className="shadow">
+      <Container>
+        <Navbar.Brand as={Link} to="/" onClick={handleHomeClick}>
+          <img
+            src={`${process.env.PUBLIC_URL}/LogoUniv.png`}
+            alt="University of Bordeaux"
+            height="30px"
+            className="d-inline-block align-top"
+          />
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link as={Link} to="/example">
+              Example
+            </Nav.Link>
+            <Nav.Link as={Link} to="/about">
+              About
+            </Nav.Link>
+            <Nav.Link as={Link} to="/input">
+              Input
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
 }
