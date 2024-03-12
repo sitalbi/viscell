@@ -68,7 +68,8 @@ export function Sankey({ worksheets, title }) {
     // We need to find the maximum consensus value and use it to scale the stroke width of the links
     const maxConsensus = d3.max(sankeyStructure.links, d => d.consensus);
     const minConsensus = d3.min(sankeyStructure.links, d => d.consensus);
-    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
+    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0, 1]);
+
 
     // We add the scaled stroke width to the links and round to two decimals
     sankeyStructure.links.forEach(d => {
@@ -180,6 +181,20 @@ export function Sankey({ worksheets, title }) {
       .attr("fill", "black")
       .text(nodes[0].name);
 
+    // Draw links borders
+    svg
+      .append("g")
+      .selectAll(".link-border")
+      .data(links)
+      .join("path")
+      .attr("class", "link-border")
+      .attr("d", sankeyLinkHorizontal())
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-opacity", d => d.stroke)
+      .attr("stroke-width", d => Math.max(2, d.width) + 5) // 5 is the constant for border thickness 
+      .lower();
+
     // Draw links
     svg
       .append("g")
@@ -193,11 +208,10 @@ export function Sankey({ worksheets, title }) {
         // Return the color of the first gene in the target cell with the highest expression
         return colorMap.get(cellsMap.get(d.target.name).keys().next().value);
       })
-      .attr("stroke-opacity", d => d.stroke)
       .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
-          .attr("stroke-opacity", 1)
+          .attr("stroke-opacity", 0.2)
           .attr("cursor", "pointer");
 
         const [x, y] = d3.pointer(event);
@@ -223,7 +237,7 @@ export function Sankey({ worksheets, title }) {
           Consensus : ${d.consensus.toFixed(2)}`);
       })
       .on("mouseout", function () {
-        d3.select(this).attr("stroke-opacity", d => d.stroke);
+        d3.select(this).attr("stroke-opacity",1);
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
