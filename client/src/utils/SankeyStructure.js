@@ -5,6 +5,9 @@ export class SankeyStructure {
 
     let meta = worksheets.get("meta");
     let markers = worksheets.get("markers");
+    if(meta === undefined || markers === undefined){
+        throw new Error("Missing sheets (need 'meta' and 'markers' sheets)");
+    }
     const getParent = (cell) => {
         return meta.find((d) => d[""] === cell["parent"]);
     }
@@ -38,7 +41,7 @@ export class SankeyStructure {
   }
 }
 
-class Pop {
+export class Pop {
   constructor(parent, name, geneMap) {
     this.parent = parent;
     this.name = name;
