@@ -21,26 +21,23 @@ export const About = () => {
               <Form.Check
                 type="switch"
                 id="custom-switch"
-                style={{ "margin-top": "15px" }}
+                style={{ "marginTop": "15px" }}
                 label={
                   <>
                     <img
                       src="https://purecatamphetamine.github.io/country-flag-icons/3x2/GB.svg"
                       alt="English Flag"
-                      style={{ width: "40px", "border-radius": "10px" }}
+                      style={{ width: "40px", "borderRadius": "10px" }}
                     />
                   </>
                 }
               />
             </Form>
           </div>
-          <p>
             {formActivated ? (
               <> {/* English Version */ }
-                <p>
                   <strong>Imagined by :</strong> Asloudj Yanis
-                  (yasloudj@u-bordeaux.fr)
-                  <p>
+                  (yasloudj@u-bordeaux.fr)<br />
                     <strong>Developed by :</strong>
                     <ul>
                       <li>Nikolaï Amossé</li>
@@ -50,8 +47,6 @@ export const About = () => {
                       <li>Yusuf Senel</li>
                       <li>Simon Talbi</li>
                     </ul>
-                  </p>
-                </p>
                 <h2 id="context">Context</h2>
                 In the context of the End of Studies Project UE of the Master 2
                 Computer Science at the University of Bordeaux, this application
@@ -113,10 +108,8 @@ export const About = () => {
               </>
             ) : (
               <> {/* French Version */ }
-                <p>
                   <strong>Superviseur :</strong> Asloudj Yanis
-                  (yasloudj@u-bordeaux.fr)
-                  <p>
+                  (yasloudj@u-bordeaux.fr)  <br />
                     <strong>Développeurs :</strong>
                     <ul>
                       <li>Nikolaï Amossé</li>
@@ -126,8 +119,6 @@ export const About = () => {
                       <li>Yusuf Senel</li>
                       <li>Simon Talbi</li>
                     </ul>
-                  </p>
-                </p>
                 <h2 id="contexte">Contexte</h2>
                 Dans le cadre de l'UE Projet de Fin d'Études du Master 2
                 Informatique de l'Université de Bordeaux, cette application a
@@ -192,7 +183,6 @@ export const About = () => {
                 </Accordion>
               </>
             )}
-          </p>
         </Col>
       </Row>
     </Container>
