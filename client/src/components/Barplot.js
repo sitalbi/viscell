@@ -81,14 +81,14 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
     svg.selectAll("*").remove();
 
     // Calculate scaling factor
-    const originalWidth = 100; // Default width of the barplot
-    const originalHeight = 60; // Default height of the barplot
+    const originalWidth = width; // Default width of the barplot
+    const originalHeight = height; // Default height of the barplot
 
     // Ignore first cell
     if (cellName !== "C") {
       drawFunction(data, originalWidth, originalHeight, svg);
     }
-  }, [cellName]);
+  }, [cellName, height, width]);
 
 
   const legendSize = function (size) {
@@ -107,15 +107,14 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
     const scaleFactor = Math.min(width / originalWidth, height / originalHeight);
 
     // Scaled dimensions
-    const scaledWidth = originalWidth * scaleFactor;
-    const scaledHeight = originalHeight * scaleFactor;
+    const scaledHeight = originalHeight * scaleFactor
 
     // Scale for mapping data values to pixel values
     const yScale = d3.scaleLinear().domain([0, d3.max(data.map(([, v]) => v))]).range([scaledHeight, 0]);
 
     // Create and append <g> tag
     // Adjust positioning to center the barplot within the node
-    const g = svg.append("g").attr("transform", `translate(${(width - scaledWidth) / 2}, ${(height - scaledHeight) / 2})`);
+    const g = svg.append("g").attr("transform", `translate(${(width - originalWidth) / 2}, ${(height - scaledHeight) / 2})`);
 
     const space = 5; // Space in between bars
 
@@ -124,9 +123,9 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .data(data)
       .enter()
       .append("rect")
-      .attr("x", (_d, i) => i * (scaledWidth / data.length))
+      .attr("x", (_d, i) => i * (originalWidth / data.length))
       .attr("y", ([, v]) => yScale(v) + 10) //TODO : Change magic number 20
-      .attr("width", (scaledWidth / data.length - space))
+      .attr("width", (originalWidth / data.length - space))
       .attr("height", ([, v]) => scaledHeight - yScale(v))
       .attr("data-testid", "bar-rectangle")
       .attr("data-testid", (d, i) => `bar-${labels[i]}`)
@@ -141,22 +140,22 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .on('mouseover', mouseOverBar)
       .on('mouseout', mouseOutBar)
 
-    // Add legend text
-    // g.selectAll("text.legend")
-    //   .data(labels)
-    //   .enter()
-    //   .append("text")
-    //   .text(d => d)
-    //   .attr("class", "legend")
-    //   .attr("x", (_d, i) => i * (scaledWidth / labels.length) + (scaledWidth / labels.length) / 2)
-    //   .attr("y", scaledHeight - 10)
-    //   .attr("text-anchor", "middle")
-    //   .attr("font-size", legendSize(scaledWidth) + "px")
-    //   .attr("font-weight", "bold")
-    //   .attr("fill", "black");
+    //Add legend text
+    g.selectAll("text.legend")
+      .data(labels)
+      .enter()
+      .append("text")
+      .text(d => d)
+      .attr("class", "legend")
+      .attr("x", (_d, i) => i * (originalWidth / labels.length) + (originalWidth / labels.length) / 2)
+      .attr("y", scaledHeight - 10)
+      .attr("text-anchor", "middle")
+      .attr("font-size", legendSize(originalWidth) + "px")
+      .attr("font-weight", "bold")
+      .attr("fill", "black");
 
       
-  }, [width, height, cellName, colorMap]);
+  }, [width, height, colorMap]);
 
   // Draw full Barplot on click
   function drawBarplotFull(data, _originalWidth, originalHeight, svg) {
