@@ -36,27 +36,27 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
    */
   const mouseOverBar = function (event) {
     d3.select(this)
-    .attr("opacity", 0.5)
-    .attr("cursor", "pointer");
+      .attr("opacity", 0.5)
+      .attr("cursor", "pointer");
 
     const geneName = d3.select(this).attr("name");
 
     // Mouse position
     const mouseX = event.pageX;
     const mouseY = event.pageY;
-  
+
     // Create the tooltip
     const tooltip = d3.select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("position", "absolute")
-    .style("left", `${mouseX}px`)
-    .style("top", `${mouseY}px`)
-    .style("background-color", "white")
-    .style("border", "1px solid black")
-    .style("padding", "5px")
-    .style("border-radius", "5px")
-    .style("opacity", 0);
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("left", `${mouseX}px`)
+      .style("top", `${mouseY}px`)
+      .style("background-color", "white")
+      .style("border", "1px solid black")
+      .style("padding", "5px")
+      .style("border-radius", "5px")
+      .style("opacity", 0);
 
     // Display the gene name
     tooltip.html(`<strong>Gene:</strong> ${geneName}`)
@@ -82,7 +82,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
 
     // Calculate scaling factor
     const originalWidth = width; // Default width of the barplot
-    const originalHeight = height; // Default height of the barplot
+    const originalHeight = height - 10; // Default height of the barplot
 
     // Ignore first cell
     if (cellName !== "C") {
@@ -108,6 +108,9 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
 
     // Scaled dimensions
     const scaledHeight = originalHeight * scaleFactor
+    
+    // Space in between bars
+    const space = 5;
 
     // Scale for mapping data values to pixel values
     const yScale = d3.scaleLinear().domain([0, d3.max(data.map(([, v]) => v))]).range([scaledHeight, 0]);
@@ -116,7 +119,20 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
     // Adjust positioning to center the barplot within the node
     const g = svg.append("g").attr("transform", `translate(${(width - originalWidth) / 2}, ${(height - scaledHeight) / 2})`);
 
-    const space = 5; // Space in between bars
+    svg.on("mouseover", function () {
+      d3.select(this)
+        .attr("cursor", "pointer");
+    });
+
+    // Add on click event to the svg
+    svg.on("click", () => {
+      setShowModal(true);
+      setClickedTitle(true);
+    });
+
+    svg.attr("data-testid", "barplot-svg");
+
+
 
     // Draw bars and color them using colorMap
     g.selectAll("rect")
@@ -124,9 +140,9 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .enter()
       .append("rect")
       .attr("x", (_d, i) => i * (originalWidth / data.length))
-      .attr("y", ([, v]) => yScale(v) + 10) //TODO : Change magic number 20
+      .attr("y", ([, v]) => yScale(v))
       .attr("width", (originalWidth / data.length - space))
-      .attr("height", ([, v]) => scaledHeight - yScale(v))
+      .attr("height", ([, v]) => scaledHeight - yScale(v) - 30)
       .attr("data-testid", "bar-rectangle")
       .attr("data-testid", (d, i) => `bar-${labels[i]}`)
       .attr("fill", (d, i) => colorMap.get(labels[i]));
@@ -148,13 +164,12 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .text(d => d)
       .attr("class", "legend")
       .attr("x", (_d, i) => i * (originalWidth / labels.length) + (originalWidth / labels.length) / 2)
-      .attr("y", scaledHeight - 10)
+      .attr("y", scaledHeight - 20)
       .attr("text-anchor", "middle")
       .attr("font-size", legendSize(originalWidth) + "px")
       .attr("font-weight", "bold")
       .attr("fill", "black");
 
-      
   }, [width, height, colorMap]);
 
   // Draw full Barplot on click
