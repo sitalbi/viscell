@@ -3,6 +3,8 @@ import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
+import { SankeyStructure } from '../utils/SankeyStructure.js';
+
 import { Sankey } from './Sankey.js';
 
 export const FileImport = () => {
@@ -181,6 +183,8 @@ export const FileImport = () => {
         }
 
         const isValid = checkData(worksheets);
+        let sankeyStructure = new SankeyStructure(worksheets);
+        sankeyStructure.print();
 
         if (isValid) {
             // Set states with the worksheets and file title
