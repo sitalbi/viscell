@@ -42,4 +42,5 @@ export function color(sankeyStructure, cellsMap, colorMap) {
             }
         });
     });
+
 }
