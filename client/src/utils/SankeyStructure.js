@@ -88,7 +88,7 @@ export class SankeyStructure {
   }
 }
 
-class Pop {
+export class Pop {
   constructor(parent, name, geneMap, n, consensus) {
     this.parent = parent;
     this.name = name;
