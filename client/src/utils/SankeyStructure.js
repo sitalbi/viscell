@@ -33,21 +33,70 @@ export class SankeyStructure {
     this.root.createAllChilds(worksheets);
   }
 
+  getRoot(){
+    return this.root;
+  }
+
+  get(popName){
+    const getPop = (pop, name) => {
+      if(pop.getName() === name){
+        return pop;
+      }
+      for(const child of pop.childs){
+        const result = getPop(child, name);
+        if(result !== null){
+          return result;
+        }
+      }
+      return null;
+    }
+    return getPop(this.root, popName);
+  }
+
+  
+  createNodesAndLinks(structure) {
+    const addNode = (pop) => {
+      structure.nodes.push({ name: pop.name });
+      pop.childs.forEach((child) => {
+        addNode(child);
+      });
+    };
+
+    const addLink = (pop) => {
+      pop.childs.forEach((child) => {
+        structure.links.push({
+          source:structure.nodes.findIndex((node) => node.name === pop.name),
+          target: structure.nodes.findIndex((node) => node.name === child.name),
+          value: child.n,
+          consensus: child.consensus,
+          stroke: null
+        });
+        addLink(child);
+      });
+    };
+
+    addNode(this.root);
+    addLink(this.root);
+  }
+
+
   print(){
     this.root.print();
   }
 }
 
 class Pop {
-  constructor(parent, name, geneMap) {
+  constructor(parent, name, geneMap, n, consensus) {
     this.parent = parent;
     this.name = name;
     this.childs = [];
     this.geneMap = geneMap;
+    this.n = n;
+    this.consensus = consensus;
   }
 
-  addChild(name, geneMap){
-    const newPop = new Pop(this, name, geneMap);
+  addChild(name, geneMap, n, consensus){
+    const newPop = new Pop(this, name, geneMap, n, consensus);
     this.childs.push(newPop);
     return newPop;
   }
@@ -69,7 +118,7 @@ class Pop {
                     });
                 }
             }
-            this.addChild(cell[""], genesMap).createAllChilds(worksheets);
+            this.addChild(cell[""], genesMap, cell["n"], cell["consensus"]).createAllChilds(worksheets);
         }
     }
   }
