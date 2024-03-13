@@ -11,10 +11,10 @@ export const FileImport = () => {
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
     const [toastMessage, setToastMessage] = useState(''); // State to manage toast message
     const handleToastClose = () => setShowToast(false); // Function to close the toast
-    
+
     const [title, setTitle] = useState(null);
 
-    const[sankeyStructure, setSankeyStructure] = useState(null);
+    const [sankeyStructure, setSankeyStructure] = useState(null);
 
     /**
      * Check if data is valid
