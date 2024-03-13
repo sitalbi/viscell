@@ -8,6 +8,7 @@ import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
+import { color } from "../utils/Color.js";
 
 /**
  * Sankey component
@@ -21,7 +22,11 @@ export function Sankey({ sankeyStructure, title }) {
   const svgRef = useRef();
   // Moving the two maps inside the useEffect makes links and cellsMap not defined
   // We need to keep them outside of the useEffect
-  const colorMap = new Map();
+  const cellMapColor = new Map();
+  const geneMapColor = new Map();
+
+
+  color(sankeyStructure, cellMapColor, geneMapColor);
 
   useEffect(() => {
     // =====================
@@ -36,21 +41,6 @@ export function Sankey({ sankeyStructure, title }) {
 
     // Create the nodes and links for the sankey diagram
     sankeyStructure.createNodesAndLinks(structure);
-
-    // ======================
-    //        SCALING
-    // ======================
-
-    // Links all have a consensus value, ranging from 0 to 1
-    // We need to find the maximum consensus value and use it to scale the stroke width of the links
-    const maxConsensus = d3.max(structure.links, d => d.consensus);
-    const minConsensus = d3.min(structure.links, d => d.consensus);
-    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
-
-    // We add the scaled stroke width to the links and round to two decimals
-    structure.links.forEach(d => {
-      d.stroke = scale(d.consensus).toFixed(2);
-    });
 
     // ===================
     //       LAYOUT
@@ -108,7 +98,7 @@ export function Sankey({ sankeyStructure, title }) {
             height={barplotHeight - 1}
             cellName={cellName}
             genes={sankeyStructure.get(cellName).geneMap}
-            colorMap={colorMap}
+            colorMap={geneMapColor}
           />
         );
         ReactDOM.createRoot(div.node()).render(component);
@@ -147,7 +137,7 @@ export function Sankey({ sankeyStructure, title }) {
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
       .attr("stroke", d => {
-        return "blue";
+        return cellMapColor.get(d.target.name);
       })
       .attr("stroke-opacity", d => d.stroke)
       .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
