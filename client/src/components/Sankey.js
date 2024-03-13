@@ -8,21 +8,19 @@ import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
-import { color } from "../utils/Color.js";
 
 /**
  * Sankey component
  * 
- * @param {Object} worksheets The sheets object
+ * @param {Object} sankeyStructure The sankeyStructure object
  * @param {String} title The title of the file
  * 
  * @returns {JSX.Element}
  */
-export function Sankey({ worksheets, title }) {
+export function Sankey({ sankeyStructure, title }) {
   const svgRef = useRef();
   // Moving the two maps inside the useEffect makes links and cellsMap not defined
   // We need to keep them outside of the useEffect
-  const cellsMap = new Map();
   const colorMap = new Map();
 
   useEffect(() => {
@@ -31,34 +29,13 @@ export function Sankey({ worksheets, title }) {
     // =====================
 
     // Create the structure for the sankey diagram
-    const sankeyStructure = {
+    const structure = {
       nodes: [],
       links: []
     };
-    // Sort meta worksheet by alphanumerical order by the "" column which is the name of the node
-    worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-    // Create nodes into the structure
-    worksheets.get("meta").forEach((d) => {
-      sankeyStructure.nodes.push({ name: d[""] });
-    });
-
-    // Create links between nodes
-    worksheets.get("meta").forEach((d) => {
-      // "?" is really important here, it's in the files sometimes
-      // we need to add it to the verification process before transferring data to Sankey.js from FileImport.js
-      if (d["parent"] && d["parent"] !== "?") {
-        sankeyStructure.links.push({
-          source: sankeyStructure.nodes.findIndex((node) => node.name === d["parent"]),
-          target: sankeyStructure.nodes.findIndex((node) => node.name === d[""]),
-          value: d["n"],
-          consensus: d["consensus"],
-          stroke: null
-        });
-      }
-    });
-
-    color(sankeyStructure, cellsMap, colorMap);
+    // Create the nodes and links for the sankey diagram
+    sankeyStructure.createNodesAndLinks(structure);
 
     // ======================
     //        SCALING
@@ -66,34 +43,14 @@ export function Sankey({ worksheets, title }) {
 
     // Links all have a consensus value, ranging from 0 to 1
     // We need to find the maximum consensus value and use it to scale the stroke width of the links
-    const maxConsensus = d3.max(sankeyStructure.links, d => d.consensus);
-    const minConsensus = d3.min(sankeyStructure.links, d => d.consensus);
+    const maxConsensus = d3.max(structure.links, d => d.consensus);
+    const minConsensus = d3.min(structure.links, d => d.consensus);
     const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
 
     // We add the scaled stroke width to the links and round to two decimals
-    sankeyStructure.links.forEach(d => {
+    structure.links.forEach(d => {
       d.stroke = scale(d.consensus).toFixed(2);
     });
-
-    // ======================
-    //        BARPLOT
-    // ======================
-
-    // Create a map of cells and their genes sorted by expression value
-    for (let value of worksheets.get("markers").values()) {
-      const genesMap = new Map();
-
-      // Sort genes by expression value before adding to genesMap
-      const sortedGenes = Object.entries(value)
-        .filter(([key, gene]) => key !== "" && gene !== 0)
-        .sort((a, b) => b[1] - a[1]);
-
-      sortedGenes.forEach(([key, gene]) => {
-        genesMap.set(key, gene);
-      });
-
-      cellsMap.set(value[""], genesMap); // Add the cell name and its genes to the map
-    }
 
     // ===================
     //       LAYOUT
@@ -106,7 +63,7 @@ export function Sankey({ worksheets, title }) {
       .nodePadding(50)
       .nodeSort(d3.ascending)
       .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
-    const { nodes, links } = sankeyLayout(sankeyStructure);
+    const { nodes, links } = sankeyLayout(structure);
 
     // Clear the svg
     svg.selectAll("*").remove();
@@ -140,7 +97,7 @@ export function Sankey({ worksheets, title }) {
 
         const div = foreignObject.append("xhtml:div");
 
-        const cellName = sankeyStructure.nodes
+        const cellName = structure.nodes
           .find((node) =>
             node.x0 === d.x0 && node.y0 === d.y0
           ).name;
@@ -150,7 +107,7 @@ export function Sankey({ worksheets, title }) {
             width={barplotWidth}
             height={barplotHeight - 1}
             cellName={cellName}
-            genes={cellsMap.get(cellName)}
+            genes={sankeyStructure.get(cellName).geneMap}
             colorMap={colorMap}
           />
         );
@@ -190,8 +147,7 @@ export function Sankey({ worksheets, title }) {
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
       .attr("stroke", d => {
-        // Return the color of the first gene in the target cell with the highest expression
-        return colorMap.get(cellsMap.get(d.target.name).keys().next().value);
+        return "blue";
       })
       .attr("stroke-opacity", d => d.stroke)
       .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
