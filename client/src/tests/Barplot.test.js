@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Barplot from '../components/Barplot';
 
 
@@ -41,7 +41,7 @@ describe('Barplot component', () => {
     });
 
     it('renders Barplot with modal', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap}/>);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} />);
 
         // Click on the title to open the modal
         fireEvent.click(screen.getByText(/Open/i));
@@ -53,7 +53,7 @@ describe('Barplot component', () => {
     });
 
     it('closes the modal when "Close" button is clicked', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap}/>);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap} />);
 
         // Click on the title to open the modal
         fireEvent.click(screen.getByText(/Open/i));
@@ -78,7 +78,7 @@ describe('Barplot component', () => {
             ["ACTC1", 1],
             ["ACTG2", 1]
         ]);
-        const { getByTestId } = render(<Barplot width={width} height={height} cellName={cellName} genes={genes} colorMap={colorMap}/>);
+        const { getByTestId } = render(<Barplot width={width} height={height} cellName={cellName} genes={genes} colorMap={colorMap} />);
         const barElement = getByTestId('bar-ACTA2');
         const originalOpen = window.open;
         window.open = jest.fn();

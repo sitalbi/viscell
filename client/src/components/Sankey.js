@@ -9,6 +9,18 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
 
+import {
+  NODE_WIDTH,
+  NODE_PADDING,
+  HORIZONTAL_PADDING,
+  VERTICAL_PADDING,
+  LAYOUT_WIDTH,
+  LAYOUT_HEIGHT,
+  ROOT_WIDTH,
+  TOOLTIP_WIDTH,
+  TOOLTIP_HEIGHT
+} from "../utils/Constants.js";
+
 /**
  * Sankey component
  * 
@@ -59,10 +71,10 @@ export function Sankey({ sankeyStructure, title }) {
     // Create the sankey layout
     const svg = d3.select(svgRef.current).attr("display", "block");
     const sankeyLayout = sankey()
-      .nodeWidth(200)
-      .nodePadding(50)
+      .nodeWidth(NODE_WIDTH)
+      .nodePadding(NODE_PADDING)
       .nodeSort(d3.ascending)
-      .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
+      .extent([[HORIZONTAL_PADDING, VERTICAL_PADDING], [LAYOUT_WIDTH, LAYOUT_HEIGHT]]);
     const { nodes, links } = sankeyLayout(structure);
 
     // Clear the svg
@@ -114,14 +126,11 @@ export function Sankey({ sankeyStructure, title }) {
         ReactDOM.createRoot(div.node()).render(component);
       });
 
-    // Draw the first node as a rectangle
-    const root_width = 30;
-
     g.append("rect")
       .attr("class", "root-node")
-      .attr("x", nodes[0].x1 - root_width)
+      .attr("x", nodes[0].x1 - ROOT_WIDTH)
       .attr("y", nodes[0].y0)
-      .attr("width", root_width)
+      .attr("width", ROOT_WIDTH)
       .attr("height", nodes[0].y1 - nodes[0].y0)
       .attr("fill", "grey")
       .attr("stroke", "lightgrey")
@@ -130,7 +139,7 @@ export function Sankey({ sankeyStructure, title }) {
     // Title of the first node
     g.append("text")
       .attr("class", "root-node-title")
-      .attr("x", nodes[0].x1 - root_width / 2)
+      .attr("x", nodes[0].x1 - ROOT_WIDTH / 2)
       .attr("y", (nodes[0].y1 + nodes[0].y0) / 2)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "middle")
@@ -164,8 +173,8 @@ export function Sankey({ sankeyStructure, title }) {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", 300)
-          .attr("height", 80)
+          .attr("width", TOOLTIP_WIDTH)
+          .attr("height", TOOLTIP_HEIGHT)
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
@@ -199,7 +208,6 @@ export function Sankey({ sankeyStructure, title }) {
     /// Grow the svg to the size of the diagram
     svg.attr("width", "400vw");
     svg.attr("height", "400vh");
-
 
     const svgString = new XMLSerializer().serializeToString(svg.node());
 
