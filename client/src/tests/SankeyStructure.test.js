@@ -44,7 +44,7 @@ describe('SankeyStructure', () => {
         it('should print the SankeyStructure', () => {
             // Spy on console.log to capture its output
             const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
             // Mock worksheets
             const worksheetsMock = new Map([
                 ["meta", [
@@ -58,22 +58,22 @@ describe('SankeyStructure', () => {
                     { "": "Grandchild" }
                 ]]
             ]);
-            
+
             // Create SankeyStructure object
             const sankeyStructure = new SankeyStructure(worksheetsMock);
-            
+
             // Call print method
             sankeyStructure.print();
-    
+
             // Assert console.log was called with the expected output
             expect(consoleLogSpy).toHaveBeenCalledWith("Root - null");
             expect(consoleLogSpy).toHaveBeenCalledWith("Child - Root");
             expect(consoleLogSpy).toHaveBeenCalledWith("Grandchild - Child");
-    
+
             // Restore console.log
             consoleLogSpy.mockRestore();
         });
-    });   
+    });
     describe('getRoot', () => {
         it('should return the root Pop', () => {
             const worksheetsMock = new Map([
@@ -83,7 +83,7 @@ describe('SankeyStructure', () => {
             const sankeyStructure = new SankeyStructure(worksheetsMock);
             expect(sankeyStructure.getRoot()).toBeInstanceOf(Pop);
         });
-    }); 
+    });
     describe('get', () => {
         it('should return the Pop with the given name', () => {
             // huge mock
