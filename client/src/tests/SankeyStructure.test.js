@@ -129,11 +129,11 @@ describe('Pop', () => {
         it('should add a child to the parent Pop', () => {
             const parentPop = new Pop(null, "Parent", new Map(), 0, 0);
             parentPop.addChild("Child", new Map());
-            expect(parentPop.childs.length).toBe(1);
+            expect(parentPop.children.length).toBe(1);
         });
     });
 
-    describe('createAllChilds', () => {
+    describe('createAllChildren', () => {
         it('should create all child Pops recursively', () => {
             const parentPop = new Pop(null, "Root", new Map(), 0, 0);
             const worksheetsMock = new Map([
@@ -147,9 +147,9 @@ describe('Pop', () => {
                     { "": "Grandchild" }
                 ]]
             ]);
-            parentPop.createAllChilds(worksheetsMock);
-            expect(parentPop.childs.length).toBe(1); // One direct child
-            expect(parentPop.childs[0].childs.length).toBe(1); // One grandchild
+            parentPop.createAllChildren(worksheetsMock);
+            expect(parentPop.children.length).toBe(1); // One direct child
+            expect(parentPop.children[0].children.length).toBe(1); // One grandchild
         });
     });
 
