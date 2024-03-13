@@ -4,6 +4,8 @@ import { Button } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
+import { Canvg } from 'canvg';
+// import { jsPDF } from "jspdf";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
@@ -201,7 +203,6 @@ export function Sankey({ sankeyStructure, title }) {
    */
   const handleDownloadSVG = () => {
     const svg = d3.select(svgRef.current);
-
     const originalWidth = svg.attr("width");
     const originalHeight = svg.attr("height");
 
@@ -209,12 +210,14 @@ export function Sankey({ sankeyStructure, title }) {
     svg.attr("width", "400vw");
     svg.attr("height", "400vh");
 
+    // Serialize the svg to a string
     const svgString = new XMLSerializer().serializeToString(svg.node());
 
     // Reset the svg to its original size
     svg.attr("width", originalWidth);
     svg.attr("height", originalHeight);
 
+    // Create a blob from the svg string
     const blob = new Blob([svgString], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -229,17 +232,67 @@ export function Sankey({ sankeyStructure, title }) {
     a.click();
   };
 
+  /**
+   * Handle the diagram's download as PNG
+   * 
+   * @returns {void}
+   */
+  const handleDownloadPNG = async () => {
+    const svg = d3.select(svgRef.current);
+    const originalWidth = svg.attr("width");
+    const originalHeight = svg.attr("height");
+
+    /// Grow the svg to the size of the diagram
+    svg.attr("width", "400vw");
+    svg.attr("height", "400vh");
+
+    // Serialize the svg to a string
+    const svgString = new XMLSerializer().serializeToString(svg.node());
+
+    // Reset the svg to its original size
+    svg.attr("width", originalWidth);
+    svg.attr("height", originalHeight);
+
+    // Create a canvas element
+    const canvas = document.createElement("canvas");
+    canvas.width = originalWidth;
+    canvas.height = originalHeight;
+
+    // Get the context of the canvas
+    const context = canvas.getContext("2d");
+
+    // Create Canvg instance
+    const canvgInstance = await Canvg.fromString(context, svgString);
+
+    // Render SVG onto the canvas
+    await canvgInstance.render();
+
+    // Convert canvas to PNG image
+    const pngDataUrl = canvas.toDataURL("image/png");
+
+    // Create a link element to trigger the download
+    const a = document.createElement("a");
+    a.download = title.split(".").slice(0, -1).join(".") + ".png";
+    a.href = pngDataUrl;
+    a.click();
+  }
+
   return (
     <div className="sankey">
       <h3 className="selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+
       <div className="download-buttons-container">
         <Button onClick={handleDownloadSVG}>
           <BsDownload className="bs-download" /> Download SVG
         </Button>
+        <Button onClick={handleDownloadPNG}>
+          <BsDownload className="bs-download" /> Download PNG
+        </Button>
       </div>
+
       <TransformWrapper>
         <TransformComponent>
-          <svg ref={svgRef} width="100vw" height="200vh"></svg>
+          <svg ref={svgRef} width="100vw" height="100vh"></svg>
         </TransformComponent>
       </TransformWrapper>
     </div>
