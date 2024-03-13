@@ -3,15 +3,18 @@ import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
+import { SankeyStructure } from '../utils/SankeyStructure.js';
+
 import { Sankey } from './Sankey.js';
 
 export const FileImport = () => {
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
     const [toastMessage, setToastMessage] = useState(''); // State to manage toast message
     const handleToastClose = () => setShowToast(false); // Function to close the toast
-
-    const [worksheets, setWorksheets] = useState(null);
+    
     const [title, setTitle] = useState(null);
+
+    const[sankeyStructure, setSankeyStructure] = useState(null);
 
     /**
      * Check if data is valid
@@ -183,8 +186,10 @@ export const FileImport = () => {
         const isValid = checkData(worksheets);
 
         if (isValid) {
-            // Set states with the worksheets and file title
-            setWorksheets(worksheets);
+            // Create SankeyStructure object
+            let sankeyStructure = new SankeyStructure(worksheets);
+            console.log(sankeyStructure);
+            setSankeyStructure(sankeyStructure);
             setTitle(f.name);
         }
         else {
@@ -216,7 +221,7 @@ export const FileImport = () => {
                         </label>
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
-                    {worksheets && title && <Sankey worksheets={worksheets} title={title} />}
+                    {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} />}
                 </Col>
             </Row>
             <Toast show={showToast} onClose={handleToastClose} className="position-fixed center-0 center-0 m-3">
