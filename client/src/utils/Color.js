@@ -11,7 +11,7 @@ export function color(sankeyStructure, cellColorMap, geneColorMap) {
         });
     }
 
-    const palette = createPalette(sankeyStructure.getSize()-1); // -1 because the root is not a pop to color
+    const palette = createPalette(sankeyStructure.getSize()); // create a palette of colors
     
     // color cells pop
     const colorPop = (pop, index) => {
