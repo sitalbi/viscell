@@ -21,7 +21,6 @@ import {
   ROOT_WIDTH,
   TOOLTIP_WIDTH,
   TOOLTIP_HEIGHT,
-  TEXT_MAX_SIZE,
   EXPORT_MARGIN_WIDTH,
   EXPORT_MARGIN_HEIGHT
 } from "../utils/Constants.js";
@@ -224,92 +223,93 @@ export function Sankey({ sankeyStructure, title }) {
   };
 
   /**
-   * Handle the barplots's download as PDF
-   * 
-   * @returns {void}
-   */
-  const handleDownloadBarplots = async () => {
-    const svg = d3.select(svgRef.current);
-
-    // Get every <g> inside every <svg> that's inside a <foreignObject>
-    const foreignObjects = svg.selectAll("foreignObject");
-    const svgForeignObjects = foreignObjects.selectAll("svg");
-    const gForeignObjects = svgForeignObjects.selectAll("g");
-
-    // Create a Map to fill with clones
-    const gForeignObjectsClone = new Map();
-
-    gForeignObjects.nodes().forEach((g, i) => {
-      // Clone the g to avoid modifying the original
-      const gClone = g.cloneNode(true);
-      // Get every text inside the g
-      const texts = gClone.querySelectorAll("text");
-      // Make text white
-      texts.forEach(text => text.setAttribute("fill", "white"));
-      // Add the clone to the Map
-      gForeignObjectsClone.set(i, gClone);
-    });
-
-    // Serialize all the <g> clones to strings
-    const gStrings = Array.from(gForeignObjectsClone.values()).map(g => new XMLSerializer().serializeToString(g));
-
-    // Create a new jsPDF instance
-    const doc = new jsPDF("landscape", "pt", "a6");
-
-    // Declare a function to save the <g> as an image
-    const saveGAsImage = async (gString, i) => {
-      const maxWidth = gForeignObjects.nodes()[i].getBBox().width + TEXT_MAX_SIZE;
-      const maxHeight = gForeignObjects.nodes()[i].getBBox().height + TEXT_MAX_SIZE;
-      await doc.addSvgAsImage(gString, 0, 0, maxWidth, maxHeight);
-      if (i < gStrings.length - 1) doc.addPage();
-    };
-
-    // Save <g> as images
-    for (let i = 0; i < gStrings.length; i++) await saveGAsImage(gStrings[i], i);
-
-    // Save the document
-    doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
-  }
-
-  /**
    * Handle the diagram's download as PDF
    * 
    * @returns {void}
    */
   const handleDownloadPDF = async () => {
     const svg = d3.select(svgRef.current);
+    const width = svg.node().getBBox().width + EXPORT_MARGIN_WIDTH;
+    const height = svg.node().getBBox().height + EXPORT_MARGIN_HEIGHT;
+
+    // =====================
+    //        LINKS
+    // =====================
 
     // Clone the svg to avoid modifying the original
     const clone = svg.node().cloneNode(true);
 
-    // Serialize the svg to a string
-    let inlineXML = new XMLSerializer().serializeToString(clone);
+    // jsPDF doesn't support transparency so we need to add a white background to the svg
+    // otherwise everything will be black
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", 0);
+    rect.setAttribute("y", 0);
+    rect.setAttribute("width", width);
+    rect.setAttribute("height", height);
+    rect.setAttribute("fill", "white");
+    clone.insertBefore(rect, clone.firstChild);
+
+    // =====================
+    //       BARPLOTS
+    // =====================
 
     // Get all the foreignObjects
     const foreignObjects = clone.querySelectorAll("foreignObject");
 
-    // Remove the foreignObjects from inlineXML
+    // Create a Map for x, y, width and height of every foreignObject
+    const foreignObjectsMap = new Map();
+    foreignObjects.forEach(foreignObject => {
+      foreignObjectsMap.set(foreignObject, {
+        x: foreignObject.getAttribute("x"),
+        y: foreignObject.getAttribute("y"),
+        width: foreignObject.getAttribute("width"),
+        height: foreignObject.getAttribute("height")
+      });
+    });
+
+    // Get every <g> inside every <svg> that's inside a <foreignObject>
+    const svgForeignObjects = svg.selectAll("foreignObject").selectAll("svg");
+    const gForeignObjects = svgForeignObjects.selectAll("g");
+
+    // Create a Map to fill with clones
+    const gForeignObjectsClone = new Map();
+    gForeignObjects.nodes().forEach((g, i) => {
+      gForeignObjectsClone.set(i, g.cloneNode(true));
+    });
+
+    // Remove all foreignObjects from inlineXML because these ones are not supported by jsPDF
     foreignObjects.forEach(foreignObject => foreignObject.remove());
 
-    // Get the width and height of the diagram and put a white rectangle behind it
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", 0);
-    rect.setAttribute("y", 0);
-    rect.setAttribute("width", 1000);
-    rect.setAttribute("height", 1000);
-    rect.setAttribute("fill", "white");
-    clone.insertBefore(rect, clone.firstChild);
+    // For every <g> clone, add a white background to it
+    gForeignObjectsClone.forEach((g, i) => {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", 0);
+      rect.setAttribute("y", 0);
+      rect.setAttribute("width", foreignObjectsMap.get(foreignObjects[i]).width);
+      rect.setAttribute("height", foreignObjectsMap.get(foreignObjects[i]).height);
+      rect.setAttribute("fill", "white");
+      g.insertBefore(rect, g.firstChild);
+    });
+
+    // Serialize all the <g> clones
+    const gStrings = Array.from(gForeignObjectsClone.values()).map(g => new XMLSerializer().serializeToString(g));
+
+    // =====================
+    //       DOCUMENT
+    // =====================
 
     // Serialize the svg to a string again
-    inlineXML = new XMLSerializer().serializeToString(clone);
-    // Copy to clipboard
-    navigator.clipboard.writeText(inlineXML);
+    const links = new XMLSerializer().serializeToString(clone);
 
     // Create a new jsPDF instance
     const doc = new jsPDF("landscape", "pt", "a1");
 
     // Add the svg to the document
-    await doc.addSvgAsImage(inlineXML, -100, 0, 2384, 1648);
+    await doc.addSvgAsImage(links, -100, 0, width, height);
+
+    // Add the first g to the document
+    await doc.addSvgAsImage(gStrings[0], 100, 100, foreignObjectsMap.get(foreignObjects[0]).width, foreignObjectsMap.get(foreignObjects[0]).height);
+    // console.log(foreignObjectsMap.get(foreignObjects[0]).x, foreignObjectsMap.get(foreignObjects[0]).y); // 1720 50 v2
 
     // Save the document
     doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
@@ -323,10 +323,7 @@ export function Sankey({ sankeyStructure, title }) {
         <Button onClick={handleDownloadSVG}>
           <BsDownload className="bs-download" /> Download SVG
         </Button>
-        <Button onClick={handleDownloadBarplots} variant="outline-secondary">
-          <BsDownload className="bs-download" /> Download PDF (Barplots only)
-        </Button>
-        <Button onClick={handleDownloadPDF}>
+        <Button onClick={handleDownloadPDF} variant="warning">
           <BsDownload className="bs-download" /> Download PDF
         </Button>
       </div>
