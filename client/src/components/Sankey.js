@@ -282,7 +282,7 @@ export function Sankey({ sankeyStructure, title }) {
 
       <TransformWrapper>
         <TransformComponent>
-          <svg ref={svgRef} width="100vw" height="100vh"></svg>
+          <svg ref={svgRef} width="100vw" height="150vh"></svg>
         </TransformComponent>
       </TransformWrapper>
     </div>
