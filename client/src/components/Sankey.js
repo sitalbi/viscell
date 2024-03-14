@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
-import { jsPDF } from "jspdf";
+//import { jsPDF } from "jspdf";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
@@ -210,11 +210,24 @@ export function Sankey({ sankeyStructure, title }) {
     svg.attr("height", "400vh");
 
     // Serialize the svg to a string
-    const inlineXML = new XMLSerializer().serializeToString(svg.node());
+    let inlineXML = new XMLSerializer().serializeToString(svg.node());
 
     // Reset the svg to its original size
     svg.attr("width", originalWidth);
     svg.attr("height", originalHeight);
+
+    // Remove the 'Open' text from foreignObject's text
+    const parser = new DOMParser();
+    const result = parser.parseFromString(inlineXML, "image/svg+xml");
+    const texts = result.querySelectorAll("foreignObject text");
+    texts.forEach(text => {
+      if (text.innerHTML === "Open") {
+        text.innerHTML = "";
+      }
+    });
+
+    // Serialize the svg to a string
+    inlineXML = new XMLSerializer().serializeToString(result);
 
     // Create a blob from the svg string
     const blob = new Blob([inlineXML], { type: "image/svg+xml" });
@@ -237,19 +250,25 @@ export function Sankey({ sankeyStructure, title }) {
    * @returns {void}
    */
   const handleDownloadPDF = async () => {
-    const svg = d3.select(svgRef.current);
-    const inlineXML = new XMLSerializer().serializeToString(svg.node());
+    alert("This feature is not yet implemented");
+    //const svg = d3.select(svgRef.current);
+    //const inlineXML = new XMLSerializer().serializeToString(svg.node());
 
-    let doc = new jsPDF({
-      orientation: "landscape",
-      unit: "px",
-      format: "a1"
+    // Remove the 'Open' text from foreignObject's text
+    /*
+    const parser = new DOMParser();
+    const result = parser.parseFromString(inlineXML, "image/svg+xml");
+    const texts = result.querySelectorAll("foreignObject text");
+    texts.forEach(text => {
+      text.setAttribute("fill", "blue");
+      if (text.innerHTML === "Open") {
+        text.innerHTML = "";
+      }
     });
+    */
 
-    // Await SVG addition as it is asynchronous
-    await doc.addSvgAsImage(inlineXML, 0, 0, 6000, 6000);
     // Set name to 'title'.pdf
-    doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
+    //doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
   }
 
   return (
