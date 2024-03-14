@@ -21,7 +21,9 @@ import {
   ROOT_WIDTH,
   TOOLTIP_WIDTH,
   TOOLTIP_HEIGHT,
-  TEXT_MAX_SIZE
+  TEXT_MAX_SIZE,
+  EXPORT_MARGIN_WIDTH,
+  EXPORT_MARGIN_HEIGHT
 } from "../utils/Constants.js";
 
 /**
@@ -193,19 +195,15 @@ export function Sankey({ sankeyStructure, title }) {
    */
   const handleDownloadSVG = () => {
     const svg = d3.select(svgRef.current);
-    const originalWidth = svg.attr("width");
-    const originalHeight = svg.attr("height");
+    const width = svg.node().getBBox().width + EXPORT_MARGIN_WIDTH;
+    const height = svg.node().getBBox().height + EXPORT_MARGIN_HEIGHT;
 
-    /// Grow the svg to the size of the diagram
-    svg.attr("width", "400vw");
-    svg.attr("height", "400vh");
+    /// Grow the svg to avoid cutting the diagram
+    svg.attr("width", width + "px");
+    svg.attr("height", height + "px");
 
     // Serialize the svg to a string
     let inlineXML = new XMLSerializer().serializeToString(svg.node());
-
-    // Reset the svg to its original size
-    svg.attr("width", originalWidth);
-    svg.attr("height", originalHeight);
 
     // Create a blob from the svg string
     const blob = new Blob([inlineXML], { type: "image/svg+xml" });
@@ -226,11 +224,11 @@ export function Sankey({ sankeyStructure, title }) {
   };
 
   /**
-   * Handle the diagram's download as PDF
+   * Handle the barplots's download as PDF
    * 
    * @returns {void}
    */
-  const handleDownloadPDF = async () => {
+  const handleDownloadBarplots = async () => {
     const svg = d3.select(svgRef.current);
 
     // Get every <g> inside every <svg> that's inside a <foreignObject>
@@ -273,6 +271,50 @@ export function Sankey({ sankeyStructure, title }) {
     doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
   }
 
+  /**
+   * Handle the diagram's download as PDF
+   * 
+   * @returns {void}
+   */
+  const handleDownloadPDF = async () => {
+    const svg = d3.select(svgRef.current);
+
+    // Clone the svg to avoid modifying the original
+    const clone = svg.node().cloneNode(true);
+
+    // Serialize the svg to a string
+    let inlineXML = new XMLSerializer().serializeToString(clone);
+
+    // Get all the foreignObjects
+    const foreignObjects = clone.querySelectorAll("foreignObject");
+
+    // Remove the foreignObjects from inlineXML
+    foreignObjects.forEach(foreignObject => foreignObject.remove());
+
+    // Get the width and height of the diagram and put a white rectangle behind it
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", 0);
+    rect.setAttribute("y", 0);
+    rect.setAttribute("width", 1000);
+    rect.setAttribute("height", 1000);
+    rect.setAttribute("fill", "white");
+    clone.insertBefore(rect, clone.firstChild);
+
+    // Serialize the svg to a string again
+    inlineXML = new XMLSerializer().serializeToString(clone);
+    // Copy to clipboard
+    navigator.clipboard.writeText(inlineXML);
+
+    // Create a new jsPDF instance
+    const doc = new jsPDF("landscape", "pt", "a1");
+
+    // Add the svg to the document
+    await doc.addSvgAsImage(inlineXML, -100, 0, 2384, 1648);
+
+    // Save the document
+    doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
+  }
+
   return (
     <div className="mt-2">
       <h3 className="mt-4 selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
@@ -281,8 +323,11 @@ export function Sankey({ sankeyStructure, title }) {
         <Button onClick={handleDownloadSVG}>
           <BsDownload className="bs-download" /> Download SVG
         </Button>
-        <Button onClick={handleDownloadPDF}>
+        <Button onClick={handleDownloadBarplots} variant="outline-secondary">
           <BsDownload className="bs-download" /> Download PDF (Barplots only)
+        </Button>
+        <Button onClick={handleDownloadPDF}>
+          <BsDownload className="bs-download" /> Download PDF
         </Button>
       </div>
 
