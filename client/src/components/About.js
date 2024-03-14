@@ -3,11 +3,12 @@ import { Container, Row, Col, Accordion } from "react-bootstrap";
 
 export const About = () => {
   return (
-    <Container className="d-flex justify-content-center">
+    <Container className="d-flex justify-content-center mt-2">
       <Row>
         <Col>
           <div className="justify-content-center">
             <h1 id="viscell">viscell</h1>
+
             <p>
               <strong>Superviseur :</strong> Asloudj Yanis
               (yasloudj@u-bordeaux.fr)
@@ -23,7 +24,9 @@ export const About = () => {
                 </ul>
               </p>
             </p>
+
             <h2 id="contexte">Contexte</h2>
+
             <p>
               Dans le cadre de l'UE Projet de Fin d&#39;Études du Master 2 Informatique de l'Université de Bordeaux, cette application a été réalisée par la demande de Yanis Asloudj, doctorant en Bio-Informatique.
               Cette dernière est un champ de recherche à
@@ -57,6 +60,7 @@ export const About = () => {
               l&#39;étude des populations de cellules, i.e. leur taille,
               leurs gènes et leur fiabilité.
             </p>
+
             <Accordion defaultActiveKey="0" alwaysOpen>
               <Accordion.Item eventKey="1">
                 <Accordion.Header id="objectifs"><h2>Objectifs</h2></Accordion.Header>
@@ -80,9 +84,7 @@ export const About = () => {
                   </p>
                 </Accordion.Body>
               </Accordion.Item>
-
             </Accordion>
-
           </div>
         </Col>
       </Row>
