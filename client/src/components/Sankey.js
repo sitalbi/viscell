@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
-//import { jsPDF } from "jspdf";
+import { jsPDF } from "jspdf";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
@@ -20,7 +20,8 @@ import {
   LAYOUT_HEIGHT,
   ROOT_WIDTH,
   TOOLTIP_WIDTH,
-  TOOLTIP_HEIGHT
+  TOOLTIP_HEIGHT,
+  TEXT_MAX_SIZE
 } from "../utils/Constants.js";
 
 /**
@@ -206,22 +207,11 @@ export function Sankey({ sankeyStructure, title }) {
     svg.attr("width", originalWidth);
     svg.attr("height", originalHeight);
 
-    // Remove the 'Open' text from foreignObject's text
-    const parser = new DOMParser();
-    const result = parser.parseFromString(inlineXML, "image/svg+xml");
-    const texts = result.querySelectorAll("foreignObject text");
-    texts.forEach(text => {
-      if (text.innerHTML === "Open") {
-        text.innerHTML = "";
-      }
-    });
-
-    // Serialize the svg to a string
-    inlineXML = new XMLSerializer().serializeToString(result);
-
     // Create a blob from the svg string
     const blob = new Blob([inlineXML], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
+
+    // Create a link and click it to download the svg
     const a = document.createElement("a");
     // Set the name of the file by removing the previous extension and adding .svg
     a.download = title.split(".").slice(0, -1).join(".") + ".svg";
@@ -231,6 +221,7 @@ export function Sankey({ sankeyStructure, title }) {
     a.rel = "noopener noreferrer";
     // Set the blob as the href
     a.href = url;
+    // Click the link
     a.click();
   };
 
@@ -240,25 +231,46 @@ export function Sankey({ sankeyStructure, title }) {
    * @returns {void}
    */
   const handleDownloadPDF = async () => {
-    alert("This feature is not yet implemented");
-    //const svg = d3.select(svgRef.current);
-    //const inlineXML = new XMLSerializer().serializeToString(svg.node());
+    const svg = d3.select(svgRef.current);
 
-    // Remove the 'Open' text from foreignObject's text
-    /*
-    const parser = new DOMParser();
-    const result = parser.parseFromString(inlineXML, "image/svg+xml");
-    const texts = result.querySelectorAll("foreignObject text");
-    texts.forEach(text => {
-      text.setAttribute("fill", "blue");
-      if (text.innerHTML === "Open") {
-        text.innerHTML = "";
-      }
+    // Get every <g> inside every <svg> that's inside a <foreignObject>
+    const foreignObjects = svg.selectAll("foreignObject");
+    const svgForeignObjects = foreignObjects.selectAll("svg");
+    const gForeignObjects = svgForeignObjects.selectAll("g");
+
+    // Create a Map to fill with clones
+    const gForeignObjectsClone = new Map();
+
+    gForeignObjects.nodes().forEach((g, i) => {
+      // Clone the g to avoid modifying the original
+      const gClone = g.cloneNode(true);
+      // Get every text inside the g
+      const texts = gClone.querySelectorAll("text");
+      // Make text white
+      texts.forEach(text => text.setAttribute("fill", "white"));
+      // Add the clone to the Map
+      gForeignObjectsClone.set(i, gClone);
     });
-    */
 
-    // Set name to 'title'.pdf
-    //doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
+    // Serialize all the <g> clones to strings
+    const gStrings = Array.from(gForeignObjectsClone.values()).map(g => new XMLSerializer().serializeToString(g));
+
+    // Create a new jsPDF instance
+    const doc = new jsPDF("landscape", "pt", "a6");
+
+    // Declare a function to save the <g> as an image
+    const saveGAsImage = async (gString, i) => {
+      const maxWidth = gForeignObjects.nodes()[i].getBBox().width + TEXT_MAX_SIZE;
+      const maxHeight = gForeignObjects.nodes()[i].getBBox().height + TEXT_MAX_SIZE;
+      await doc.addSvgAsImage(gString, 0, 0, maxWidth, maxHeight);
+      if (i < gStrings.length - 1) doc.addPage();
+    };
+
+    // Save <g> as images
+    for (let i = 0; i < gStrings.length; i++) await saveGAsImage(gStrings[i], i);
+
+    // Save the document
+    doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
   }
 
   return (
@@ -270,13 +282,13 @@ export function Sankey({ sankeyStructure, title }) {
           <BsDownload className="bs-download" /> Download SVG
         </Button>
         <Button onClick={handleDownloadPDF}>
-          <BsDownload className="bs-download" /> Download PDF
+          <BsDownload className="bs-download" /> Download PDF (Barplots only)
         </Button>
       </div>
 
       <TransformWrapper>
         <TransformComponent>
-          <svg ref={svgRef} width="100vw" height="150vh"></svg>
+          <svg ref={svgRef} width="100vw" height="125vh"></svg>
         </TransformComponent>
       </TransformWrapper>
     </div>
