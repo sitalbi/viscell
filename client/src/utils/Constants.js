@@ -5,7 +5,7 @@ export const NODE_WIDTH = 200;
 export const NODE_PADDING = 50;
 
 export const HORIZONTAL_PADDING = 0;
-export const VERTICAL_PADDING = 28;
+export const VERTICAL_PADDING = 50;
 export const LAYOUT_WIDTH = 1920;
 export const LAYOUT_HEIGHT = 1080;
 
@@ -18,14 +18,13 @@ export const TOOLTIP_HEIGHT = 80;
 export const POPUP_MAX_SIZE = 300;
 export const POPUP_TOP_MARGIN = 50;
 
-export const BARPLOT_DEFAULT_WIDTH = 100;
-export const BARPLOT_DEFAULT_HEIGHT = 60;
+// Default height for full Barplot
+export const BARPLOT_DEFAULT_HEIGHT = 70;
 
 export const TEXT_MAX_SIZE = 10;
 export const SCALING_FACTOR = 16;
 
-export const Y_MARGIN = 10;
-export const HEIGHT_MARGIN = 40;
+export const HEIGHT_MARGIN = 30;
 
 // Other attributes (.attr) are heavily magic numbered so they are not included in the Constants.js file for now
 
