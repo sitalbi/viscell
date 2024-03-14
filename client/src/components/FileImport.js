@@ -188,7 +188,6 @@ export const FileImport = () => {
         if (isValid) {
             // Create SankeyStructure object
             let sankeyStructure = new SankeyStructure(worksheets);
-            console.log(sankeyStructure);
             setSankeyStructure(sankeyStructure);
             setTitle(f.name);
         }
