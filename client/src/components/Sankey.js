@@ -274,8 +274,8 @@ export function Sankey({ sankeyStructure, title }) {
   }
 
   return (
-    <div className="sankey">
-      <h3 className="selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+    <div className="mt-2">
+      <h3 className="mt-4 selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
 
       <div className="download-buttons-container">
         <Button onClick={handleDownloadSVG}>
@@ -288,7 +288,7 @@ export function Sankey({ sankeyStructure, title }) {
 
       <TransformWrapper>
         <TransformComponent>
-          <svg ref={svgRef} width="100vw" height="125vh"></svg>
+          <svg ref={svgRef} className="mt-4 sankey-svg"></svg>
         </TransformComponent>
       </TransformWrapper>
     </div>
