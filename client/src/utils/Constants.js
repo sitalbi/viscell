@@ -14,6 +14,9 @@ export const ROOT_WIDTH = 30;
 export const TOOLTIP_WIDTH = 300;
 export const TOOLTIP_HEIGHT = 80;
 
+export const EXPORT_MARGIN_WIDTH = 200;
+export const EXPORT_MARGIN_HEIGHT = 100;
+
 // Barplot.js
 export const POPUP_MAX_SIZE = 300;
 export const POPUP_TOP_MARGIN = 50;
