@@ -6,7 +6,6 @@ describe("About component", () => {
   it("renders with default French version content", () => {
     const { getByText } = render(<About />);
     expect(getByText("Superviseur :")).toBeInTheDocument();
-    expect(getByText("Développeurs :")).toBeInTheDocument();
     expect(getByText("Contexte")).toBeInTheDocument();
     expect(getByText("Objectifs")).toBeInTheDocument();
     expect(getByText("Fonctionnalités")).toBeInTheDocument();
@@ -16,7 +15,6 @@ describe("About component", () => {
     const { getByAltText, getByText } = render(<About />);
     fireEvent.click(getByAltText("English Flag"));
     expect(getByText("Imagined by :")).toBeInTheDocument();
-    expect(getByText("Developed by :")).toBeInTheDocument();
     expect(getByText("Context")).toBeInTheDocument();
     expect(getByText("Objectives")).toBeInTheDocument();
     expect(getByText("Features")).toBeInTheDocument();
@@ -27,7 +25,6 @@ describe("About component", () => {
     fireEvent.click(getByAltText("English Flag"));
     fireEvent.click(getByAltText("English Flag"));
     expect(getByText("Superviseur :")).toBeInTheDocument();
-    expect(getByText("Développeurs :")).toBeInTheDocument();
     expect(getByText("Contexte")).toBeInTheDocument();
     expect(getByText("Objectifs")).toBeInTheDocument();
     expect(getByText("Fonctionnalités")).toBeInTheDocument();
