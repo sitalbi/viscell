@@ -30,7 +30,7 @@ import {
  * 
  * @returns {JSX.Element}
  */
-export function Sankey({ sankeyStructure, title }) {
+export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   const svgRef = useRef();
   // Moving the two maps inside the useEffect makes links and cellsMap not defined
   // We need to keep them outside of the useEffect
@@ -111,6 +111,7 @@ export function Sankey({ sankeyStructure, title }) {
             cellName={cellName}
             genes={sankeyStructure.get(cellName).geneMap}
             colorMap={geneMapColor}
+            numberOfGenes={numberOfGenes}
           />
         );
         ReactDOM.createRoot(div.node()).render(component);

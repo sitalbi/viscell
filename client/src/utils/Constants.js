@@ -25,6 +25,9 @@ export const TEXT_MAX_SIZE = 10;
 export const SCALING_FACTOR = 16;
 
 export const HEIGHT_MARGIN = 30;
+export const MARGIN_BOTTOM_FOR_LABELS = 15;
+
+export const MINIMUM_SIZE_OF_RECTANGLE = 5;
 
 // Other attributes (.attr) are heavily magic numbered so they are not included in the Constants.js file for now
 
