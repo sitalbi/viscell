@@ -162,7 +162,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .text(d => d)
       .attr("class", "legend")
       .attr("x", (_d, i) => i * (originalWidth / labels.length) + (originalWidth / labels.length) / 2)
-      .attr("y", scaledHeight - 20)
+      .attr("y", scaledHeight)
       .attr("text-anchor", "middle")
       .attr("font-size", legendSize(originalWidth) + "px")
       .attr("font-weight", "bold")
