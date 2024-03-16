@@ -1,7 +1,7 @@
 // Constants.js
 
 // Sankey.js
-export const NODE_WIDTH = 200;
+export const NODE_WIDTH = 325;
 export const NODE_PADDING = 50;
 
 export const HORIZONTAL_PADDING = 0;
