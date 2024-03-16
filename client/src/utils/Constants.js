@@ -24,11 +24,11 @@ export const BARPLOT_DEFAULT_HEIGHT = 70;
 export const TEXT_MAX_SIZE = 10;
 export const SCALING_FACTOR = 16;
 
-export const HEIGHT_MARGIN = 30;
+export const HEIGHT_MARGIN = 10;
 
 // Other attributes (.attr) are heavily magic numbered so they are not included in the Constants.js file for now
 
 export const BAR_SPACING = 5;
 export const SVG_MARGIN = 50;
 
-export const SPACE_BETWEEN_BARS = 5;
+export const SPACE_BETWEEN_BARS = 10;
