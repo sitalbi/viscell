@@ -93,18 +93,13 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
   }, [height, width]);
 
   const legendSize = useCallback((size) => {
-    if (numberOfGenes > 4) {
-      return 5;
-    }
-
     const textSize = size / SCALING_FACTOR;
 
     if (textSize > TEXT_MAX_SIZE)
       return TEXT_MAX_SIZE;
 
-    return textSize;
-  }, [numberOfGenes]);
-
+    return textSize - 1.5;
+  }, []);
 
   // Draw Sliced Barplot
   const drawBarplotSliced = useCallback((data, originalWidth, originalHeight, svg) => {
@@ -294,7 +289,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
   );
 
   return (
-    
+
     <div data-testid="barplot">
       <svg className="barplot" ref={svgRef} width={width} height={height} style={barplotStyle} />
       <Popup

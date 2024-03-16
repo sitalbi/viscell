@@ -227,14 +227,6 @@ export const FileImport = () => {
                         </label>
                         <p className='text-center'>Number of genes to display: {numberOfGenesToDisplay}</p>
                         <div className="slider-container">
-                            {/* <select onChange={onChange}>
-                                <option defaultValue disabled></option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                            </select> */}
                             <Slider
                                 min={3}
                                 max={7}
