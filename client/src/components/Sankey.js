@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
+import { jsPDF } from "jspdf";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
@@ -19,7 +20,9 @@ import {
   LAYOUT_HEIGHT,
   ROOT_WIDTH,
   TOOLTIP_WIDTH,
-  TOOLTIP_HEIGHT
+  TOOLTIP_HEIGHT,
+  EXPORT_MARGIN_WIDTH,
+  EXPORT_MARGIN_HEIGHT
 } from "../utils/Constants.js";
 
 /**
@@ -192,23 +195,21 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
    */
   const handleDownloadSVG = () => {
     const svg = d3.select(svgRef.current);
-    const originalWidth = svg.attr("width");
-    const originalHeight = svg.attr("height");
+    const width = svg.node().getBBox().width + EXPORT_MARGIN_WIDTH;
+    const height = svg.node().getBBox().height + EXPORT_MARGIN_HEIGHT;
 
-    /// Grow the svg to the size of the diagram
-    svg.attr("width", "400vw");
-    svg.attr("height", "400vh");
+    /// Grow the svg to avoid cutting the diagram
+    svg.attr("width", width + "px");
+    svg.attr("height", height + "px");
 
     // Serialize the svg to a string
-    const svgString = new XMLSerializer().serializeToString(svg.node());
-
-    // Reset the svg to its original size
-    svg.attr("width", originalWidth);
-    svg.attr("height", originalHeight);
+    let inlineXML = new XMLSerializer().serializeToString(svg.node());
 
     // Create a blob from the svg string
-    const blob = new Blob([svgString], { type: "image/svg+xml" });
+    const blob = new Blob([inlineXML], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
+
+    // Create a link and click it to download the svg
     const a = document.createElement("a");
     // Set the name of the file by removing the previous extension and adding .svg
     a.download = title.split(".").slice(0, -1).join(".") + ".svg";
@@ -218,8 +219,112 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
     a.rel = "noopener noreferrer";
     // Set the blob as the href
     a.href = url;
+    // Click the link
     a.click();
   };
+
+  /**
+   * Handle the diagram's download as PDF
+   * 
+   * @returns {void}
+   */
+  const handleDownloadPDF = async () => {
+    const svg = d3.select(svgRef.current);
+    const width = svg.node().getBBox().width + EXPORT_MARGIN_WIDTH;
+    const height = svg.node().getBBox().height + EXPORT_MARGIN_HEIGHT;
+
+    // =====================
+    //        LINKS
+    // =====================
+
+    // Clone the svg to avoid modifying the original
+    const clone = svg.node().cloneNode(true);
+
+    // jsPDF doesn't support transparency so we need to add a white background to the svg
+    // otherwise everything will be black
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", 0);
+    rect.setAttribute("y", 0);
+    rect.setAttribute("width", width);
+    rect.setAttribute("height", height);
+    rect.setAttribute("fill", "white");
+    clone.insertBefore(rect, clone.firstChild);
+
+    // =====================
+    //       BARPLOTS
+    // =====================
+
+    // Get all the foreignObjects
+    const fO = clone.querySelectorAll("foreignObject");
+
+    // Create a Map for x, y, width and height of every foreignObject
+    const foreignCoords = new Map();
+    fO.forEach(foreignObject => {
+      foreignCoords.set(foreignObject, {
+        x: foreignObject.getAttribute("x") - EXPORT_MARGIN_HEIGHT,
+        y: foreignObject.getAttribute("y"),
+        width: foreignObject.getAttribute("width"),
+        height: foreignObject.getAttribute("height")
+      });
+    });
+
+    // Get every <g> inside every <svg> that's inside a <foreignObject>
+    const svgInsideFO = svg.selectAll("foreignObject").selectAll("svg");
+    const gInsideSVG = svgInsideFO.selectAll("g");
+
+    // Create a Map to fill with clones
+    const gClones = new Map();
+    gInsideSVG.nodes().forEach((g, i) => {
+      gClones.set(i, g.cloneNode(true));
+    });
+
+    // Remove all foreignObjects from inlineXML because these ones are not supported by jsPDF
+    fO.forEach(foreignObject => foreignObject.remove());
+
+    // For every <g> clone, add a white background to it
+    gClones.forEach((g, i) => {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", 0);
+      rect.setAttribute("y", 0);
+      rect.setAttribute("width", foreignCoords.get(fO[i]).width);
+      rect.setAttribute("height", foreignCoords.get(fO[i]).height);
+      rect.setAttribute("fill", "white");
+      g.insertBefore(rect, g.firstChild);
+    });
+
+    // =====================
+    //     SERIALIZATION
+    // =====================
+
+    // Serialize the svg to a string again
+    const serializedLinks = new XMLSerializer().serializeToString(clone);
+
+    // Serialize all the <g> clones
+    const serializedBarplots = Array.from(gClones.values()).map(g => new XMLSerializer().serializeToString(g));
+
+    // =====================
+    //       DOCUMENT
+    // =====================
+
+    // Create a new jsPDF instance using the width and height of the svg
+    // instead of page formats like "a1" or "letter"
+    const doc = new jsPDF("landscape", "pt", [width, height]);
+
+    // Add the links to the document
+    await doc.addSvgAsImage(serializedLinks, -100, 0, width, height); // Asynchronous
+
+    // Add the barplots to the document
+    // Do not use forEach because it brings problems with async/await
+    for (let i = 0; i < serializedBarplots.length; i++) {
+      await doc.addSvgAsImage(serializedBarplots[i], Math.round(foreignCoords.get(fO[i]).x),
+        Math.round(foreignCoords.get(fO[i]).y),
+        Math.round(foreignCoords.get(fO[i]).width),
+        Math.round(foreignCoords.get(fO[i]).height)); // Asynchronous
+    }
+
+    // Save the document
+    doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
+  }
 
   return (
     <div className="mt-2">
@@ -228,6 +333,9 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       <div className="download-buttons-container">
         <Button onClick={handleDownloadSVG}>
           <BsDownload className="bs-download" /> Download SVG
+        </Button>
+        <Button onClick={handleDownloadPDF} variant="warning">
+          <BsDownload className="bs-download" /> Download PDF
         </Button>
       </div>
 
