@@ -2,6 +2,11 @@ import { Container, Row, Col, Toast } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
+import '../App.js';
+
+import { SankeyStructure } from '../utils/SankeyStructure.js';
 
 import { Sankey } from './Sankey.js';
 
@@ -10,8 +15,13 @@ export const FileImport = () => {
     const [toastMessage, setToastMessage] = useState(''); // State to manage toast message
     const handleToastClose = () => setShowToast(false); // Function to close the toast
 
-    const [worksheets, setWorksheets] = useState(null);
     const [title, setTitle] = useState(null);
+    const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3);// Number of genes to display (3 by default)
+    const [sankeyStructure, setSankeyStructure] = useState(null);
+
+    const onChange = (newValue) => {
+        setNumberOfGenesToDisplay(newValue);
+    };
 
     /**
      * Check if data is valid
@@ -183,8 +193,9 @@ export const FileImport = () => {
         const isValid = checkData(worksheets);
 
         if (isValid) {
-            // Set states with the worksheets and file title
-            setWorksheets(worksheets);
+            // Create SankeyStructure object
+            let sankeyStructure = new SankeyStructure(worksheets);
+            setSankeyStructure(sankeyStructure);
             setTitle(f.name);
         }
         else {
@@ -209,14 +220,24 @@ export const FileImport = () => {
             <Row>
                 <Col>
                     <h2 className="text-center mt-2">Import your file</h2>
-                    <p className="text-center mt-2">Supported file types: .csv, .xlsx, .xls</p>
+                    <p className="text-center mt-2">Supported file types: <span className='filetype-span'>.xlsx</span> and <span className='filetype-span'>.xls</span></p>
                     <div className="text-center">
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine style={{ marginRight: '5px' }} /> Choose a file
                         </label>
+                        <p className='text-center mt-4'>Number of genes to display: {numberOfGenesToDisplay}</p>
+                        <div className="slider-container">
+                            <Slider
+                                min={3}
+                                max={7}
+                                step={1}
+                                value={numberOfGenesToDisplay}
+                                onChange={onChange}
+                            />
+                        </div>
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
-                    {worksheets && title && <Sankey worksheets={worksheets} title={title} />}
+                    {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
                 </Col>
             </Row>
             <Toast show={showToast} onClose={handleToastClose} className="position-fixed center-0 center-0 m-3">

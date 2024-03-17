@@ -1,45 +1,76 @@
 import * as d3 from 'd3';
 
-/**
- * Return a map containing the color for each gene
- * @param {Object} sankeyStructure  The structure of the sankey diagram containing nodes and links
- * @param {Map} cellsMap Cells map is a map containing the genes for each cell
- * @param {Map} colorMap The map containing the color for each gene
- * @returns {Map} A map containing the color for each gene
- */
-export function color(sankeyStructure, cellsMap, colorMap) {
-    const colorsUsed = new Set();
+export function color(sankeyStructure, cellColorMap, geneColorMap) {
+    const root = sankeyStructure.getRoot();
 
-    cellsMap.forEach((genes, cellName) => {
-        let maxExpression = Math.max(...genes.values());
-        let maxExpressedGenes = [...genes.entries()]
-            .filter(([gene, expression]) => expression === maxExpression)
-            .map(([gene]) => gene);
-
-        let randomColor;
-        do {
-            randomColor = d3.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255);
-        } while (colorsUsed.has(randomColor));
-        colorsUsed.add(randomColor);
-
-        maxExpressedGenes.forEach(gene => {
-            sankeyStructure.links.forEach(link => {
-                let target = sankeyStructure.nodes[link.target];
-                let source = sankeyStructure.nodes[link.source];
-                if (target.name === cellName) {
-                    let parentColor = colorMap.get(cellsMap.get(source.name).keys().next().value);
-                    let newColor = parentColor ? d3.interpolateRgb(parentColor, Math.random() < 0.5 ? d3.rgb(parentColor).brighter(0.5) : d3.rgb(parentColor).darker(0.5))(2) : randomColor;
-                    colorMap.set(gene, newColor);
-                }
-            });
+    // Create a palette of colors
+    const createPalette = (numColors) => {
+        const colorScale = d3.scaleSequential(d3.interpolateRainbow).domain([0, numColors]);
+        return d3.range(numColors).map(function (d) {
+            return colorScale(d);
         });
-    });
+    }
 
-    cellsMap.forEach(genes => {
-        genes.forEach((_, gene) => {
-            if (!colorMap.has(gene)) {
-                colorMap.set(gene, 'gray');
+    const palette = createPalette(sankeyStructure.getSize()); // create a palette of colors
+
+    // color cells pop
+    const colorPop = (pop, index) => {
+        if (pop !== root) cellColorMap.set(pop.name, palette[index[0]]);
+
+        for (const child of pop.getChildren()) {
+            index[0]++;
+            colorPop(child, index);
+        }
+    }
+
+    colorPop(root, [0]);
+
+    // check if a gene is specific to a cell pop
+    // const isSpecificGene = (gene, pop, rootPop) => {
+    //     if(rootPop !== pop && rootPop.hasGene(gene)){
+    //         return false;
+    //     }
+    //     for(const child of pop.getChildren()){
+    //         if(!isSpecificGene(gene, child, rootPop)){
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+
+    // count the number of times a gene is present in the pops
+    const countGene = (gene, pop) => {
+        let count = 0;
+        if (pop.hasGene(gene)) count++;
+
+        for (const child of pop.getChildren()) count += countGene(gene, child);
+
+        return count;
+    }
+
+    // check if a gene is specific to a cell pop
+    const isSpecificGene = (gene, pop) => {
+        return countGene(gene, root) === countGene(gene, pop);
+    }
+
+    // color all genes in grey
+    const colorAllGenesInGrey = (pop) => {
+        for (const [gene,] of pop.geneMap) geneColorMap.set(gene, "grey");
+
+        for (const child of pop.getChildren()) colorAllGenesInGrey(child);
+    }
+
+    // color genes
+    const colorGenes = (pop) => {
+        for (const [gene,] of pop.geneMap) {
+            // if gene is grey and specific to the pop, color it
+            if (geneColorMap.get(gene) === "grey" && isSpecificGene(gene, pop, root)) {
+                geneColorMap.set(gene, cellColorMap.get(pop.name));
             }
-        });
-    });
+        }
+        for (const child of pop.getChildren()) colorGenes(child);
+    }
+
+    colorAllGenesInGrey(root);
+    colorGenes(root);
 }

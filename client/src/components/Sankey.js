@@ -4,24 +4,44 @@ import { Button } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
+import { jsPDF } from "jspdf";
 import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
 import { color } from "../utils/Color.js";
 
+import {
+  NODE_WIDTH,
+  NODE_PADDING,
+  HORIZONTAL_PADDING,
+  VERTICAL_PADDING,
+  LAYOUT_WIDTH,
+  LAYOUT_HEIGHT,
+  ROOT_WIDTH,
+  TOOLTIP_WIDTH,
+  TOOLTIP_HEIGHT,
+  EXPORT_MARGIN_WIDTH,
+  EXPORT_MARGIN_HEIGHT
+} from "../utils/Constants.js";
+
 /**
  * Sankey component
  * 
- * @param {Object} worksheets The sheets object
+ * @param {Object} sankeyStructure The sankeyStructure object
  * @param {String} title The title of the file
  * 
  * @returns {JSX.Element}
  */
-export function Sankey({ worksheets, title }) {
+export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   const svgRef = useRef();
-  const cellsMap = new Map();
-  const colorMap = new Map();
+  // Moving the two maps inside the useEffect makes links and cellsMap not defined
+  // We need to keep them outside of the useEffect
+  const cellMapColor = new Map();
+  const geneMapColor = new Map();
+
+
+  color(sankeyStructure, cellMapColor, geneMapColor);
 
   useEffect(() => {
     // =====================
@@ -29,69 +49,13 @@ export function Sankey({ worksheets, title }) {
     // =====================
 
     // Create the structure for the sankey diagram
-    const sankeyStructure = {
+    const structure = {
       nodes: [],
       links: []
     };
-    // Sort meta worksheet by alphanumerical order by the "" column which is the name of the node
-    worksheets.get("meta").sort((a, b) => a[""].localeCompare(b[""]));
 
-    // Create nodes into the structure
-    worksheets.get("meta").forEach((d) => {
-      sankeyStructure.nodes.push({ name: d[""] });
-    });
-
-    // Create links between nodes
-    worksheets.get("meta").forEach((d) => {
-      // "?" is really important here, it's in the files sometimes
-      // we need to add it to the verification process before transferring data to Sankey.js from FileImport.js
-      if (d["parent"] && d["parent"] !== "?") {
-        sankeyStructure.links.push({
-          source: sankeyStructure.nodes.findIndex((node) => node.name === d["parent"]),
-          target: sankeyStructure.nodes.findIndex((node) => node.name === d[""]),
-          value: d["n"],
-          consensus: d["consensus"],
-          stroke: null
-        });
-      }
-    });
-
-    color(sankeyStructure, cellsMap, colorMap);
-
-    // ======================
-    //        SCALING
-    // ======================
-
-    // Links all have a consensus value, ranging from 0 to 1
-    // We need to find the maximum consensus value and use it to scale the stroke width of the links
-    const maxConsensus = d3.max(sankeyStructure.links, d => d.consensus);
-    const minConsensus = d3.min(sankeyStructure.links, d => d.consensus);
-    const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([0.10, 1]);
-
-    // We add the scaled stroke width to the links and round to two decimals
-    sankeyStructure.links.forEach(d => {
-      d.stroke = scale(d.consensus).toFixed(2);
-    });
-
-    // ======================
-    //        BARPLOT
-    // ======================
-
-    // Create a map of cells and their genes sorted by expression value
-    for (let value of worksheets.get("markers").values()) {
-      const genesMap = new Map();
-
-      // Sort genes by expression value before adding to genesMap
-      const sortedGenes = Object.entries(value)
-        .filter(([key, gene]) => key !== "" && gene !== 0)
-        .sort((a, b) => b[1] - a[1]);
-
-      sortedGenes.forEach(([key, gene]) => {
-        genesMap.set(key, gene);
-      });
-
-      cellsMap.set(value[""], genesMap); // Add the cell name and its genes to the map
-    }
+    // Create the nodes and links for the sankey diagram
+    sankeyStructure.createNodesAndLinks(structure);
 
     // ===================
     //       LAYOUT
@@ -100,11 +64,11 @@ export function Sankey({ worksheets, title }) {
     // Create the sankey layout
     const svg = d3.select(svgRef.current).attr("display", "block");
     const sankeyLayout = sankey()
-      .nodeWidth(200)
-      .nodePadding(50)
+      .nodeWidth(NODE_WIDTH)
+      .nodePadding(NODE_PADDING)
       .nodeSort(d3.ascending)
-      .extent([[0, 28], [1920, 1080]]); // Horizontal & vertical padding and width and height of the layout
-    const { nodes, links } = sankeyLayout(sankeyStructure);
+      .extent([[HORIZONTAL_PADDING, VERTICAL_PADDING], [LAYOUT_WIDTH, LAYOUT_HEIGHT]]);
+    const { nodes, links } = sankeyLayout(structure);
 
     // Clear the svg
     svg.selectAll("*").remove();
@@ -138,7 +102,7 @@ export function Sankey({ worksheets, title }) {
 
         const div = foreignObject.append("xhtml:div");
 
-        const cellName = sankeyStructure.nodes
+        const cellName = structure.nodes
           .find((node) =>
             node.x0 === d.x0 && node.y0 === d.y0
           ).name;
@@ -148,21 +112,19 @@ export function Sankey({ worksheets, title }) {
             width={barplotWidth}
             height={barplotHeight - 1}
             cellName={cellName}
-            genes={cellsMap.get(cellName)}
-            colorMap={colorMap}
+            genes={sankeyStructure.get(cellName).geneMap}
+            colorMap={geneMapColor}
+            numberOfGenes={numberOfGenes}
           />
         );
         ReactDOM.createRoot(div.node()).render(component);
       });
 
-    // Draw the first node as a rectangle
-    const root_width = 30;
-
     g.append("rect")
       .attr("class", "root-node")
-      .attr("x", nodes[0].x1 - root_width)
+      .attr("x", nodes[0].x1 - ROOT_WIDTH)
       .attr("y", nodes[0].y0)
-      .attr("width", root_width)
+      .attr("width", ROOT_WIDTH)
       .attr("height", nodes[0].y1 - nodes[0].y0)
       .attr("fill", "grey")
       .attr("stroke", "lightgrey")
@@ -171,7 +133,7 @@ export function Sankey({ worksheets, title }) {
     // Title of the first node
     g.append("text")
       .attr("class", "root-node-title")
-      .attr("x", nodes[0].x1 - root_width / 2)
+      .attr("x", nodes[0].x1 - ROOT_WIDTH / 2)
       .attr("y", (nodes[0].y1 + nodes[0].y0) / 2)
       .attr("text-anchor", "middle")
       .attr("alignment-baseline", "middle")
@@ -188,8 +150,7 @@ export function Sankey({ worksheets, title }) {
       .attr("d", sankeyLinkHorizontal())
       .attr("fill", "none")
       .attr("stroke", d => {
-        // Return the color of the first gene in the target cell with the highest expression
-        return colorMap.get(cellsMap.get(d.target.name).keys().next().value);
+        return cellMapColor.get(d.target.name);
       })
       .attr("stroke-opacity", d => d.stroke)
       .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
@@ -206,8 +167,8 @@ export function Sankey({ worksheets, title }) {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", 300)
-          .attr("height", 80)
+          .attr("width", TOOLTIP_WIDTH)
+          .attr("height", TOOLTIP_HEIGHT)
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
@@ -234,23 +195,21 @@ export function Sankey({ worksheets, title }) {
    */
   const handleDownloadSVG = () => {
     const svg = d3.select(svgRef.current);
+    const width = svg.node().getBBox().width + EXPORT_MARGIN_WIDTH;
+    const height = svg.node().getBBox().height + EXPORT_MARGIN_HEIGHT;
 
-    const originalWidth = svg.attr("width");
-    const originalHeight = svg.attr("height");
+    /// Grow the svg to avoid cutting the diagram
+    svg.attr("width", width + "px");
+    svg.attr("height", height + "px");
 
-    /// Grow the svg to the size of the diagram
-    svg.attr("width", "400vw");
-    svg.attr("height", "400vh");
+    // Serialize the svg to a string
+    let inlineXML = new XMLSerializer().serializeToString(svg.node());
 
-
-    const svgString = new XMLSerializer().serializeToString(svg.node());
-
-    // Reset the svg to its original size
-    svg.attr("width", originalWidth);
-    svg.attr("height", originalHeight);
-
-    const blob = new Blob([svgString], { type: "image/svg+xml" });
+    // Create a blob from the svg string
+    const blob = new Blob([inlineXML], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
+
+    // Create a link and click it to download the svg
     const a = document.createElement("a");
     // Set the name of the file by removing the previous extension and adding .svg
     a.download = title.split(".").slice(0, -1).join(".") + ".svg";
@@ -260,22 +219,131 @@ export function Sankey({ worksheets, title }) {
     a.rel = "noopener noreferrer";
     // Set the blob as the href
     a.href = url;
+    // Click the link
     a.click();
   };
 
+  /**
+   * Handle the diagram's download as PDF
+   * 
+   * @returns {void}
+   */
+  const handleDownloadPDF = async () => {
+    const svg = d3.select(svgRef.current);
+    const width = svg.node().getBBox().width + EXPORT_MARGIN_WIDTH;
+    const height = svg.node().getBBox().height + EXPORT_MARGIN_HEIGHT;
+
+    // =====================
+    //        LINKS
+    // =====================
+
+    // Clone the svg to avoid modifying the original
+    const clone = svg.node().cloneNode(true);
+
+    // jsPDF doesn't support transparency so we need to add a white background to the svg
+    // otherwise everything will be black
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", 0);
+    rect.setAttribute("y", 0);
+    rect.setAttribute("width", width);
+    rect.setAttribute("height", height);
+    rect.setAttribute("fill", "white");
+    clone.insertBefore(rect, clone.firstChild);
+
+    // =====================
+    //       BARPLOTS
+    // =====================
+
+    // Get all the foreignObjects
+    const fO = clone.querySelectorAll("foreignObject");
+
+    // Create a Map for x, y, width and height of every foreignObject
+    const foreignCoords = new Map();
+    fO.forEach(foreignObject => {
+      foreignCoords.set(foreignObject, {
+        x: foreignObject.getAttribute("x") - EXPORT_MARGIN_HEIGHT,
+        y: foreignObject.getAttribute("y"),
+        width: foreignObject.getAttribute("width"),
+        height: foreignObject.getAttribute("height")
+      });
+    });
+
+    // Get every <g> inside every <svg> that's inside a <foreignObject>
+    const svgInsideFO = svg.selectAll("foreignObject").selectAll("svg");
+    const gInsideSVG = svgInsideFO.selectAll("g");
+
+    // Create a Map to fill with clones
+    const gClones = new Map();
+    gInsideSVG.nodes().forEach((g, i) => {
+      gClones.set(i, g.cloneNode(true));
+    });
+
+    // Remove all foreignObjects from inlineXML because these ones are not supported by jsPDF
+    fO.forEach(foreignObject => foreignObject.remove());
+
+    // For every <g> clone, add a white background to it
+    gClones.forEach((g, i) => {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", 0);
+      rect.setAttribute("y", 0);
+      rect.setAttribute("width", foreignCoords.get(fO[i]).width);
+      rect.setAttribute("height", foreignCoords.get(fO[i]).height);
+      rect.setAttribute("fill", "white");
+      g.insertBefore(rect, g.firstChild);
+    });
+
+    // =====================
+    //     SERIALIZATION
+    // =====================
+
+    // Serialize the svg to a string again
+    const serializedLinks = new XMLSerializer().serializeToString(clone);
+
+    // Serialize all the <g> clones
+    const serializedBarplots = Array.from(gClones.values()).map(g => new XMLSerializer().serializeToString(g));
+
+    // =====================
+    //       DOCUMENT
+    // =====================
+
+    // Create a new jsPDF instance using the width and height of the svg
+    // instead of page formats like "a1" or "letter"
+    const doc = new jsPDF("landscape", "pt", [width, height]);
+
+    // Add the links to the document
+    await doc.addSvgAsImage(serializedLinks, -100, 0, width, height); // Asynchronous
+
+    // Add the barplots to the document
+    // Do not use forEach because it brings problems with async/await
+    for (let i = 0; i < serializedBarplots.length; i++) {
+      await doc.addSvgAsImage(serializedBarplots[i], Math.round(foreignCoords.get(fO[i]).x),
+        Math.round(foreignCoords.get(fO[i]).y),
+        Math.round(foreignCoords.get(fO[i]).width),
+        Math.round(foreignCoords.get(fO[i]).height)); // Asynchronous
+    }
+
+    // Save the document
+    doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
+  }
+
   return (
-    <div className="sankey">
-      <h3 className="selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+    <div className="mt-2">
+      <h3 className="mt-4 selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+
       <div className="download-buttons-container">
         <Button onClick={handleDownloadSVG}>
           <BsDownload className="bs-download" /> Download SVG
         </Button>
+        <Button onClick={handleDownloadPDF} variant="warning">
+          <BsDownload className="bs-download" /> Download PDF
+        </Button>
       </div>
-        <TransformWrapper>
-          <TransformComponent>
-            <svg ref={svgRef} width="100vw" height="200vh"></svg>
-          </TransformComponent>
-        </TransformWrapper>
+
+      <TransformWrapper>
+        <TransformComponent>
+          <svg ref={svgRef} className="mt-4 sankey-svg"></svg>
+        </TransformComponent>
+      </TransformWrapper>
     </div>
   );
 }
