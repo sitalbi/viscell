@@ -98,7 +98,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
 
     if (textSize > TEXT_MAX_SIZE)
       return TEXT_MAX_SIZE;
-    
+
     return textSize;
   }
 
@@ -106,7 +106,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
   const drawBarplotSliced = useCallback((data, originalWidth, originalHeight, svg) => {
     const labels = Array.from(data).map(([gene]) => gene);
     const scaleFactor = Math.min(width / originalWidth, height / originalHeight);
-    
+
     // Scaled dimensions
     const scaledHeight = originalHeight * scaleFactor
 
@@ -130,8 +130,6 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
 
     svg.attr("data-testid", "barplot-svg");
 
-
-
     // Draw bars and color them using colorMap
     g.selectAll("rect")
       .data(data)
@@ -154,7 +152,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
       .on('mouseover', mouseOverBar)
       .on('mouseout', mouseOutBar)
 
-    //Add legend text
+    // Add legend text
     g.selectAll("text.legend")
       .data(labels)
       .enter()
@@ -279,10 +277,11 @@ const Barplot = ({ width, height, cellName, genes, colorMap }) => {
         className="barplot"
         ref={popupSvgRef}
         width={calculateSvgWidth() + 70}
-        height={POPUP_MAX_SIZE} 
+        height={POPUP_MAX_SIZE}
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
       <Button
+        className="mt-2"
         variant="danger"
         onClick={() => {
           setShowModal(false);
