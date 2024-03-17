@@ -254,13 +254,13 @@ export function Sankey({ sankeyStructure, title }) {
     // =====================
 
     // Get all the foreignObjects
-    const foreignObjects = clone.querySelectorAll("foreignObject");
+    const fO = clone.querySelectorAll("foreignObject");
 
     // Create a Map for x, y, width and height of every foreignObject
-    const foreignObjectsMap = new Map();
-    foreignObjects.forEach(foreignObject => {
-      foreignObjectsMap.set(foreignObject, {
-        x: foreignObject.getAttribute("x"),
+    const foreignCoords = new Map();
+    fO.forEach(foreignObject => {
+      foreignCoords.set(foreignObject, {
+        x: foreignObject.getAttribute("x") - EXPORT_MARGIN_HEIGHT,
         y: foreignObject.getAttribute("y"),
         width: foreignObject.getAttribute("width"),
         height: foreignObject.getAttribute("height")
@@ -268,48 +268,58 @@ export function Sankey({ sankeyStructure, title }) {
     });
 
     // Get every <g> inside every <svg> that's inside a <foreignObject>
-    const svgForeignObjects = svg.selectAll("foreignObject").selectAll("svg");
-    const gForeignObjects = svgForeignObjects.selectAll("g");
+    const svgInsideFO = svg.selectAll("foreignObject").selectAll("svg");
+    const gInsideSVG = svgInsideFO.selectAll("g");
 
     // Create a Map to fill with clones
-    const gForeignObjectsClone = new Map();
-    gForeignObjects.nodes().forEach((g, i) => {
-      gForeignObjectsClone.set(i, g.cloneNode(true));
+    const gClones = new Map();
+    gInsideSVG.nodes().forEach((g, i) => {
+      gClones.set(i, g.cloneNode(true));
     });
 
     // Remove all foreignObjects from inlineXML because these ones are not supported by jsPDF
-    foreignObjects.forEach(foreignObject => foreignObject.remove());
+    fO.forEach(foreignObject => foreignObject.remove());
 
     // For every <g> clone, add a white background to it
-    gForeignObjectsClone.forEach((g, i) => {
+    gClones.forEach((g, i) => {
       const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
       rect.setAttribute("x", 0);
       rect.setAttribute("y", 0);
-      rect.setAttribute("width", foreignObjectsMap.get(foreignObjects[i]).width);
-      rect.setAttribute("height", foreignObjectsMap.get(foreignObjects[i]).height);
+      rect.setAttribute("width", foreignCoords.get(fO[i]).width);
+      rect.setAttribute("height", foreignCoords.get(fO[i]).height);
       rect.setAttribute("fill", "white");
       g.insertBefore(rect, g.firstChild);
     });
 
+    // =====================
+    //     SERIALIZATION
+    // =====================
+
+    // Serialize the svg to a string again
+    const serializedLinks = new XMLSerializer().serializeToString(clone);
+
     // Serialize all the <g> clones
-    const gStrings = Array.from(gForeignObjectsClone.values()).map(g => new XMLSerializer().serializeToString(g));
+    const serializedBarplots = Array.from(gClones.values()).map(g => new XMLSerializer().serializeToString(g));
 
     // =====================
     //       DOCUMENT
     // =====================
 
-    // Serialize the svg to a string again
-    const links = new XMLSerializer().serializeToString(clone);
+    // Create a new jsPDF instance using the width and height of the svg
+    // instead of page formats like "a1" or "letter"
+    const doc = new jsPDF("landscape", "pt", [width, height]);
 
-    // Create a new jsPDF instance
-    const doc = new jsPDF("landscape", "pt", "a1");
+    // Add the links to the document
+    await doc.addSvgAsImage(serializedLinks, -100, 0, width, height); // Asynchronous
 
-    // Add the svg to the document
-    await doc.addSvgAsImage(links, -100, 0, width, height);
-
-    // Add the first g to the document
-    await doc.addSvgAsImage(gStrings[0], 100, 100, foreignObjectsMap.get(foreignObjects[0]).width, foreignObjectsMap.get(foreignObjects[0]).height);
-    // console.log(foreignObjectsMap.get(foreignObjects[0]).x, foreignObjectsMap.get(foreignObjects[0]).y); // 1720 50 v2
+    // Add the barplots to the document
+    // Do not use forEach because it brings problems with async/await
+    for (let i = 0; i < serializedBarplots.length; i++) {
+      await doc.addSvgAsImage(serializedBarplots[i], Math.round(foreignCoords.get(fO[i]).x),
+        Math.round(foreignCoords.get(fO[i]).y),
+        Math.round(foreignCoords.get(fO[i]).width),
+        Math.round(foreignCoords.get(fO[i]).height)); // Asynchronous
+    }
 
     // Save the document
     doc.save(title.split(".").slice(0, -1).join(".") + ".pdf");
