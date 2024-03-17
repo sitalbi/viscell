@@ -2,6 +2,9 @@ import { Container, Row, Col, Toast } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
+import '../App.js';
 
 import { SankeyStructure } from '../utils/SankeyStructure.js';
 
@@ -13,8 +16,12 @@ export const FileImport = () => {
     const handleToastClose = () => setShowToast(false); // Function to close the toast
 
     const [title, setTitle] = useState(null);
-
+    const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3);// Number of genes to display (3 by default)
     const [sankeyStructure, setSankeyStructure] = useState(null);
+
+    const onChange = (newValue) => {
+        setNumberOfGenesToDisplay(newValue);
+      };
 
     /**
      * Check if data is valid
@@ -218,9 +225,19 @@ export const FileImport = () => {
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine style={{ marginRight: '5px' }} /> Choose a file
                         </label>
+                        <p className='text-center'>Number of genes to display: {numberOfGenesToDisplay}</p>
+                        <div className="slider-container">
+                            <Slider
+                                min={3}
+                                max={7}
+                                step={1}
+                                value={numberOfGenesToDisplay} 
+                                onChange={onChange}
+                            />
+                        </div>
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
-                    {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} />}
+                    {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
                 </Col>
             </Row>
             <Toast show={showToast} onClose={handleToastClose} className="position-fixed center-0 center-0 m-3">
