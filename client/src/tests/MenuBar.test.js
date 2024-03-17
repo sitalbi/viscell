@@ -18,15 +18,16 @@ describe('MenuBar', () => {
             </Router>
         );
 
-        fireEvent.click(screen.getByAltText('University of Bordeaux'));
+        fireEvent.click(getByText('Home'));
         expect(window.location.pathname).toBe('/');
-
-        // Removed useless "Result" button as we agreed
 
         fireEvent.click(getByText('Example'));
         expect(window.location.pathname).toBe('/example');
 
         fireEvent.click(getByText('About'));
         expect(window.location.pathname).toBe('/about');
+
+        fireEvent.click(getByText('Input'));
+        expect(window.location.pathname).toBe('/input');
     });
 });

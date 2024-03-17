@@ -17,12 +17,7 @@ export function MenuBar() {
     <Navbar bg="primary" variant="dark" expand="lg" className="shadow">
       <Container>
         <Navbar.Brand as={Link} to="/" onClick={handleHomeClick}>
-          <img
-            src={`${process.env.PUBLIC_URL}/LogoUniv.png`}
-            alt="University of Bordeaux"
-            height="30px"
-            className="d-inline-block align-top"
-          />
+          Home
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
