@@ -21,7 +21,7 @@ export const FileImport = () => {
 
     const onChange = (newValue) => {
         setNumberOfGenesToDisplay(newValue);
-      };
+    };
 
     /**
      * Check if data is valid
@@ -225,13 +225,13 @@ export const FileImport = () => {
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine style={{ marginRight: '5px' }} /> Choose a file
                         </label>
-                        <p className='text-center'>Number of genes to display: {numberOfGenesToDisplay}</p>
+                        <p className='text-center mt-4'>Number of genes to display: {numberOfGenesToDisplay}</p>
                         <div className="slider-container">
                             <Slider
                                 min={3}
                                 max={7}
                                 step={1}
-                                value={numberOfGenesToDisplay} 
+                                value={numberOfGenesToDisplay}
                                 onChange={onChange}
                             />
                         </div>
