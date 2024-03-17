@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MenuBar } from './components/MenuBar.js';
 import { FileImport } from './components/FileImport.js';
 import { About } from './components/About.js';
+import { Footer } from './components/Footer.js';
 
 import './App.css';
 
@@ -18,6 +19,7 @@ function App() {
           {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </div>
+      <Footer />
     </Router>
   );
 }
