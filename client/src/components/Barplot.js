@@ -165,6 +165,42 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
 
     svg.attr("data-testid", "barplot-svg");
 
+    // Draw bars and color them using colorMap
+    g.selectAll("rect")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", (_d, i) => i * (originalWidth / data.length))
+      .attr("y", ([, v]) => yScale(v))
+      .attr("width", (originalWidth / data.length - SPACE_BETWEEN_BARS))
+      .attr("height", ([, v]) => scaledHeight - yScale(v) - HEIGHT_MARGIN)
+      .attr("data-testid", "bar-rectangle")
+      .attr("data-testid", (d, i) => `bar-${labels[i]}`)
+      .attr("fill", (d, i) => colorMap.get(labels[i]));
+
+    // Add on BarClick
+    g.selectAll("rect")
+      .on("click", onBarClick)
+      .data(labels)
+      .attr("name", d => d)
+      .style("cursor", "pointer")
+      .on('mouseover', mouseOverBar)
+      .on('mouseout', mouseOutBar)
+
+    //Add legend text
+    g.selectAll("text.legend")
+      .data(labels)
+      .enter()
+      .append("text")
+      .text(d => d)
+      .attr("class", "legend")
+      .attr("x", (_d, i) => i * (originalWidth / labels.length) + (originalWidth / labels.length) / 2)
+      .attr("y", scaledHeight)
+      .attr("text-anchor", "middle")
+      .attr("font-size", legendSize(originalWidth) + "px")
+      .attr("font-weight", "bold")
+      .attr("fill", "black");
+
   }, [width, height, colorMap, legendSize]);
 
   // Draw full Barplot on click
@@ -290,7 +326,6 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
   );
 
   return (
-
     <div data-testid="barplot">
       <svg className="barplot" ref={svgRef} width={width} height={height} style={barplotStyle} />
       <Popup
@@ -303,8 +338,6 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
         {popupContent}
       </Popup>
     </div>
-
-
   );
 };
 
