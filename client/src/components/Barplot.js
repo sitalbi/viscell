@@ -138,7 +138,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
       .on('mouseover', mouseOverBar)
       .on('mouseout', mouseOutBar)
 
-    //Add legend text
+    // Add legend text
     g.selectAll("text.legend")
       .data(labels)
       .enter()
@@ -280,6 +280,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
         style={{ ...barplotStyle, overflowX: 'auto' }}
       />
       <Button
+        className="mt-2"
         variant="danger"
         onClick={() => {
           setShowModal(false);

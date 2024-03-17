@@ -4,12 +4,15 @@ export class SankeyStructure {
 
     let meta = worksheets.get("meta");
     let markers = worksheets.get("markers");
+
     if (meta === undefined || markers === undefined) {
       throw new Error("Missing sheets (need 'meta' and 'markers' sheets)");
     }
+
     const getParent = (cell) => {
       return meta.find((d) => d[""] === cell["parent"]);
     }
+
     // get the root
     for (const cell of meta) {
       if (getParent(cell) === undefined) { // its the root
@@ -35,10 +38,10 @@ export class SankeyStructure {
     this.root.createAllChildren(worksheets);
   }
 
-  getSize(){
+  getSize() {
     const getSize = (pop) => {
       let size = 1;
-      for(const child of pop.children){
+      for (const child of pop.children) {
         size += getSize(child);
       }
       return size;
@@ -56,7 +59,7 @@ export class SankeyStructure {
       if (pop.getName() === name) {
         return pop;
       }
-      for(const child of pop.children){
+      for (const child of pop.children) {
         const result = getPop(child, name);
         if (result !== null) {
           return result;
@@ -66,7 +69,6 @@ export class SankeyStructure {
     }
     return getPop(this.root, popName);
   }
-
 
   createNodesAndLinks(structure) {
     const addNode = (pop) => {
@@ -79,7 +81,7 @@ export class SankeyStructure {
     const addLink = (pop) => {
       pop.children.forEach((child) => {
         structure.links.push({
-          source:structure.nodes.findIndex((node) => node.name === pop.getName()),
+          source: structure.nodes.findIndex((node) => node.name === pop.getName()),
           target: structure.nodes.findIndex((node) => node.name === child.getName()),
           value: child.n,
           consensus: child.consensus,
@@ -92,7 +94,6 @@ export class SankeyStructure {
     addNode(this.root);
     addLink(this.root);
   }
-
 
   print() {
     this.root.print();
@@ -115,11 +116,11 @@ export class Pop {
     return newPop;
   }
 
-  getChildren(){
+  getChildren() {
     return this.children;
   }
 
-  hasGene(geneName){
+  hasGene(geneName) {
     return this.geneMap.has(geneName);
   }
 
@@ -127,27 +128,27 @@ export class Pop {
     let meta = worksheets.get("meta");
     let markers = worksheets.get("markers");
 
-    for(const cell of meta){
-        if(cell["parent"] === this.name){
-            let genesMap = new Map();
-            for (const value of markers) {
-                if(value[""] === cell[""]){
-                    const sortedGenes = Object.entries(value)
-                        .filter(([key, gene]) => key !== "" && gene !== 0)
-                        .sort((a, b) => b[1] - a[1]);
-                    sortedGenes.forEach(([key, gene]) => {
-                        genesMap.set(key, gene);
-                    });
-                }
-            }
-            this.addChild(cell[""], genesMap, cell["n"], cell["consensus"]).createAllChildren(worksheets);
+    for (const cell of meta) {
+      if (cell["parent"] === this.name) {
+        let genesMap = new Map();
+        for (const value of markers) {
+          if (value[""] === cell[""]) {
+            const sortedGenes = Object.entries(value)
+              .filter(([key, gene]) => key !== "" && gene !== 0)
+              .sort((a, b) => b[1] - a[1]);
+            sortedGenes.forEach(([key, gene]) => {
+              genesMap.set(key, gene);
+            });
+          }
         }
+        this.addChild(cell[""], genesMap, cell["n"], cell["consensus"]).createAllChildren(worksheets);
+      }
     }
   }
+
   getName() {
     return this.name;
   }
-
 
   print() {
     if (this.parent === null) {
@@ -155,9 +156,8 @@ export class Pop {
     } else {
       console.log(this.name + " - " + this.parent.getName());
     }
-    for(const child of this.children){
-        child.print();
+    for (const child of this.children) {
+      child.print();
     }
   }
-
 }

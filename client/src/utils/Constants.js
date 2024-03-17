@@ -14,12 +14,18 @@ export const ROOT_WIDTH = 30;
 export const TOOLTIP_WIDTH = 300;
 export const TOOLTIP_HEIGHT = 80;
 
-// Barplot.js
+// Very important for the export function
+// Do not change these values unless you deeply understand how the export function works
+export const EXPORT_MARGIN_WIDTH = 200;
+export const EXPORT_MARGIN_HEIGHT = 100;
+
+// =====================
+//      BARPLOT.JS
+// =====================
 export const POPUP_MAX_SIZE = 300;
 export const POPUP_TOP_MARGIN = 50;
 
-// Default height for full Barplot
-export const BARPLOT_DEFAULT_HEIGHT = 70;
+export const BARPLOT_DEFAULT_HEIGHT = 70; // Default height for a full barplot
 
 export const TEXT_MAX_SIZE = 10;
 export const SCALING_FACTOR = 16;
