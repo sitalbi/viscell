@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
-import { BsDownload } from 'react-icons/bs';
-import { Button } from 'react-bootstrap';
+import { BsDownload, BsInfoCircle } from 'react-icons/bs';
+import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
@@ -334,9 +334,19 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         <Button onClick={handleDownloadSVG}>
           <BsDownload className="bs-download" /> Download SVG
         </Button>
-        <Button onClick={handleDownloadPDF} variant="warning">
-          <BsDownload className="bs-download" /> Download PDF
-        </Button>
+        <OverlayTrigger
+          placement="bottom"
+          overlay={
+            <Tooltip id="pdf-tooltip">
+              <BsInfoCircle className="info-icon" />
+              Please note that transparency is not supported in PDFs. The background will be white and barplots will be rasterized.
+            </Tooltip>
+          }
+        >
+          <Button onClick={handleDownloadPDF} variant="warning">
+            <BsDownload className="bs-download" /> Download PDF
+          </Button>
+        </OverlayTrigger>
       </div>
 
       <TransformWrapper>
