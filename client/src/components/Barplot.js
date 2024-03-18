@@ -15,7 +15,6 @@ import {
   SVG_MARGIN,
   SPACE_BETWEEN_BARS,
   MINIMUM_SIZE_OF_RECTANGLE,
-  MARGIN_BOTTOM_FOR_LABELS
 } from "../utils/Constants.js";
 
 /**
@@ -146,7 +145,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
       .text(d => d)
       .attr("class", "legend")
       .attr("x", (_d, i) => i * (originalWidth / labels.length) + (originalWidth / labels.length) / 2)
-      .attr("y", scaledHeight - MARGIN_BOTTOM_FOR_LABELS)
+      .attr("y", scaledHeight)
       .attr("text-anchor", "middle")
       .attr("font-size", legendSize(originalWidth) + "px")
       .attr("font-weight", "bold")
