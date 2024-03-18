@@ -223,9 +223,9 @@ export const FileImport = () => {
                     <p className="text-center mt-2">Supported file types: <span className='filetype-span'>.xlsx</span> and <span className='filetype-span'>.xls</span></p>
                     <div className="text-center">
                         <label className='btn btn-outline-primary' htmlFor="file">
-                            <RiFileUploadLine style={{ marginRight: '5px' }} /> Choose a file
+                            <RiFileUploadLine className='upload-icon' /> Upload a file
                         </label>
-                        <p className='text-center mt-4'>Number of genes to display: {numberOfGenesToDisplay}</p>
+                        <p className='text-center mt-4'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
                         <div className="slider-container">
                             <Slider
                                 min={3}

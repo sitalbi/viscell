@@ -18,7 +18,7 @@ describe('FileImport', () => {
             </Router>
         );
         expect(screen.getByText('Import your file')).toBeInTheDocument();
-        expect(screen.getByLabelText('Choose a file')).toBeInTheDocument();
+        expect(screen.getByLabelText('Upload a file')).toBeInTheDocument();
     });
 
     // it('displays "File uploaded successfully" on Upload button click', () => {

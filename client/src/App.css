@@ -26,9 +26,20 @@
   }
 }
 
+.number-of-genes {
+  font-weight: bold;
+}
+
 .bs-download {
   height: 15px;
   margin-right: 5px;
+}
+
+.info-icon,
+.upload-icon {
+  height: 15px;
+  margin-right: 5px;
+  margin-bottom: 2px;
 }
 
 .filetype-span,
@@ -63,6 +74,8 @@
 }
 
 .slider-container {
-  width: 200px; /* Ajustez la largeur selon vos besoins */
-  margin: 0 auto; /* Centrez horizontalement le conteneur */
+  width: 200px;
+  /* Ajustez la largeur selon vos besoins */
+  margin: 0 auto;
+  /* Centrez horizontalement le conteneur */
 }
