@@ -42,6 +42,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
 
   color(sankeyStructure, cellMapColor, geneMapColor);
+  console.log(cellMapColor);
 
   useEffect(() => {
     // =====================
@@ -114,6 +115,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
             cellName={cellName}
             genes={sankeyStructure.get(cellName).geneMap}
             colorMap={geneMapColor}
+            cellColor={cellMapColor.get(cellName)}
             numberOfGenes={numberOfGenes}
           />
         );
