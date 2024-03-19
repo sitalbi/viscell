@@ -2,13 +2,13 @@ import { Container, Row, Col, Toast } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
+
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import '../App.js';
 
 import { SankeyStructure } from '../utils/SankeyStructure.js';
-
 import { Sankey } from './Sankey.js';
+import '../App.js';
 
 export const FileImport = () => {
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
@@ -16,9 +16,14 @@ export const FileImport = () => {
     const handleToastClose = () => setShowToast(false); // Function to close the toast
 
     const [title, setTitle] = useState(null);
-    const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3);// Number of genes to display (3 by default)
+    const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3); // Number of genes to display (3 by default)
     const [sankeyStructure, setSankeyStructure] = useState(null);
 
+    /**
+     * Handle the change of the number of genes to display
+     * 
+     * @param {*} newValue The new value of the slider
+     */
     const onChange = (newValue) => {
         setNumberOfGenesToDisplay(newValue);
     };
@@ -31,20 +36,26 @@ export const FileImport = () => {
      * @returns {boolean} True if data is valid, false otherwise
      */
     const checkData = (data) => {
-        // Auxiliar function to search the parent of a cell (use in circularity check)
+        /**
+         * Auxiliary function to search the parent of a cell (used in circularity check)
+         * 
+         * @param {*} cell A cell
+         * 
+         * @returns The parent of the cell
+         */
         const getParent = (cell) => {
-            return data.get("meta").find((d) => d[""] === cell)["parent"];
+            // Avoiding "Cannot read property 'parent' of undefined" error by returning undefined if the cell is not found
+            const parent = data.get("meta").find((d) => d[""] === cell);
+            return parent ? parent["parent"] : undefined;
         }
 
-        // Boolean to store if the data is valid
+        // Variables to keep track of the validity of the data and the toast message
         let valid = true;
-
-        // Error message to show in the toast
         let toastMessage = "";
 
         // Check data size and if it has the required sheets
         if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
-            toastMessage += "- Missing sheets (need 'meta' and 'markers' sheets)\n";
+            toastMessage += "File should at least contain 'meta' and 'markers' sheets.\n";
             valid = false;
         }
 
@@ -54,14 +65,23 @@ export const FileImport = () => {
             if (!cell["parent"] || cell["parent"] === "?") count++;
         }
         if (count !== 1) {
-            toastMessage += "- There should be only one root cell (no parent) in the 'meta' sheet\n";
+            toastMessage += "There should be only one root cell in the 'meta' sheet.\n";
             valid = false;
+        }
+
+        // Check that F1 Score is well restricted to [0, 1] for the consensus value in the "meta" sheet
+        for (const cell of data.get("meta")) {
+            if (cell["consensus"] < 0 || cell["consensus"] > 1) {
+                toastMessage += "Consensus value should be restricted to [0, 1] in the 'meta' sheet.\n";
+                valid = false;
+                break;
+            }
         }
 
         // Check that all other cells have a parent (present in the "meta" sheet)
         for (const cell of data.get("meta")) {
             if (cell["parent"] && cell["parent"] !== "?" && !data.get("meta").find((d) => d[""] === cell["parent"])) {
-                toastMessage += "- A cell has a parent that is not present in the 'meta' sheet\n";
+                toastMessage += "A cell has an unknown parent in the 'meta' sheet.\n";
                 valid = false;
                 break;
             }
@@ -75,13 +95,21 @@ export const FileImport = () => {
             const visitedCells = new Set();
             while (parent && parent !== "?") {
                 if (visitedCells.has(parent)) {
-                    toastMessage += "- Invalid data: circularity in the parent-child relationship\n";
+                    toastMessage += "Found circularity in the parent-child relationship in the 'meta' sheet.\n";
                     valid = false;
                     breakFlag = true;
                     break;
                 }
+
                 visitedCells.add(parent);
                 parent = getParent(parent);
+
+                if (parent === undefined) {
+                    toastMessage += "A cell has an unknown parent in the 'meta' sheet.\n";
+                    valid = false;
+                    breakFlag = true;
+                    break;
+                }
             }
             if (breakFlag) break;
         }
@@ -89,7 +117,7 @@ export const FileImport = () => {
         // Check that all cells have a "n" and "consensus" values
         for (const cell of data.get("meta")) {
             if (cell["n"] === undefined || cell["consensus"] === undefined) {
-                toastMessage += "- A cell is missing the 'n' or 'consensus' value in the 'meta' sheet\n";
+                toastMessage += "Missing 'n' or 'consensus' value in the 'meta' sheet.\n";
                 valid = false;
                 break;
             }
@@ -98,7 +126,7 @@ export const FileImport = () => {
         // Check if all cells in the "markers" sheet are present in the "meta" sheet
         for (const cell of data.get("markers")) {
             if (!data.get("meta").find((d) => d[""] === cell[""])) {
-                toastMessage += "- A cell in the 'markers' sheet is not present in the 'meta' sheet\n";
+                toastMessage += "A cell in the 'markers' sheet is not present in the 'meta' sheet.\n";
                 valid = false;
                 break;
             }
@@ -107,7 +135,7 @@ export const FileImport = () => {
         // Check if all cells in the "meta" sheet are present in the "markers" sheet
         for (const cell of data.get("meta")) {
             if (!data.get("markers").find((d) => d[""] === cell[""])) {
-                toastMessage += "- A cell in the 'meta' sheet is not present in the 'markers' sheet\n";
+                toastMessage += "A cell in the 'meta' sheet is not present in the 'markers' sheet.\n";
                 valid = false;
                 break;
             }
@@ -119,7 +147,7 @@ export const FileImport = () => {
             for (const key in cell) {
                 if (key !== "") {
                     if (cell[key] < 0) {
-                        toastMessage += "\n[ERROR] A cell in the 'markers' sheet has a negative value";
+                        toastMessage += "Found negative value in the 'markers' sheet.\n";
                         valid = false;
                         breakFlag = true;
                         break;
@@ -217,6 +245,7 @@ export const FileImport = () => {
 
     return (
         <Container className="d-flex justify-content-center">
+
             <Row>
                 <Col>
                     <h2 className="text-center mt-2">Import your file</h2>
@@ -225,7 +254,7 @@ export const FileImport = () => {
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine className='upload-icon' /> Upload a file
                         </label>
-                        <p className='text-center mt-4'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
+                        <p className='text-center mt-2'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
                         <div className="slider-container">
                             <Slider
                                 min={3}
@@ -240,16 +269,19 @@ export const FileImport = () => {
                     {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
                 </Col>
             </Row>
+
             <Toast show={showToast} onClose={handleToastClose} className="position-fixed center-0 center-0 m-3">
                 <Toast.Header>
-                    <strong className="me-auto">Error(s) during the loading of the file</strong>
+                    <strong className="me-auto">Error(s) while reading the file</strong>
                 </Toast.Header>
+
                 <Toast.Body>
-                    {toastMessage.split("\n").map((line, index) => {
+                    {[...new Set(toastMessage.split("\n"))].map((line, index) => {
                         return <p key={index}>{line}</p>;
                     })}
                 </Toast.Body>
             </Toast>
+
         </Container>
     );
 }
