@@ -4,7 +4,7 @@
 export const NODE_WIDTH = 325;
 export const NODE_PADDING = 50;
 
-export const HORIZONTAL_PADDING = 0;
+export const HORIZONTAL_PADDING = -50;
 export const VERTICAL_PADDING = 50;
 export const LAYOUT_WIDTH = 1920;
 export const LAYOUT_HEIGHT = 1080;

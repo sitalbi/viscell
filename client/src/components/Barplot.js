@@ -27,7 +27,7 @@ import {
  * 
  * @returns {JSX.Element}
  */
-const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) => {
+const Barplot = ({ width, height, cellName, genes, colorMap, cellColor, numberOfGenes }) => {
   const svgRef = useRef();
   const popupSvgRef = useRef();
   const [showModal, setShowModal] = useState(false);
@@ -288,14 +288,16 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
 
   // Declare style for the barplot
   const barplotStyle = {
-    border: "1px solid #d3d3d3",
+    borderStyle: "solid",
+    borderWidth: "3px",
+    borderColor: cellColor,
     borderRadius: "5px",
   };
 
   // Define custom styles for the popup content
   const popupStyle = {
     width: '80%',
-    height: '80%',
+    height: '50%',
     border: '1px solid #ccc',
     borderRadius: '8px',
     padding: '20px',
