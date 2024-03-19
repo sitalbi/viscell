@@ -1,6 +1,6 @@
 import { Container, Row, Col, Toast } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
-import { React, useState } from 'react';
+import { React, useState, useEffect } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
 import Slider from "rc-slider";
@@ -13,7 +13,6 @@ import '../App.js';
 export const FileImport = () => {
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
     const [toastMessage, setToastMessage] = useState(''); // State to manage toast message
-    const handleToastClose = () => setShowToast(false); // Function to close the toast
 
     const [title, setTitle] = useState(null);
     const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3); // Number of genes to display (3 by default)
@@ -27,6 +26,13 @@ export const FileImport = () => {
     const onChange = (newValue) => {
         setNumberOfGenesToDisplay(newValue);
     };
+
+    /**
+     * Handle the close of the toast
+     * 
+     * @returns {boolean} True if the toast is open, false otherwise
+     */
+    const handleToastClose = () => setShowToast(false);
 
     /**
      * Check if data is valid
@@ -165,6 +171,9 @@ export const FileImport = () => {
     }
 
     const onFileChange = async (value) => {
+        // Reset the toast message
+        setToastMessage("");
+
         // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
         const data = await f.arrayBuffer();
@@ -232,6 +241,17 @@ export const FileImport = () => {
         }
     }
 
+    useEffect(() => {
+        // Close the toast after 5 seconds if it is open
+        if (showToast) {
+            const timer = setTimeout(() => {
+                setShowToast(false);
+            }, 5000);
+            // Clear the timer when the component unmounts or when toast is closed manually
+            return () => clearTimeout(timer);
+        }
+    }, [showToast]);
+
     /**
      * Transpose a matrix
      * 
@@ -254,12 +274,14 @@ export const FileImport = () => {
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine className='upload-icon' /> Upload a file
                         </label>
-                        <p className='text-center mt-2'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
+
                         <div className="slider-container">
+                            <p className='text-center mt-2'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
                             <Slider
                                 min={3}
                                 max={7}
                                 step={1}
+                                marks={{ 3: '3', 4: '4', 5: '5', 6: '6', 7: '7' }}
                                 value={numberOfGenesToDisplay}
                                 onChange={onChange}
                             />

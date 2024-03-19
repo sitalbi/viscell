@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { BsDownload, BsInfoCircle } from 'react-icons/bs';
-import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Container, Row, Col, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
@@ -327,33 +327,45 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   }
 
   return (
-    <div className="mt-2">
-      <h3 className="mt-4 selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+    <div>
 
-      <div className="download-buttons-container">
-        <Button onClick={handleDownloadSVG}>
-          <BsDownload className="bs-download" /> Download SVG
-        </Button>
-        <OverlayTrigger
-          placement="bottom"
-          overlay={
-            <Tooltip id="pdf-tooltip">
-              <BsInfoCircle className="info-icon" />
-              Please note that transparency is not supported in PDFs. The background will be white and barplots will be rasterized.
-            </Tooltip>
-          }
-        >
-          <Button onClick={handleDownloadPDF} variant="warning">
-            <BsDownload className="bs-download" /> Download PDF
-          </Button>
-        </OverlayTrigger>
-      </div>
+      <Container className="toolbar-container">
+        <Row className="align-items-center">
+
+          <Col className="text-center">
+            <h5 className="mt-1">Selected diagram: <span className="filename-span">{title}</span></h5>
+          </Col>
+
+          <Col className="text-center">
+            <div className="download-buttons-container">
+              <Button onClick={handleDownloadSVG} className="mr-2">
+                <BsDownload className="bs-download" /> Download SVG
+              </Button>
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="pdf-tooltip">
+                    <BsInfoCircle className="info-icon" />
+                    Please note that transparency is not supported in PDFs. The background will be white and barplots will be rasterized.
+                  </Tooltip>
+                }
+              >
+                <Button onClick={handleDownloadPDF} variant="warning">
+                  <BsDownload className="bs-download" /> Download PDF
+                </Button>
+              </OverlayTrigger>
+            </div>
+          </Col>
+
+        </Row>
+      </Container>
 
       <TransformWrapper>
         <TransformComponent>
           <svg ref={svgRef} className="mt-4 sankey-svg"></svg>
         </TransformComponent>
       </TransformWrapper>
+
     </div>
   );
 }
