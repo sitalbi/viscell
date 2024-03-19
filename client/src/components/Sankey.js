@@ -115,7 +115,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
             cellName={cellName}
             genes={sankeyStructure.get(cellName).geneMap}
             colorMap={geneMapColor}
-            cellColor={cellMapColor.get(cellName)}
+            cellMapColor={cellMapColor}
             numberOfGenes={numberOfGenes}
           />
         );
