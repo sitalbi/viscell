@@ -11,6 +11,9 @@ export const TOAST_DURATION = 5000; // Duration of the toast message
 export const NODE_WIDTH = 325; // Width of the nodes
 export const NODE_PADDING = 50; // Padding between the nodes
 
+export const MINIMUM_OPACITY_STROKE = 0.2; // Minimum opacity of the stroke
+export const MAXIMUM_OPACITY_STROKE = 0.9; // Maximum opacity of the stroke
+
 export const BARPLOT_MINIMUM_HEIGHT = 50; // Minimum height of the barplot
 export const NODE_TO_LINK_BOTTOM = 5; // Makes the gene rectangle aligned with the link
 

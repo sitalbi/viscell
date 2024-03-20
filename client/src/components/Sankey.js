@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { BsDownload, BsInfoCircle } from 'react-icons/bs';
-import { Container, Row, Col, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Container, Row, Col, Button, OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
@@ -14,6 +14,8 @@ import { color } from "../utils/Color.js";
 import {
   NODE_WIDTH,
   NODE_PADDING,
+  MINIMUM_OPACITY_STROKE,
+  MAXIMUM_OPACITY_STROKE,
   NODE_TO_LINK_BOTTOM,
   BARPLOT_MINIMUM_HEIGHT,
   HORIZONTAL_PADDING,
@@ -45,6 +47,9 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   const cellMapColor = new Map();
   const geneMapColor = new Map();
 
+  // useState hook to toggle the opacity of the links
+  const [opacity, setOpacity] = useState(false);
+
   color(sankeyStructure, cellMapColor, geneMapColor);
 
   useEffect(() => {
@@ -60,6 +65,27 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
     // Create the nodes and links for the sankey diagram
     sankeyStructure.createNodesAndLinks(structure);
+
+    // =====================
+    //  OPACITY AND SCALING
+    // =====================
+
+    if (opacity) {
+      // Links have a consensus value, ranging from 0 to 1
+      // We need to find the maximum consensus value and use it to scale the stroke width of the links
+      const maxConsensus = d3.max(structure.links, d => d.consensus);
+      const minConsensus = d3.min(structure.links, d => d.consensus);
+      const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([MINIMUM_OPACITY_STROKE, MAXIMUM_OPACITY_STROKE]);
+
+      // We add a stroke attribute to the links to use it in the mouseover event
+      structure.links.forEach(link => {
+        link.stroke = scale(link.consensus);
+      });
+    } else {
+      structure.links.forEach(link => {
+        link.stroke = 1;
+      });
+    }
 
     // ===================
     //       LAYOUT
@@ -106,10 +132,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
         const div = foreignObject.append("xhtml:div");
 
-        const cellName = structure.nodes
-          .find((node) =>
-            node.x0 === d.x0 && node.y0 === d.y0
-          ).name;
+        const cellName = structure.nodes.find((node) => node.x0 === d.x0 && node.y0 === d.y0).name;
 
         const component = (
           <Barplot
@@ -202,6 +225,13 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
   });
+
+  /**
+   * Toggle the opacity of the links or not
+   */
+  const toggleOpacity = () => {
+    setOpacity(!opacity);
+  }
 
   /**
    * Handle the diagram's download as SVG
@@ -343,12 +373,11 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
   return (
     <div>
-
       <Container className="toolbar-container">
         <Row className="align-items-center">
 
           <Col className="text-center">
-            <h4 className="mt-2">Selected diagram: <span className="filename-span">{title}</span></h4>
+            <h5 className="mt-2">Selected diagram <span className="filename-span">{title}</span></h5>
           </Col>
 
           <Col className="text-center">
@@ -372,6 +401,16 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
             </div>
           </Col>
 
+          <Col className="text-center">
+            <h5 className="mt-2">Opacity</h5>
+            <Form>
+              <Form.Check
+                onClick={toggleOpacity}
+                type="switch"
+              />
+            </Form>
+          </Col>
+
         </Row>
       </Container>
 
@@ -380,7 +419,6 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
           <svg ref={svgRef} className="mt-4 sankey-svg"></svg>
         </TransformComponent>
       </TransformWrapper>
-
     </div>
   );
 }
