@@ -285,7 +285,17 @@ export const FileImport = () => {
                                 onChange={onChange}
                             />
                         </div>
-                        <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
+                        <input 
+                        className='import-button' 
+                        type="file" 
+                        id="file" 
+                        name="file" 
+                        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+                        onChange={(e) => {
+                            onFileChange(e); 
+                            e.target.value = null;
+                        }} 
+                        />
                     </div>
 
                     {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
@@ -301,7 +311,6 @@ export const FileImport = () => {
                     {[...new Set(toastMessage.split("\n"))].map((line, index) => {
                         return <p key={index}>{line}</p>;
                     })}
-                    <small className='toast-instructions'>If you want to upload the same file again, please refresh the page. However, uploading a valid file won't require a page refresh.</small>
                 </Toast.Body>
             </Toast>
 
