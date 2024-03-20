@@ -14,6 +14,8 @@ import { color } from "../utils/Color.js";
 import {
   NODE_WIDTH,
   NODE_PADDING,
+  NODE_TO_LINK_BOTTOM,
+  BARPLOT_MINIMUM_HEIGHT,
   HORIZONTAL_PADDING,
   VERTICAL_PADDING,
   LAYOUT_WIDTH,
@@ -23,7 +25,9 @@ import {
   TOOLTIP_HEIGHT,
   TOOLTIP_FONT_SIZE,
   EXPORT_MARGIN_WIDTH,
-  EXPORT_MARGIN_HEIGHT
+  EXPORT_MARGIN_HEIGHT,
+  EXPORT_ORIGIN_X,
+  TOOLTIP_TRANSITON_DURATION
 } from "../utils/Constants.js";
 
 /**
@@ -83,9 +87,9 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       .attr("class", "node")
       .each(function (d) {
         const nodeWidth = d.x1 - d.x0;
-        const nodeHeight = d.y1 - d.y0 + 5;
+        const nodeHeight = d.y1 - d.y0 + NODE_TO_LINK_BOTTOM;
         const barplotWidth = nodeWidth;
-        const barplotHeight = Math.max(nodeHeight, 50); // Ensure minimum height
+        const barplotHeight = Math.max(nodeHeight, BARPLOT_MINIMUM_HEIGHT); // Ensure minimum height
 
         // Calculate position for Barplot
         const barplotX = d.x0; // Adjust as needed
@@ -181,12 +185,16 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
           .style("border", "1px solid black")
           .style("padding", "5px")
           .style("border-radius", "5px")
-          .style("opacity", 1);
+          .style("opacity", 0);
 
-        tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name} <br>
-          Population: ${d.value} <br>
-          Consensus : ${d.consensus.toFixed(2)}`);
+        let tooltipContent = `<strong>${d.source.name} &rarr; ${d.target.name} </strong> <br>
+          <strong>Population: </strong> ${d.value} <br>
+          <strong>Consensus : </strong> ${d.consensus.toFixed(2)}`;
+
+        tooltip.html(tooltipContent)
+          .transition()
+          .duration(TOOLTIP_TRANSITON_DURATION)
+          .style("opacity", 1);
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", d => d.stroke);
@@ -318,7 +326,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
     const doc = new jsPDF("landscape", "pt", [width, height]);
 
     // Add the links to the document
-    await doc.addSvgAsImage(serializedLinks, -100, 0, width, height); // Asynchronous
+    await doc.addSvgAsImage(serializedLinks, EXPORT_ORIGIN_X, 0, width, height); // Asynchronous
 
     // Add the barplots to the document
     // Do not use forEach because it brings problems with async/await

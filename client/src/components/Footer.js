@@ -1,19 +1,13 @@
 import { Navbar, Container } from "react-bootstrap";
 
 export function Footer() {
-  const footerStyle = {
-    fontSize: "14px",
-    color: "white",
-    textAlign: "center",
-  };
-
   return (
     <footer>
       <Navbar className="bg-primary" fixed="bottom">
         <Container>
           <Navbar.Brand
-            style={footerStyle}
-            className="d-flex justify-content-between w-100"
+            style={{ fontSize: "0.8em" }}
+            className="d-flex justify-content-between w-100 text-white text-center"
           >
             <div>
               <i>

@@ -7,6 +7,7 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
 import { SankeyStructure } from '../utils/SankeyStructure.js';
+import { TOAST_DURATION } from '../utils/Constants.js';
 import { Sankey } from './Sankey.js';
 import '../App.js';
 
@@ -256,7 +257,7 @@ export const FileImport = () => {
         if (showToast) {
             const timer = setTimeout(() => {
                 setShowToast(false);
-            }, 5000);
+            }, TOAST_DURATION);
             // Clear the timer when the component unmounts or when toast is closed manually
             return () => clearTimeout(timer);
         }
@@ -285,16 +286,16 @@ export const FileImport = () => {
                                 onChange={onChange}
                             />
                         </div>
-                        <input 
-                        className='import-button' 
-                        type="file" 
-                        id="file" 
-                        name="file" 
-                        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
-                        onChange={(e) => {
-                            onFileChange(e); 
-                            e.target.value = null;
-                        }} 
+                        <input
+                            className='import-button'
+                            type="file"
+                            id="file"
+                            name="file"
+                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                            onChange={(e) => {
+                                onFileChange(e);
+                                e.target.value = null;
+                            }}
                         />
                     </div>
 
