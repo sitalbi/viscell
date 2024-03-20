@@ -8,7 +8,7 @@ export function Footer() {
   };
 
   return (
-    <footer>
+    <footer style={{marginTop:'100px'}}>
       <Navbar className="bg-primary" fixed="bottom">
         <Container>
           <Navbar.Brand

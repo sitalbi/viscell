@@ -200,7 +200,23 @@ export const About = () => {
                   </Accordion.Header>
                   <Accordion.Body>
                     <p>
-                      <code>TODO</code>
+                      <ul>
+                        <li>Soumettre un fichier
+                        <div>
+                        Via le bouton Upload a file, l'utilisateur peut soumettre un fichier xls ou xlsx contenant les résultats d'une analyse single-cell au format adapté.
+                        <img src="/about/Import.png" alt="Submit" />
+
+                        Si le fichier n'est pas au bon format, l'application détaillera la ou les erreurs sur le contenu du fichier. 
+                        <img src="/about/Errors.png" alt="Error" />
+                        </div>
+                        </li>
+                         
+                        
+                        <li>Visualiser les résultats</li>
+                        <li>Exporter les résultats</li>
+                        <li>Afficher un chiffre défini de gênes</li>
+                        <li>Accéder aux informations détaillées d'un gêne</li>
+                      </ul>
                     </p>
                   </Accordion.Body>
                 </Accordion.Item>
