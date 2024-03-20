@@ -11,8 +11,9 @@ export const LAYOUT_HEIGHT = 1080;
 
 export const ROOT_WIDTH = 30;
 
-export const TOOLTIP_WIDTH = 300;
+export const TOOLTIP_WIDTH = 200;
 export const TOOLTIP_HEIGHT = 80;
+export const TOOLTIP_FONT_SIZE = 14;
 
 // Very important for the export function
 // Do not change these values unless you deeply understand how the export function works

@@ -34,8 +34,6 @@ const Barplot = ({ width, height, cellName, genes, colorMap, cellMapColor, numbe
   const [popupGenes, setPopupGenes] = useState([]);
   const [clickedTitle, setClickedTitle] = useState(false);
 
-  console.log(cellMapColor);
-
   var onBarClick = function (event) {
     event.stopPropagation();
     const geneName = d3.select(this).data()[0];
@@ -70,13 +68,13 @@ const Barplot = ({ width, height, cellName, genes, colorMap, cellMapColor, numbe
       .style("border-radius", "5px")
       .style("opacity", 0);
 
-    
+
     let tooltipContent = `<strong>Gene:</strong> ${geneName}`;
 
     // Get the pop for which the gene is specific
     const specificPop = [...cellMapColor.keys()].find(cellName => cellMapColor.get(cellName) === colorMap.get(geneName));
-    if(specificPop !== undefined) tooltipContent += `<br><strong>Is Specific to: </strong> ${specificPop}`;
-    
+    if (specificPop !== undefined) tooltipContent += `<br><strong>Is Specific to: </strong> ${specificPop}`;
+
     // Display the gene tooltip
     tooltip.html(tooltipContent)
       .transition()
@@ -196,7 +194,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, cellMapColor, numbe
       .on('mouseover', mouseOverBar)
       .on('mouseout', mouseOutBar)
 
-    //Add legend text
+    // Add legend text
     g.selectAll("text.legend")
       .data(labels)
       .enter()
@@ -209,7 +207,6 @@ const Barplot = ({ width, height, cellName, genes, colorMap, cellMapColor, numbe
       .attr("font-size", legendSize(originalWidth) + "px")
       .attr("font-weight", "bold")
       .attr("fill", "black");
-
   }, [width, height, colorMap, legendSize, mouseOverBar]);
 
   // Draw full Barplot on click
