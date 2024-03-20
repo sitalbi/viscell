@@ -22,10 +22,19 @@ describe('Barplot component', () => {
         ['Gene6', '#ffff00'],
     ]);
 
+    const cellMapColor = new Map([
+        ['C1', '#ff0000'],
+        ['C2', '#00ff12'],
+        ['C3', '#ff00ff'],
+        ['C4', '#00ff00'],
+        ['C5', '#0000ff'],
+        ['C6', '#ffff00'],
+    ]);
+
     const numberOfGenesToDisplay = 3;
 
     it('renders Barplot component', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={new Map()} numberOfGenes={numberOfGenesToDisplay} />);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={new Map()} cellMapColor={new Map()} numberOfGenes={numberOfGenesToDisplay} />);
 
         // Check if the component renders without crashing
         const barplotElement = screen.getByTestId('barplot');
@@ -33,7 +42,7 @@ describe('Barplot component', () => {
     });
 
     it('renders with only 3 genes initially', () => {
-        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
 
         // Check that only 3 genes are rendered initially
         expect(screen.queryByText('Gene5')).toBeInTheDocument();
@@ -43,7 +52,7 @@ describe('Barplot component', () => {
     });
 
     it('renders full Barplot with modal', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} numberOfGenes={numberOfGenesToDisplay} />);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay} />);
 
         // Click on the svg
         fireEvent.click(screen.getByTestId('barplot-svg'));
@@ -59,7 +68,7 @@ describe('Barplot component', () => {
     });
 
     it('renders with all genes after clicking the title', async () => {
-        render(<Barplot width={500} height={300} cellName="C6" genes={genesMap} colorMap={colorMap} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={500} height={300} cellName="C6" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
 
         // Click on the svg
         fireEvent.click(screen.getByTestId('barplot-svg'));
@@ -83,7 +92,7 @@ describe('Barplot component', () => {
 
 
     it('closes the modal when "Close" button is clicked', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
 
         // Click on the svg
         fireEvent.click(screen.getByTestId('barplot-svg'));
@@ -100,7 +109,7 @@ describe('Barplot component', () => {
     });
 
     it('renders the correct information on mouseover on a bar and reset style on mouseout', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
 
         // Get a reference to the rectangle element
         const barElement = screen.getByTestId('bar-Gene5');
@@ -134,7 +143,7 @@ describe('Barplot component', () => {
             ["ACTC1", 1],
             ["ACTG2", 1]
         ]);
-        const { getByTestId } = render(<Barplot width={width} height={height} cellName={cellName} genes={genes} colorMap={colorMap} numberOfGenes={numberOfGenesToDisplay} />);
+        const { getByTestId } = render(<Barplot width={width} height={height} cellName={cellName} genes={genes} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay} />);
         const barElement = getByTestId('bar-ACTA2');
         const originalOpen = window.open;
         window.open = jest.fn();

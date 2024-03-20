@@ -4,15 +4,16 @@
 export const NODE_WIDTH = 325;
 export const NODE_PADDING = 50;
 
-export const HORIZONTAL_PADDING = 0;
+export const HORIZONTAL_PADDING = -50;
 export const VERTICAL_PADDING = 50;
 export const LAYOUT_WIDTH = 1920;
 export const LAYOUT_HEIGHT = 1080;
 
 export const ROOT_WIDTH = 30;
 
-export const TOOLTIP_WIDTH = 300;
+export const TOOLTIP_WIDTH = 200;
 export const TOOLTIP_HEIGHT = 80;
+export const TOOLTIP_FONT_SIZE = 14;
 
 // Very important for the export function
 // Do not change these values unless you deeply understand how the export function works
