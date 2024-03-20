@@ -1,10 +1,12 @@
-import { Container, Row, Col, Toast } from 'react-bootstrap';
+import { Container, Row, Col, Toast, Button } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import '../App.js';
+
+import exampleFile from '../data/Darmanis.xlsx';
 
 import { SankeyStructure } from '../utils/SankeyStructure.js';
 
@@ -18,6 +20,7 @@ export const FileImport = () => {
     const [title, setTitle] = useState(null);
     const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3);// Number of genes to display (3 by default)
     const [sankeyStructure, setSankeyStructure] = useState(null);
+
 
     const onChange = (newValue) => {
         setNumberOfGenesToDisplay(newValue);
@@ -136,10 +139,9 @@ export const FileImport = () => {
         return valid;
     }
 
-    const onFileChange = async (value) => {
+    const onFileChange = async (fileChange, buttonUpload) => {
         // Use XLSX to read the file which is a xlss file
-        const f = value.target.files[0];
-        const data = await f.arrayBuffer();
+        const data = await fileChange.arrayBuffer();
         const workbook = XLSX.read(data);
 
         const worksheets = new Map();
@@ -196,12 +198,33 @@ export const FileImport = () => {
             // Create SankeyStructure object
             let sankeyStructure = new SankeyStructure(worksheets);
             setSankeyStructure(sankeyStructure);
-            setTitle(f.name);
+            if (buttonUpload)
+                setTitle(fileChange.name);
+            else
+                setTitle("Darmanis.xlsx");
         }
         else {
             // Show toast if data is not valid
             setShowToast(true);
         }
+    }
+
+    const onUploadChange = async (value) => {
+        const uploadFile = value.target.files[0];
+
+        onFileChange(uploadFile, true);
+    }
+
+    /**
+     * Handle the change event of the example file select dropdown
+     * 
+     * @param {*} file The selected file event
+     */
+    const OnClickExample = async () => {
+        // Fetch the example file
+        const fetchedExampleFile = await fetch(exampleFile);
+
+        await onFileChange(fetchedExampleFile, false);
     }
 
     /**
@@ -225,6 +248,7 @@ export const FileImport = () => {
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine className='upload-icon' /> Upload a file
                         </label>
+                        <Button className='example-button' onClick={OnClickExample}>Load example</Button>
                         <p className='text-center mt-4'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
                         <div className="slider-container">
                             <Slider
@@ -235,7 +259,7 @@ export const FileImport = () => {
                                 onChange={onChange}
                             />
                         </div>
-                        <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
+                        <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onUploadChange} />
                     </div>
                     {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
                 </Col>
