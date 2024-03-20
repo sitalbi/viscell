@@ -1,4 +1,8 @@
-// Constants.js
+// =====================
+//     FILEIMPORT.JS
+// =====================
+
+export const TOAST_DURATION = 5000; // Duration of the toast message
 
 // =====================
 //      SANKEY.JS
@@ -6,6 +10,9 @@
 
 export const NODE_WIDTH = 325; // Width of the nodes
 export const NODE_PADDING = 50; // Padding between the nodes
+
+export const BARPLOT_MINIMUM_HEIGHT = 50; // Minimum height of the barplot
+export const NODE_TO_LINK_BOTTOM = 5; // Makes the gene rectangle aligned with the link
 
 export const HORIZONTAL_PADDING = 0; // Padding on the left and right of the SVG
 export const VERTICAL_PADDING = 50; // Padding on the top and bottom of the SVG
@@ -22,6 +29,8 @@ export const TOOLTIP_FONT_SIZE = 12; // Font size of the tooltip
 // Do not change these values unless you deeply understand how the export function works
 export const EXPORT_MARGIN_WIDTH = 400;
 export const EXPORT_MARGIN_HEIGHT = 100;
+
+export const EXPORT_ORIGIN_X = -100; // Origin of the PDF export
 
 
 // =====================
@@ -40,9 +49,13 @@ export const MINIMUM_SIZE_OF_RECTANGLE = 5; // Minimum size of a rectangle in th
 
 export const HEIGHT_MARGIN = 15;
 
-// Other attributes (.attr) are heavily magic numbered so they are not included in the Constants.js file for now
-
 export const BAR_SPACING = 5;
 export const SVG_MARGIN = 50;
 
 export const SPACE_BETWEEN_BARS = 10; // Space between bars in the barplot
+
+// =====================
+//   USED BY MULTIPLE
+// =====================
+
+export const TOOLTIP_TRANSITON_DURATION = 200; // Duration of the tooltip transition
