@@ -1,8 +1,10 @@
 # viscell
 
-**Superviseur :** Asloudj Yanis (yasloudj@u-bordeaux.fr)
+**Superviseur :** Yanis ASLOUDJ (yasloudj@u-bordeaux.fr)
 
-## Contexte
+**Développeurs :** Nikolaï AMOSSÉ, Martin ITHURBIDE, Yusuf SENEL, Simon TALBI, Valentin LEROY, Adrien LE CORRE
+
+## 🔬 Contexte
 
 La bio-informatique est un champ de recherche à l'interface entre la biologie, l'informatique et les
 statistiques. Elle vise à proposer de nouvelles méthodes pour analyser les données en biologie.
@@ -22,24 +24,64 @@ L'interprétation des résultats d'une analyse single-cell demande donc le déve
 métaphores visuelles intégrant toutes les informations pertinentes à l'étude des populations de
 cellules, i.e. leur taille, leurs gènes et leur fiabilité.
 
-## Objectifs
+## 🦠 Objectifs
 
-Pour explorer les résultats d'une analyse single-cell, j'ai conceptualisé une métaphore visuelle
+Pour explorer les résultats d'une analyse single-cell, Y. Asloudj a conceptualisé une métaphore visuelle
 simple, axée autour de plusieurs barplots, représentant une population de cellules chacun. Le
-contenu d'un barplot représente les gènes caractéristiques d'une population, tandis que son
+contenu d'un barplot (également appelé *histogramme*) représente les gènes caractéristiques d'une population, tandis que son
 positionnement sur l’écran représente les liens de parenté avec les autres populations.
 
-Dans le cadre de mon travail, je souhaiterais voir cette métaphore visuelle implémentée dans un
-outil client basé sur les nouvelles technologiques de développement du Web.
+L'objectif de ce projet est de développer une application web permettant de visualiser les résultats d'une analyse single-cell, en utilisant la métaphore visuelle inovante proposée par Y. Asloudj.
 
-## Description rapide du projet
+## 👋🏼 À la main
 
-`TODO`
+### Prérequis
 
-## Avant de lancer
+Tout d'abord, il est nécessaire de cloner le dépôt ou de télécharger l'archive de l'application. Ensuite, assurez-vous d'avoir le gestionnaire de paquets `npm` installé sur votre machine.
 
-`TODO`
+```bash
+# Vous devriez voir la version de npm s'afficher si npm est installé
+npm --version
+```
 
-## Lancer l'application
+Si ce n'est pas le cas, vous pouvez l'installer en suivant les instructions sur le site officiel de [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
 
-`TODO`
+### Installation
+
+Pour installer les dépendances du projet, exécutez les commandes suivantes à l'intérieur du répertoire de l'application.
+
+```bash
+# Vérifiez que vous êtes dans le bon répertoire de l'application 'viscell' et passez dans le répertoire 'client'
+cd client
+
+# Installez les dépendances du client
+npm install # ou bien 'npm i'
+```
+
+### Exécution
+
+Toujours dans le répertoire `client`, exécutez la commande suivante pour lancer l'application.
+
+```bash
+# Exécutez l'application
+npm run start
+```
+
+L'application devrait s'ouvrir automatiquement dans votre navigateur par défaut. Si ce n'est pas le cas, ouvrez votre navigateur et rendez-vous à l'adresse `http://localhost:3000`. Vous devriez voir l'interface de l'application.
+
+## 📁 En utilisant `run.sh`
+
+Le script `run.sh` permet d'automatiser les étapes d'installation et d'exécution de l'application. Pour l'utiliser, exécutez les commandes suivantes à la racine du répertoire de l'application.
+
+```bash
+# Rendez le script exécutable si vous ne pouvez pas l'exécuter
+chmod +x run.sh
+
+# Exécutez le script
+./run.sh
+```
+
+> **Note :**
+> Il se peut même que vous puissiez double-cliquer sur le script pour l'exécuter.
+
+Ce script est pour l'instant destiné à des systèmes Unix (Linux, macOS). Pour les utilisateurs de Windows, vous pouvez exécuter les commandes du script une par une dans votre terminal ou utiliser un émulateur de terminal Unix.
