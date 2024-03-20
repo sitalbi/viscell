@@ -27,7 +27,7 @@ import {
  * 
  * @returns {JSX.Element}
  */
-const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) => {
+const Barplot = ({ width, height, cellName, genes, colorMap, cellMapColor, numberOfGenes }) => {
   const svgRef = useRef();
   const popupSvgRef = useRef();
   const [showModal, setShowModal] = useState(false);
@@ -44,7 +44,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
   /**
    * Change opacity and display gene name on mouse over
    */
-  const mouseOverBar = function (event) {
+  const mouseOverBar = useCallback(function (event) {
     d3.select(this)
       .attr("opacity", 0.5)
       .attr("cursor", "pointer");
@@ -68,12 +68,20 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
       .style("border-radius", "5px")
       .style("opacity", 0);
 
-    // Display the gene name
-    tooltip.html(`<strong>Gene:</strong> ${geneName}`)
+
+    let tooltipContent = `<strong>Gene:</strong> ${geneName}`;
+
+    // Get the pop for which the gene is specific
+    const specificPop = [...cellMapColor.keys()].find(cellName => cellMapColor.get(cellName) === colorMap.get(geneName));
+    if (specificPop !== undefined) tooltipContent += `<br><strong>Is Specific to: </strong> ${specificPop}`;
+
+    // Display the gene tooltip
+    tooltip.html(tooltipContent)
       .transition()
       .duration(200)
       .style("opacity", 1);
-  }
+
+  }, [cellMapColor, colorMap]);
 
   const mouseOutBar = function () {
     d3.select(this).attr("opacity", null);
@@ -145,7 +153,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
       .text(d => d)
       .attr("class", "legend")
       .attr("x", (_d, i) => i * (originalWidth / labels.length) + (originalWidth / labels.length) / 2)
-      .attr("y", scaledHeight)
+      .attr("y", scaledHeight-2) // will be modified to be into constant
       .attr("text-anchor", "middle")
       .attr("font-size", legendSize(originalWidth) + "px")
       .attr("font-weight", "bold")
@@ -164,7 +172,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
 
     svg.attr("data-testid", "barplot-svg");
 
-  }, [width, height, colorMap, legendSize]);
+  }, [width, height, colorMap, legendSize, mouseOverBar]);
 
   // Draw full Barplot on click
   function drawBarplotFull(data, _originalWidth, _originalHeight, svg) {
@@ -240,7 +248,7 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
       const dataToRender = dataSort.slice(0, numberOfGenes);
       renderBarplot(dataToRender, svgRef, drawBarplotSliced);
     }
-  }, [width, height, cellName, genes, colorMap, clickedTitle, renderBarplot, drawBarplotSliced, numberOfGenes]);
+  }, [width, height, cellName, genes, colorMap, clickedTitle, renderBarplot, drawBarplotSliced, numberOfGenes, mouseOverBar]);
 
   const calculateSvgWidth = () => {
     // Will maybe included in Constants.js
@@ -252,14 +260,16 @@ const Barplot = ({ width, height, cellName, genes, colorMap, numberOfGenes }) =>
 
   // Declare style for the barplot
   const barplotStyle = {
-    border: "1px solid #d3d3d3",
+    borderStyle: "solid",
+    borderWidth: "3px",
+    borderColor: cellMapColor.get(cellName),
     borderRadius: "5px",
   };
 
   // Define custom styles for the popup content
   const popupStyle = {
     width: '80%',
-    height: '80%',
+    height: '50%',
     border: '1px solid #ccc',
     borderRadius: '8px',
     padding: '20px',
