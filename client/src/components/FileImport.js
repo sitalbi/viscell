@@ -32,7 +32,21 @@ export const FileImport = () => {
      * 
      * @returns {boolean} True if the toast is open, false otherwise
      */
-    const handleToastClose = () => setShowToast(false);
+    const handleToastClose = () => {
+        setShowToast(false);
+        setToastMessage('');
+    }
+
+    /**
+     * Transpose a matrix
+     * 
+     * @param {*} matrix A 2D array
+     * 
+     * @returns A transposed 2D array
+     */
+    const transpose = (matrix) => {
+        return matrix[0].map((_, i) => matrix.map(row => row[i]));
+    }
 
     /**
      * Check if data is valid
@@ -171,9 +185,6 @@ export const FileImport = () => {
     }
 
     const onFileChange = async (value) => {
-        // Reset the toast message
-        setToastMessage("");
-
         // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
         const data = await f.arrayBuffer();
@@ -227,22 +238,21 @@ export const FileImport = () => {
             worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
         }
 
+        // Either show the diagram or the error toast
         const isValid = checkData(worksheets);
-
         if (isValid) {
-            // Create SankeyStructure object
             let sankeyStructure = new SankeyStructure(worksheets);
             setSankeyStructure(sankeyStructure);
             setTitle(f.name);
-        }
-        else {
-            // Show toast if data is not valid
+        } else {
             setShowToast(true);
         }
     }
 
+    /**
+     * useEffect to close the toast after 5 seconds if it is open
+     */
     useEffect(() => {
-        // Close the toast after 5 seconds if it is open
         if (showToast) {
             const timer = setTimeout(() => {
                 setShowToast(false);
@@ -251,17 +261,6 @@ export const FileImport = () => {
             return () => clearTimeout(timer);
         }
     }, [showToast]);
-
-    /**
-     * Transpose a matrix
-     * 
-     * @param {*} matrix A 2D array
-     * 
-     * @returns A transposed 2D array
-     */
-    function transpose(matrix) {
-        return matrix[0].map((_, i) => matrix.map(row => row[i]));
-    }
 
     return (
         <Container className="d-flex justify-content-center">
@@ -288,6 +287,7 @@ export const FileImport = () => {
                         </div>
                         <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onFileChange} />
                     </div>
+
                     {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
                 </Col>
             </Row>
@@ -301,6 +301,7 @@ export const FileImport = () => {
                     {[...new Set(toastMessage.split("\n"))].map((line, index) => {
                         return <p key={index}>{line}</p>;
                     })}
+                    <small className='toast-instructions'>If you want to upload the same file again, please refresh the page. However, uploading a valid file won't require a page refresh.</small>
                 </Toast.Body>
             </Toast>
 

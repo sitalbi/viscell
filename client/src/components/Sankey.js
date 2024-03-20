@@ -333,12 +333,12 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         <Row className="align-items-center">
 
           <Col className="text-center">
-            <h5 className="mt-1">Selected diagram: <span className="filename-span">{title}</span></h5>
+            <h4 className="mt-2">Selected diagram: <span className="filename-span">{title}</span></h4>
           </Col>
 
           <Col className="text-center">
             <div className="download-buttons-container">
-              <Button onClick={handleDownloadSVG} className="mr-2">
+              <Button onClick={handleDownloadSVG} className="p-2 mr-2">
                 <BsDownload className="bs-download" /> Download SVG
               </Button>
               <OverlayTrigger
