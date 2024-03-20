@@ -16,6 +16,7 @@ export const ROOT_WIDTH = 30; // Width of the root node, usually called 'C'
 
 export const TOOLTIP_WIDTH = 300; // Width of the tooltip
 export const TOOLTIP_HEIGHT = 80; // Height of the tooltip
+export const TOOLTIP_FONT_SIZE = 12; // Font size of the tooltip
 
 // Very important for the export function
 // Do not change these values unless you deeply understand how the export function works
