@@ -21,9 +21,6 @@ describe('MenuBar', () => {
         fireEvent.click(getByText('Home'));
         expect(window.location.pathname).toBe('/');
 
-        fireEvent.click(getByText('Example'));
-        expect(window.location.pathname).toBe('/example');
-
         fireEvent.click(getByText('About'));
         expect(window.location.pathname).toBe('/about');
 

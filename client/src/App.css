@@ -23,6 +23,12 @@
   margin: 0 auto;
 }
 
+.toast-instructions {
+  border-radius: 5px;
+  background-color: #f8f9fa;
+  color: blueviolet;
+}
+
 
 /** SANKEY.JS **/
 .toolbar-container {
