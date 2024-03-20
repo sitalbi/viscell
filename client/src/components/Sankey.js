@@ -21,6 +21,7 @@ import {
   ROOT_WIDTH,
   TOOLTIP_WIDTH,
   TOOLTIP_HEIGHT,
+  TOOLTIP_FONT_SIZE,
   EXPORT_MARGIN_WIDTH,
   EXPORT_MARGIN_HEIGHT
 } from "../utils/Constants.js";
@@ -40,9 +41,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   const cellMapColor = new Map();
   const geneMapColor = new Map();
 
-
   color(sankeyStructure, cellMapColor, geneMapColor);
-  console.log(cellMapColor);
 
   useEffect(() => {
     // =====================
@@ -163,14 +162,20 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
         const [x, y] = d3.pointer(event);
 
-        // Show tooltip
+        // ===================
+        //       TOOLTIP
+        // ===================
+
+        // We also need to resize the tooltip according to the zoom level
+        // We're not using svg.on("wheel") because it would get overwritten by the following lines
         const tooltip = d3.select(this.parentNode)
           .append("foreignObject")
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", TOOLTIP_WIDTH)
-          .attr("height", TOOLTIP_HEIGHT)
+          .attr("width", (TOOLTIP_WIDTH / svg.node().getScreenCTM().a) + "px")
+          .attr("height", (TOOLTIP_HEIGHT / svg.node().getScreenCTM().d) + "px")
+          .style("font-size", TOOLTIP_FONT_SIZE / svg.node().getScreenCTM().a + "px")
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
