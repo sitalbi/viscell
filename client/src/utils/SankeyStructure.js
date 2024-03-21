@@ -44,6 +44,7 @@ export class SankeyStructure {
     if (this.root === null) throw new Error("Root not found");
     // Create all populations
     this.root.createAllChildren(worksheets);
+
   }
 
   /**

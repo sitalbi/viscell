@@ -18,6 +18,7 @@ import {
   MAXIMUM_OPACITY_STROKE,
   NODE_TO_LINK_BOTTOM,
   BARPLOT_MINIMUM_HEIGHT,
+  LINK_MIN_WIDTH,
   HORIZONTAL_PADDING,
   VERTICAL_PADDING,
   LAYOUT_WIDTH,
@@ -124,6 +125,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       .join("g")
       .attr("class", "node")
       .each(function (d) {
+        console.log(d);
         const nodeWidth = d.x1 - d.x0;
         const nodeHeight = d.y1 - d.y0 + NODE_TO_LINK_BOTTOM;
         const barplotWidth = nodeWidth;
@@ -193,7 +195,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         return cellMapColor.get(d.target.name);
       })
       .attr("stroke-opacity", d => d.stroke)
-      .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
+      .attr("stroke-width", d => Math.max(d.width, LINK_MIN_WIDTH)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)
