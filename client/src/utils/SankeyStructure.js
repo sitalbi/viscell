@@ -44,6 +44,18 @@ export class SankeyStructure {
     if (this.root === null) throw new Error("Root not found");
     // Create all populations
     this.root.createAllChildren(worksheets);
+
+    // get the min and the max of the n values
+    // the + is used to convert the string to a number
+    if(meta.length > 1){
+      this.minN = +meta[1]["n"];
+      this.maxN = +meta[1]["n"];
+
+      for (let index = 2; index < meta.length; index++) {
+        if (+meta[index]["n"] < this.minN) this.minN = +meta[index]["n"];
+        if (+meta[index]["n"] > this.maxN) this.maxN = +meta[index]["n"];
+      }
+    }
   }
 
   /**

@@ -15,6 +15,9 @@ export const MINIMUM_OPACITY_STROKE = 0.2; // Minimum opacity of the stroke
 export const MAXIMUM_OPACITY_STROKE = 0.9; // Maximum opacity of the stroke
 
 export const BARPLOT_MINIMUM_HEIGHT = 50; // Minimum height of the barplot
+export const BARPLOT_MAXIMUM_HEIGHT = 300; // Maximum height of the barplot
+export const LINK_MIN_WIDTH = 20; // Minimum width of the link
+export const LINK_MAX_WIDTH = 200; // Maximum width of the link
 export const NODE_TO_LINK_BOTTOM = 5; // Makes the gene rectangle aligned with the link
 
 export const HORIZONTAL_PADDING = 0; // Padding on the left and right of the SVG
