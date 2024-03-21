@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { BsDownload, BsInfoCircle } from 'react-icons/bs';
-import { Container, Row, Col, Button, OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
+import { Container, Row, Col, Button, OverlayTrigger, Tooltip, Form, Alert } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
@@ -37,21 +37,28 @@ import {
  * 
  * @param {Object} sankeyStructure The sankeyStructure object
  * @param {String} title The title of the file
+ * @param {Number} numberOfGenes The number of genes to display in the barplots
  * 
  * @returns {JSX.Element}
  */
 export function Sankey({ sankeyStructure, title, numberOfGenes }) {
+  // useRef hook to get the svg element
   const svgRef = useRef();
+
   // Moving the two maps inside the useEffect makes links and cellsMap not defined
   // We need to keep them outside of the useEffect
-  const cellMapColor = new Map();
-  const geneMapColor = new Map();
+  const cellMapColor = useMemo(() => new Map(), []);
+  const geneMapColor = useMemo(() => new Map(), []);
 
-  // useState hook to toggle the opacity of the links
-  const [opacity, setOpacity] = useState(false);
+  const [opacity, setOpacity] = useState(false); // useState hook to toggle the opacity of the links
+  const [alert, setAlert] = useState(false); // useState hook to show an alert if there are too many genes or populations
 
+  // Fill the maps with the colors
   color(sankeyStructure, cellMapColor, geneMapColor);
 
+  /**
+   * useEffect hook to draw the Sankey diagram
+   */
   useEffect(() => {
     // =====================
     //        SANKEY
@@ -85,6 +92,11 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       structure.links.forEach(link => {
         link.stroke = 1;
       });
+    }
+
+    // If there are more than 20 populations or 2000 genes, show an alert
+    if (sankeyStructure.getSize() > 20 || sankeyStructure.getNumberOfGenes() > 2000) {
+      setAlert(true);
     }
 
     // ===================
@@ -224,7 +236,21 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
-  });
+  }, [sankeyStructure, opacity, geneMapColor, cellMapColor, numberOfGenes]);
+
+  /**
+   * Alert content if there are too many genes or populations
+   * 
+   * @param {*} totalGenes The number of genes in the diagram
+   * @param {*} totalPopulations The number of populations in the diagram
+   * 
+   * @returns {JSX.Element} The alert content
+   */
+  const alertContent = (totalPopulations, totalGenes) => (
+    <Alert variant="warning">
+      You are about to visualize a diagram with <strong>{totalPopulations}</strong> populations and <strong>{totalGenes}</strong> genes. Colors might not be distinguishable.
+    </Alert>
+  );
 
   /**
    * Toggle the opacity of the links or not
@@ -414,9 +440,13 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         </Row>
       </Container>
 
+      <div className="alert-container">
+        {alert && alertContent(sankeyStructure.getSize(), sankeyStructure.getNumberOfGenes())}
+      </div>
+
       <TransformWrapper>
         <TransformComponent>
-          <svg ref={svgRef} className="mt-4 sankey-svg"></svg>
+          <svg ref={svgRef} className="mt-2 sankey-svg"></svg>
         </TransformComponent>
       </TransformWrapper>
     </div>
