@@ -7,9 +7,9 @@ describe("Footer component", () => {
     const { getByText } = render(<Footer />);
     expect(
       getByText(
-        "Authors : Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre, Valentin Leroy, Yusuf Senel, Simon Talbi"
+        "Authors: Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre, Valentin Leroy, Yusuf Senel, Simon Talbi"
       )
     ).toBeInTheDocument();
-    expect(getByText("Property of the University of Bordeaux ©2024")).toBeInTheDocument();
+    expect(getByText("viscell ©2024")).toBeInTheDocument();
   });
 });

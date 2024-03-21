@@ -11,12 +11,12 @@ export function Footer() {
           >
             <div>
               <i>
-                Authors : Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre,
+                Authors: Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre,
                 Valentin Leroy, Yusuf Senel, Simon Talbi
               </i>
             </div>
             <div>
-              <i>Property of the University of Bordeaux ©2024</i>
+              <i>viscell ©2024</i>
             </div>
           </Navbar.Brand>
         </Container>
