@@ -19,7 +19,6 @@ import {
   NODE_TO_LINK_BOTTOM,
   BARPLOT_MINIMUM_HEIGHT,
   LINK_MIN_WIDTH,
-  LINK_MAX_WIDTH,
   HORIZONTAL_PADDING,
   VERTICAL_PADDING,
   LAYOUT_WIDTH,
@@ -196,10 +195,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         return cellMapColor.get(d.target.name);
       })
       .attr("stroke-opacity", d => d.stroke)
-      .attr("stroke-width", function(d){
-        // the following calcul is to make the width of the link proportional to the number of individuals 
-         return LINK_MIN_WIDTH+(LINK_MAX_WIDTH-LINK_MIN_WIDTH)*(+d.value-sankeyStructure.minN)/(sankeyStructure.maxN-sankeyStructure.minN);
-      }) // Width of the link is a value between 2 and the width of the link
+      .attr("stroke-width", d => Math.max(d.width, LINK_MIN_WIDTH)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)
