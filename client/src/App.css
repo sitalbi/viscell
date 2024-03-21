@@ -79,3 +79,20 @@
   margin: 0 auto;
   /* Centrez horizontalement le conteneur */
 }
+
+/** ABOUT.JS **/
+
+.features {
+  background-color: #0B6EFD;
+  list-style-type: none;
+  text-align: center;
+  padding: 5px;
+  border-radius: 5px;
+  color: white;
+}
+
+.featuresImg {
+  border: solid 2px black;
+  border-radius: 5px;
+  max-width: 100%;
+}
