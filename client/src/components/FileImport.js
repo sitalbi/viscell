@@ -1,5 +1,6 @@
-import { Container, Row, Col, Toast } from 'react-bootstrap';
+import { Container, Row, Col, Toast, Button } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
+import { LuFilePieChart } from "react-icons/lu";
 import { React, useState, useEffect } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 
@@ -9,6 +10,7 @@ import "rc-slider/assets/index.css";
 import { SankeyStructure } from '../utils/SankeyStructure.js';
 import { TOAST_DURATION } from '../utils/Constants.js';
 import { Sankey } from './Sankey.js';
+import Darmanis from '../data/Darmanis.xlsx';
 import '../App.js';
 
 export const FileImport = () => {
@@ -185,6 +187,11 @@ export const FileImport = () => {
         return valid;
     }
 
+    /**
+     * Handle the change of the file
+     * 
+     * @param {*} value The file to be read
+     */
     const onFileChange = async (value) => {
         // Use XLSX to read the file which is a xlss file
         const f = value.target.files[0];
@@ -251,6 +258,68 @@ export const FileImport = () => {
     }
 
     /**
+     * Upload the example file
+     */
+    const onExampleChange = async () => {
+        const darmanis = await fetch(Darmanis);
+        const data = await darmanis.arrayBuffer();
+        const workbook = XLSX.read(data);
+
+        const worksheets = new Map();
+
+        // Loop through each sheet in the workbook and convert it to a json object for data processing
+        for (const sheetName of workbook.SheetNames) {
+            // If the sheet is not the meta or markers sheet, skip it
+            if (sheetName !== "meta" && sheetName !== "markers") {
+                continue;
+            }
+
+            // Get the sheet
+            let sheet = workbook.Sheets[sheetName];
+
+            // We transpose the markers sheet to make it easier to process
+            if (sheetName === "markers") {
+                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }); // Convert the sheet to a 2D array with empty cells as empty strings
+                // Delete empty rows
+                for (let i = 0; i < tab.length; i++) {
+                    if (tab[i].length === 0) {
+                        tab.splice(i, 1);
+                        i--;
+                    }
+                }
+                // Transpose the 2D array
+                const transposedTab = transpose(tab);
+                // Convert the transposed 2D array to a sheet
+                sheet = XLSX.utils.aoa_to_sheet(transposedTab);
+            }
+
+            if (sheetName === "meta" || sheetName === "markers") {
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                // Remove empty keys
+                const oldKey = '__EMPTY';
+                const newKey = '';
+
+                const sanitizedData = json.map((row) => {
+                    if (oldKey in row) {
+                        row[newKey] = row[oldKey];
+                        delete row[oldKey];
+                    }
+                    return row;
+                });
+
+                sheet = XLSX.utils.json_to_sheet(sanitizedData);
+            }
+            worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
+        }
+
+        // No need to check data since it's the example file, we know that it is valid
+        let sankeyStructure = new SankeyStructure(worksheets);
+        setSankeyStructure(sankeyStructure);
+        setTitle("Darmanis.xlsx");
+    }
+
+    /**
      * useEffect to close the toast after 5 seconds if it is open
      */
     useEffect(() => {
@@ -274,6 +343,10 @@ export const FileImport = () => {
                         <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine className='upload-icon' /> Upload a file
                         </label>
+
+                        <Button variant="outline-primary" className='example-button' onClick={onExampleChange}>
+                            <LuFilePieChart className='upload-icon' /> Upload example
+                        </Button>
 
                         <div className="slider-container">
                             <p className='text-center mt-2'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
