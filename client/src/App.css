@@ -23,6 +23,10 @@
   margin: 0 auto;
 }
 
+.example-button {
+  margin-left: 1vw;
+}
+
 
 /** SANKEY.JS **/
 .toolbar-container {
