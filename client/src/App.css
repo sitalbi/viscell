@@ -77,6 +77,12 @@
   padding: 2px 5px;
 }
 
+.alert-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2vh;
+}
+
 .sankey-svg {
   cursor: move;
   border: 1px solid #d3d3d3;
