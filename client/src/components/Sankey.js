@@ -9,7 +9,7 @@ import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
-import { color } from "../utils/Color.js";
+import { Color } from "../utils/Color.js";
 
 import {
   NODE_WIDTH,
@@ -55,7 +55,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   const [alert, setAlert] = useState(false); // useState hook to show an alert if there are too many genes or populations
 
   // Fill the maps with the colors
-  color(sankeyStructure, cellMapColor, geneMapColor);
+  Color(sankeyStructure, cellMapColor, geneMapColor);
 
   /**
    * useEffect hook to draw the Sankey diagram

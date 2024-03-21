@@ -42,7 +42,7 @@ export const About = () => {
               <strong>Imagined by :</strong> Asloudj Yanis
               (yasloudj@u-bordeaux.fr)<br />
               <strong>Developers :</strong> Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre,
-                Valentin Leroy, Yusuf Senel, Simon Talbi
+              Valentin Leroy, Yusuf Senel, Simon Talbi
               <br />
               <h2 id="context" className="mt-2">
                 Context
@@ -290,7 +290,7 @@ export const About = () => {
               <strong>Superviseur :</strong> Asloudj Yanis
               (yasloudj@u-bordeaux.fr) <br />
               <strong>Développeurs :</strong> Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre,
-                Valentin Leroy, Yusuf Senel, Simon Talbi
+              Valentin Leroy, Yusuf Senel, Simon Talbi
               <h2 id="contexte" className="mt-2">
                 Contexte
               </h2>
