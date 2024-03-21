@@ -10,7 +10,7 @@ export const TOAST_MESSAGES = {
     "MISSING_ERROR": "Missing 'n' or 'consensus' value in the 'meta' sheet.",
     "MARKERS_ERROR": "A cell in the 'markers' sheet is not present in the 'meta' sheet.",
     "META_ERROR": "A cell in the 'meta' sheet is not present in the 'markers' sheet.",
-    "NEGATIVE_ERROR": "Found negative value in the 'markers' sheet."
+    "NEGATIVE_ERROR": "Values on the 'markers' sheet should be positive."
 }
 
 /**
@@ -38,7 +38,7 @@ export const Validation = (data) => {
 
     // Check data size and if it has the required sheets
     if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
-        toastMessages.add(TOAST_MESSAGES["FILE_ERROR"]);
+        return [false, TOAST_MESSAGES["FILE_ERROR"]];
     }
 
     // Check that only one cell is the root (has no parent)
@@ -50,7 +50,7 @@ export const Validation = (data) => {
         toastMessages.add(TOAST_MESSAGES["ROOT_ERROR"]);
     }
 
-    // Check that F1 Score is well restricted to [0, 1] for the consensus value in the "meta" sheet
+    // Check that F1 Score is well restricted to [0, 1] for the consensus value in the 'meta' sheet
     for (const cell of data.get("meta")) {
         if (cell["consensus"] < 0 || cell["consensus"] > 1) {
             toastMessages.add(TOAST_MESSAGES["CONS_ERROR"]);
@@ -58,7 +58,7 @@ export const Validation = (data) => {
         }
     }
 
-    // Check that all other cells have a parent (present in the "meta" sheet)
+    // Check that all other cells have a parent (present in the 'meta' sheet)
     for (const cell of data.get("meta")) {
         if (cell["parent"] && cell["parent"] !== "?" && !data.get("meta").find((d) => d[""] === cell["parent"])) {
             toastMessages.add(TOAST_MESSAGES["PARENT_ERROR"]);
@@ -91,7 +91,7 @@ export const Validation = (data) => {
         if (breakFlag) break;
     }
 
-    // Check that all cells have a "n" and "consensus" values
+    // Check that all cells have a 'n' and 'consensus' values
     for (const cell of data.get("meta")) {
         if (cell["n"] === undefined || cell["consensus"] === undefined) {
             toastMessages.add(TOAST_MESSAGES["MISSING_ERROR"]);
@@ -99,15 +99,7 @@ export const Validation = (data) => {
         }
     }
 
-    // Check if all cells in the "markers" sheet are present in the "meta" sheet
-    for (const cell of data.get("markers")) {
-        if (!data.get("meta").find((d) => d[""] === cell[""])) {
-            toastMessages.add(TOAST_MESSAGES["MARKERS_ERROR"]);
-            break;
-        }
-    }
-
-    // Check if all cells in the "meta" sheet are present in the "markers" sheet
+    // Check if all cells in the 'meta' sheet are present in the "markers' sheet
     for (const cell of data.get("meta")) {
         if (!data.get("markers").find((d) => d[""] === cell[""])) {
             toastMessages.add(TOAST_MESSAGES["META_ERROR"]);
@@ -115,7 +107,15 @@ export const Validation = (data) => {
         }
     }
 
-    // Check if value on "markers" sheet are positive
+    // Check if all cells in the 'markers' sheet are present in the 'meta' sheet
+    for (const cell of data.get("markers")) {
+        if (!data.get("meta").find((d) => d[""] === cell[""])) {
+            toastMessages.add(TOAST_MESSAGES["MARKERS_ERROR"]);
+            break;
+        }
+    }
+
+    // Check if value on 'markers' sheet are positive
     breakFlag = false;
     for (const cell of data.get("markers")) {
         for (const key in cell) {
