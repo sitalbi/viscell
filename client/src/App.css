@@ -96,27 +96,7 @@
   width: 95vw;
 }
 
-
-/* IMPORTFILE.JS */
-/* The HTML part of the file input musn't be visible */
-.import-button {
-  width: 0px;
-  height: 0px;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  z-index: -1;
-}
-
-.slider-container {
-  width: 200px;
-  /* Ajustez la largeur selon vos besoins */
-  margin: 0 auto;
-  /* Centrez horizontalement le conteneur */
-}
-
 /** ABOUT.JS **/
-
 .features {
   background-color: #0B6EFD;
   list-style-type: none;
