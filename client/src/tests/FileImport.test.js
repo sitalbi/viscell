@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import { FileImport } from '../components/FileImport.js';
+import { FileImport, processSheets } from '../components/FileImport.js';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { TOAST_MESSAGES, Validation } from '../utils/Validation.js';
+import { XLSX } from 'xlsx/xlsx.mjs';
 
 describe('FileImport', () => {
     it('renders without crashing', () => {
@@ -136,5 +137,37 @@ describe('validation', () => {
         const result = Validation(data);
         expect(result[0]).toBe(false);
         expect(result[1]).toContain(TOAST_MESSAGES["NEGATIVE_ERROR"]);
+    });
+});
+
+describe('upload example', () => {
+    it('renders without crashing', () => {
+        render(
+            <Router>
+                <FileImport />
+            </Router>
+        );
+    });
+
+    it('renders FileImport component', () => {
+        render(
+            <Router>
+                <FileImport />
+            </Router>
+        );
+        expect(screen.getByText('Import your file')).toBeInTheDocument();
+        expect(screen.getByLabelText('Upload a file')).toBeInTheDocument();
+        expect(screen.getByText('Upload example')).toBeInTheDocument();
+    });
+
+    it('uploads example file', () => {
+        render(
+            <Router>
+                <FileImport />
+            </Router>
+        );
+        const uploadExampleButton = screen.getByText('Upload example');
+        expect(uploadExampleButton).toBeInTheDocument();
+        uploadExampleButton.click();
     });
 });
