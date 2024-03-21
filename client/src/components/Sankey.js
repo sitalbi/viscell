@@ -42,7 +42,6 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
 
   color(sankeyStructure, cellMapColor, geneMapColor);
-  console.log(cellMapColor);
 
   useEffect(() => {
     // =====================
