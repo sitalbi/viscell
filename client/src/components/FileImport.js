@@ -1,134 +1,55 @@
 import { Container, Row, Col, Toast, Button } from 'react-bootstrap';
 import { RiFileUploadLine } from 'react-icons/ri';
-import { React, useState } from 'react';
+import { LuFilePieChart } from "react-icons/lu";
+import { React, useState, useEffect } from 'react';
 import * as XLSX from 'xlsx/xlsx.mjs';
+
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import '../App.js';
-
-import exampleFile from '../data/Darmanis.xlsx';
 
 import { SankeyStructure } from '../utils/SankeyStructure.js';
-
+import { TOAST_DURATION } from '../utils/Constants.js';
 import { Sankey } from './Sankey.js';
-
-export const checkData = (data) => {
-    // Auxiliar function to search the parent of a cell (use in circularity check)
-    const getParent = (cell) => {
-        return data.get("meta").find((d) => d[""] === cell)["parent"];
-    }
-
-    // Boolean to store if the data is valid
-    let valid = true;
-
-    // Error message to show in the toast
-    let toastMessage = "";
-
-    // Check data size and if it has the required sheets
-    if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
-        toastMessage += "- Missing sheets (need 'meta' and 'markers' sheets)\n";
-        return [false, toastMessage];
-    }
-
-    // Check that only one cell is the root (has no parent)
-    let count = 0;
-    for (const cell of data.get("meta")) {
-        if (!cell["parent"] || cell["parent"] === "?") count++;
-    }
-    if (count !== 1) {
-        toastMessage += "- There should be only one root cell (no parent) in the 'meta' sheet\n";
-        valid = false;
-    }
-
-    // Check that all other cells have a parent (present in the "meta" sheet)
-    for (const cell of data.get("meta")) {
-        if (cell["parent"] && cell["parent"] !== "?" && !data.get("meta").find((d) => d[""] === cell["parent"])) {
-            toastMessage += "- A cell has a parent that is not present in the 'meta' sheet\n";
-            valid = false;
-            break;
-        }
-    }
-
-    // Check that there is no circularity in the parent-child relationship
-    let breakFlag = false;
-    for (const cell of data.get("meta")) {
-        let parent = cell["parent"];
-        // Keep track of visited cells to detect circularity
-        const visitedCells = new Set();
-        while (parent && parent !== "?") {
-            if (visitedCells.has(parent)) {
-                toastMessage += "- Invalid data: circularity in the parent-child relationship\n";
-                valid = false;
-                breakFlag = true;
-                break;
-            }
-            visitedCells.add(parent);
-            parent = getParent(parent);
-        }
-        if (breakFlag) break;
-    }
-
-    // Check that all cells have a "n" and "consensus" values
-    for (const cell of data.get("meta")) {
-        if (cell["n"] === undefined || cell["consensus"] === undefined) {
-            toastMessage += "- A cell is missing the 'n' or 'consensus' value in the 'meta' sheet\n";
-            valid = false;
-            break;
-        }
-    }
-
-    // Check if all cells in the "markers" sheet are present in the "meta" sheet
-    for (const cell of data.get("markers")) {
-        if (!data.get("meta").find((d) => d[""] === cell[""])) {
-            toastMessage += "- A cell in the 'markers' sheet is not present in the 'meta' sheet\n";
-            valid = false;
-            break;
-        }
-    }
-
-    // Check if all cells in the "meta" sheet are present in the "markers" sheet
-    for (const cell of data.get("meta")) {
-        if (!data.get("markers").find((d) => d[""] === cell[""])) {
-            toastMessage += "- A cell in the 'meta' sheet is not present in the 'markers' sheet\n";
-            valid = false;
-            break;
-        }
-    }
-
-    // Check if value on "markers" sheet are positive
-    breakFlag = false;
-    for (const cell of data.get("markers")) {
-        for (const key in cell) {
-            if (key !== "") {
-                if (cell[key] < 0) {
-                    toastMessage += "\n[ERROR] A cell in the 'markers' sheet has a negative value";
-                    valid = false;
-                    breakFlag = true;
-                    break;
-                }
-            }
-        }
-        if (breakFlag) break;
-    }
-
-    // Return true if all checks passed
-    return [valid, toastMessage];
-}
-
+import Darmanis from '../data/Darmanis.xlsx';
+import '../App.js';
 
 export const FileImport = () => {
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
     const [toastMessage, setToastMessage] = useState(''); // State to manage toast message
-    const handleToastClose = () => setShowToast(false); // Function to close the toast
 
     const [title, setTitle] = useState(null);
-    const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3);// Number of genes to display (3 by default)
+    const [numberOfGenesToDisplay, setNumberOfGenesToDisplay] = useState(3); // Number of genes to display (3 by default)
     const [sankeyStructure, setSankeyStructure] = useState(null);
 
-
+    /**
+     * Handle the change of the number of genes to display
+     * 
+     * @param {*} newValue The new value of the slider
+     */
     const onChange = (newValue) => {
         setNumberOfGenesToDisplay(newValue);
     };
+
+    /**
+     * Handle the close of the toast
+     * 
+     * @returns {boolean} True if the toast is open, false otherwise
+     */
+    const handleToastClose = () => {
+        setShowToast(false);
+        setToastMessage('');
+    }
+
+    /**
+     * Transpose a matrix
+     * 
+     * @param {*} matrix A 2D array
+     * 
+     * @returns A transposed 2D array
+     */
+    const transpose = (matrix) => {
+        return matrix[0].map((_, i) => matrix.map(row => row[i]));
+    }
 
     /**
      * Check if data is valid
@@ -137,10 +58,144 @@ export const FileImport = () => {
      * 
      * @returns {boolean} True if data is valid, false otherwise
      */
+    const checkData = (data) => {
+        /**
+         * Auxiliary function to search the parent of a cell (used in circularity check)
+         * 
+         * @param {*} cell A cell
+         * 
+         * @returns The parent of the cell
+         */
+        const getParent = (cell) => {
+            // Avoiding "Cannot read property 'parent' of undefined" error by returning undefined if the cell is not found
+            const parent = data.get("meta").find((d) => d[""] === cell);
+            return parent ? parent["parent"] : undefined;
+        }
 
-    const onFileChange = async (fileChange, buttonUpload) => {
+        // Variables to keep track of the validity of the data and the toast message
+        let valid = true;
+        let toastMessage = "";
+
+        // Check data size and if it has the required sheets
+        if (data.size !== 2 || !data.has("meta") || !data.has("markers")) {
+            toastMessage += "File should at least contain 'meta' and 'markers' sheets.\n";
+            valid = false;
+        }
+
+        // Check that only one cell is the root (has no parent)
+        let count = 0;
+        for (const cell of data.get("meta")) {
+            if (!cell["parent"] || cell["parent"] === "?") count++;
+        }
+        if (count !== 1) {
+            toastMessage += "There should be only one root cell in the 'meta' sheet.\n";
+            valid = false;
+        }
+
+        // Check that F1 Score is well restricted to [0, 1] for the consensus value in the "meta" sheet
+        for (const cell of data.get("meta")) {
+            if (cell["consensus"] < 0 || cell["consensus"] > 1) {
+                toastMessage += "Consensus value should be restricted to [0, 1] in the 'meta' sheet.\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check that all other cells have a parent (present in the "meta" sheet)
+        for (const cell of data.get("meta")) {
+            if (cell["parent"] && cell["parent"] !== "?" && !data.get("meta").find((d) => d[""] === cell["parent"])) {
+                toastMessage += "A cell has an unknown parent in the 'meta' sheet.\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check that there is no circularity in the parent-child relationship
+        let breakFlag = false;
+        for (const cell of data.get("meta")) {
+            let parent = cell["parent"];
+            // Keep track of visited cells to detect circularity
+            const visitedCells = new Set();
+            while (parent && parent !== "?") {
+                if (visitedCells.has(parent)) {
+                    toastMessage += "Found circularity in the parent-child relationship in the 'meta' sheet.\n";
+                    valid = false;
+                    breakFlag = true;
+                    break;
+                }
+
+                visitedCells.add(parent);
+                parent = getParent(parent);
+
+                if (parent === undefined) {
+                    toastMessage += "A cell has an unknown parent in the 'meta' sheet.\n";
+                    valid = false;
+                    breakFlag = true;
+                    break;
+                }
+            }
+            if (breakFlag) break;
+        }
+
+        // Check that all cells have a "n" and "consensus" values
+        for (const cell of data.get("meta")) {
+            if (cell["n"] === undefined || cell["consensus"] === undefined) {
+                toastMessage += "Missing 'n' or 'consensus' value in the 'meta' sheet.\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check if all cells in the "markers" sheet are present in the "meta" sheet
+        for (const cell of data.get("markers")) {
+            if (!data.get("meta").find((d) => d[""] === cell[""])) {
+                toastMessage += "A cell in the 'markers' sheet is not present in the 'meta' sheet.\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check if all cells in the "meta" sheet are present in the "markers" sheet
+        for (const cell of data.get("meta")) {
+            if (!data.get("markers").find((d) => d[""] === cell[""])) {
+                toastMessage += "A cell in the 'meta' sheet is not present in the 'markers' sheet.\n";
+                valid = false;
+                break;
+            }
+        }
+
+        // Check if value on "markers" sheet are positive
+        breakFlag = false;
+        for (const cell of data.get("markers")) {
+            for (const key in cell) {
+                if (key !== "") {
+                    if (cell[key] < 0) {
+                        toastMessage += "Found negative value in the 'markers' sheet.\n";
+                        valid = false;
+                        breakFlag = true;
+                        break;
+                    }
+                }
+            }
+            if (breakFlag) break;
+        }
+
+        // Set the toast message
+        setToastMessage(toastMessage);
+
+        // Return true if all checks passed
+        return valid;
+    }
+
+    /**
+     * Handle the change of the file
+     * 
+     * @param {*} value The file to be read
+     */
+    const onFileChange = async (value) => {
         // Use XLSX to read the file which is a xlss file
-        const data = await fileChange.arrayBuffer();
+        const f = value.target.files[0];
+        const data = await f.arrayBuffer();
         const workbook = XLSX.read(data);
 
         const worksheets = new Map();
@@ -191,89 +246,148 @@ export const FileImport = () => {
             worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
         }
 
-        const isValid = checkData(worksheets)[0];
-        setToastMessage(checkData(worksheets)[1]);
-
+        // Either show the diagram or the error toast
+        const isValid = checkData(worksheets);
         if (isValid) {
-            // Create SankeyStructure object
             let sankeyStructure = new SankeyStructure(worksheets);
             setSankeyStructure(sankeyStructure);
-            if (buttonUpload)
-                setTitle(fileChange.name);
-            else
-                setTitle("Darmanis.xlsx");
-        }
-        else {
-            // Show toast if data is not valid
+            setTitle(f.name);
+        } else {
             setShowToast(true);
         }
     }
 
-    const onUploadChange = async (value) => {
-        const uploadFile = value.target.files[0];
+    /**
+     * Upload the example file
+     */
+    const onExampleChange = async () => {
+        const darmanis = await fetch(Darmanis);
+        const data = await darmanis.arrayBuffer();
+        const workbook = XLSX.read(data);
 
-        onFileChange(uploadFile, true);
+        const worksheets = new Map();
+
+        // Loop through each sheet in the workbook and convert it to a json object for data processing
+        for (const sheetName of workbook.SheetNames) {
+            // If the sheet is not the meta or markers sheet, skip it
+            if (sheetName !== "meta" && sheetName !== "markers") {
+                continue;
+            }
+
+            // Get the sheet
+            let sheet = workbook.Sheets[sheetName];
+
+            // We transpose the markers sheet to make it easier to process
+            if (sheetName === "markers") {
+                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }); // Convert the sheet to a 2D array with empty cells as empty strings
+                // Delete empty rows
+                for (let i = 0; i < tab.length; i++) {
+                    if (tab[i].length === 0) {
+                        tab.splice(i, 1);
+                        i--;
+                    }
+                }
+                // Transpose the 2D array
+                const transposedTab = transpose(tab);
+                // Convert the transposed 2D array to a sheet
+                sheet = XLSX.utils.aoa_to_sheet(transposedTab);
+            }
+
+            if (sheetName === "meta" || sheetName === "markers") {
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                // Remove empty keys
+                const oldKey = '__EMPTY';
+                const newKey = '';
+
+                const sanitizedData = json.map((row) => {
+                    if (oldKey in row) {
+                        row[newKey] = row[oldKey];
+                        delete row[oldKey];
+                    }
+                    return row;
+                });
+
+                sheet = XLSX.utils.json_to_sheet(sanitizedData);
+            }
+            worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
+        }
+
+        // No need to check data since it's the example file, we know that it is valid
+        let sankeyStructure = new SankeyStructure(worksheets);
+        setSankeyStructure(sankeyStructure);
+        setTitle("Darmanis.xlsx");
     }
 
     /**
-     * Handle the change event of the example file select dropdown
-     * 
-     * @param {*} file The selected file event
+     * useEffect to close the toast after 5 seconds if it is open
      */
-    const OnClickExample = async () => {
-        // Fetch the example file
-        const fetchedExampleFile = await fetch(exampleFile);
-
-        await onFileChange(fetchedExampleFile, false);
-    }
-
-    /**
-     * Transpose a matrix
-     * 
-     * @param {*} matrix A 2D array
-     * 
-     * @returns A transposed 2D array
-     */
-    function transpose(matrix) {
-        return matrix[0].map((_, i) => matrix.map(row => row[i]));
-    }
+    useEffect(() => {
+        if (showToast) {
+            const timer = setTimeout(() => {
+                setShowToast(false);
+            }, TOAST_DURATION);
+            // Clear the timer when the component unmounts or when toast is closed manually
+            return () => clearTimeout(timer);
+        }
+    }, [showToast]);
 
     return (
         <Container className="d-flex justify-content-center">
+
             <Row>
                 <Col>
                     <h2 className="text-center mt-2">Import your file</h2>
                     <p className="text-center mt-2">Supported file types: <span className='filetype-span'>.xlsx</span> and <span className='filetype-span'>.xls</span></p>
                     <div className="text-center">
-                        <label className='btn btn-outline-primary' htmlFor="file" style={{marginRight: '10px'}}>
+                        <label className='btn btn-outline-primary' htmlFor="file">
                             <RiFileUploadLine className='upload-icon' /> Upload a file
                         </label>
-                        <Button className='example-button' onClick={OnClickExample}>Load example</Button>
-                        <p className='text-center mt-4'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
+
+                        <Button variant="outline-primary" className='example-button' onClick={onExampleChange}>
+                            <LuFilePieChart className='upload-icon' /> Upload example
+                        </Button>
+
                         <div className="slider-container">
+                            <p className='text-center mt-2'>Number of genes to display: <span className='number-of-genes'>{numberOfGenesToDisplay}</span></p>
                             <Slider
                                 min={3}
                                 max={7}
                                 step={1}
+                                marks={{ 3: '3', 4: '4', 5: '5', 6: '6', 7: '7' }}
                                 value={numberOfGenesToDisplay}
                                 onChange={onChange}
                             />
                         </div>
-                        <input className='import-button' type="file" id="file" name="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={onUploadChange} />
+                        <input
+                            className='import-button'
+                            type="file"
+                            id="file"
+                            name="file"
+                            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                            onChange={(e) => {
+                                onFileChange(e);
+                                e.target.value = null;
+                            }}
+                        />
                     </div>
+
                     {sankeyStructure && title && <Sankey sankeyStructure={sankeyStructure} title={title} numberOfGenes={numberOfGenesToDisplay} />}
                 </Col>
             </Row>
+
             <Toast show={showToast} onClose={handleToastClose} className="position-fixed center-0 center-0 m-3">
                 <Toast.Header>
-                    <strong className="me-auto">Error(s) during the loading of the file</strong>
+                    <strong className="me-auto">Error(s) while reading the file</strong>
                 </Toast.Header>
+
                 <Toast.Body>
-                    {toastMessage.split("\n").map((line, index) => {
+                    {[...new Set(toastMessage.split("\n"))].map((line, index) => {
                         return <p key={index}>{line}</p>;
                     })}
                 </Toast.Body>
             </Toast>
+
         </Container>
     );
 }
