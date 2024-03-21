@@ -52,48 +52,36 @@ export const FileImport = () => {
     }
 
     /**
-     * Handle the change of the file
+     * Filter and combine sheets of the workbook
      * 
-     * @param {*} value The file to be read
+     * @param {*} workbook The workbook to be processed
+     * 
+     * @returns A map containing the filtered and processed sheets
      */
-    const onFileChange = async (value) => {
-        // Use XLSX to read the file which is a xlss file
-        const f = value.target.files[0];
-        const data = await f.arrayBuffer();
-        const workbook = XLSX.read(data);
-
+    const processSheets = async (workbook) => {
         const worksheets = new Map();
 
-        // Loop through each sheet in the workbook and convert it to a json object for data processing
         for (const sheetName of workbook.SheetNames) {
-            // If the sheet is not the meta or markers sheet, skip it
             if (sheetName !== "meta" && sheetName !== "markers") {
                 continue;
             }
 
-            // Get the sheet
             let sheet = workbook.Sheets[sheetName];
 
-            // We transpose the markers sheet to make it easier to process
             if (sheetName === "markers") {
-                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }); // Convert the sheet to a 2D array with empty cells as empty strings
-                // Delete empty rows
+                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                 for (let i = 0; i < tab.length; i++) {
                     if (tab[i].length === 0) {
                         tab.splice(i, 1);
                         i--;
                     }
                 }
-                // Transpose the 2D array
                 const transposedTab = transpose(tab);
-                // Convert the transposed 2D array to a sheet
                 sheet = XLSX.utils.aoa_to_sheet(transposedTab);
             }
 
             if (sheetName === "meta" || sheetName === "markers") {
                 const json = XLSX.utils.sheet_to_json(sheet);
-
-                // Remove empty keys
                 const oldKey = '__EMPTY';
                 const newKey = '';
 
@@ -110,8 +98,24 @@ export const FileImport = () => {
             worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
         }
 
-        // Either show the diagram or the error toast
+        return worksheets;
+    };
+
+
+    /**
+     * Handle the change of the file
+     * 
+     * @param {*} value The file to be read
+     */
+    const onFileChange = async (value) => {
+        // Use XLSX to read the file which is a xlss file
+        const f = value.target.files[0];
+        const data = await f.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const worksheets = await processSheets(workbook);
+
         const result = Validation(worksheets);
+
         if (result[0]) {
             let sankeyStructure = new SankeyStructure(worksheets);
             setSankeyStructure(sankeyStructure);
@@ -129,54 +133,7 @@ export const FileImport = () => {
         const darmanis = await fetch(Darmanis);
         const data = await darmanis.arrayBuffer();
         const workbook = XLSX.read(data);
-
-        const worksheets = new Map();
-
-        // Loop through each sheet in the workbook and convert it to a json object for data processing
-        for (const sheetName of workbook.SheetNames) {
-            // If the sheet is not the meta or markers sheet, skip it
-            if (sheetName !== "meta" && sheetName !== "markers") {
-                continue;
-            }
-
-            // Get the sheet
-            let sheet = workbook.Sheets[sheetName];
-
-            // We transpose the markers sheet to make it easier to process
-            if (sheetName === "markers") {
-                const tab = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }); // Convert the sheet to a 2D array with empty cells as empty strings
-                // Delete empty rows
-                for (let i = 0; i < tab.length; i++) {
-                    if (tab[i].length === 0) {
-                        tab.splice(i, 1);
-                        i--;
-                    }
-                }
-                // Transpose the 2D array
-                const transposedTab = transpose(tab);
-                // Convert the transposed 2D array to a sheet
-                sheet = XLSX.utils.aoa_to_sheet(transposedTab);
-            }
-
-            if (sheetName === "meta" || sheetName === "markers") {
-                const json = XLSX.utils.sheet_to_json(sheet);
-
-                // Remove empty keys
-                const oldKey = '__EMPTY';
-                const newKey = '';
-
-                const sanitizedData = json.map((row) => {
-                    if (oldKey in row) {
-                        row[newKey] = row[oldKey];
-                        delete row[oldKey];
-                    }
-                    return row;
-                });
-
-                sheet = XLSX.utils.json_to_sheet(sanitizedData);
-            }
-            worksheets.set(sheetName, XLSX.utils.sheet_to_json(sheet));
-        }
+        const worksheets = await processSheets(workbook);
 
         // No need to check data since it's the example file, we know that it is valid
         let sankeyStructure = new SankeyStructure(worksheets);
