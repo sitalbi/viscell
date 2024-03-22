@@ -47,12 +47,7 @@ export const About = () => {
               <h2 id="context" className="mt-2">
                 Context
               </h2>
-              In the context of the End of Studies Project TU of the Master 2
-              Computer Science at the University of Bordeaux, this application
-              was developed according to the request of Yanis Asloudj, a PhD
-              student in Bioinformatics. This field is a research area at the
-              interface between biology, computer science, and statistics. Its
-              aim is to propose new methods for analyzing data in biology.
+              As part of the Final Year Project of the Master 2 Computer Science program at the University of Bordeaux, this application was created at the behest of Yanis Asloudj, a doctoral student in Bioinformatics. Bioinformatics is a field of research at the interface between biology, computer science and statistics. Its aim is to propose new methods for analyzing biological data.
               <br />
               <br />
               Cells are the elementary blocks of the living world. In
@@ -113,8 +108,8 @@ export const About = () => {
                             src="/about/Import.png"
                             alt="Submit"
                           />
-                          <figcaption>
-                            <i>File import button on the application's home</i>
+                          <figcaption className="mb-4">
+                            <i>File import button on the application's home.</i>
                           </figcaption>
                           <p>
                             If the file is not in the correct format, the
@@ -126,8 +121,8 @@ export const About = () => {
                             src="/about/Errors.png"
                             alt="Error"
                           />
-                          <figcaption>
-                            <i>Example of error when importing a file</i>
+                          <figcaption className="mb-4">
+                            <i>Example of error when importing a file.</i>
                           </figcaption>
                         </div>
                         <li className="features">
@@ -143,8 +138,8 @@ export const About = () => {
                             src="/about/Graphs.png"
                             alt="Sankey Diagram"
                           />
-                          <figcaption>
-                            <i>Example of results displayed</i>
+                          <figcaption className="mb-4">
+                            <i>Example of results displayed.</i>
                           </figcaption>
                           <p>
                             The result is interactive and allows the user to
@@ -162,8 +157,8 @@ export const About = () => {
                             src="/about/Export.png"
                             alt="Export"
                           />
-                          <figcaption>
-                            <i>Results export menu</i>
+                          <figcaption className="mb-4">
+                            <i>Results export menu.</i>
                           </figcaption>
                           <Alert variant="warning">
                             The pdf export produces a blackened display at the
@@ -186,9 +181,9 @@ export const About = () => {
                             src="/about/GenesDisplay.png"
                             alt="Genes"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>
-                              Menu for selecting the number of genes to display
+                              Menu for selecting the number of genes to display.
                             </i>
                           </figcaption>
                         </div>
@@ -206,8 +201,8 @@ export const About = () => {
                             src="/about/FullHistogram.png"
                             alt="FullHistogram"
                           />
-                          <figcaption>
-                            <i>Example of full histograms display</i>
+                          <figcaption className="mb-4">
+                            <i>Example of full histograms display.</i>
                           </figcaption>
                         </div>
                         <li className="features">
@@ -223,7 +218,7 @@ export const About = () => {
                             src="/about/GeneLink.png"
                             alt="Gene hover"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>
                               Example of gene information display when hovering
                               over a bar.
@@ -239,7 +234,7 @@ export const About = () => {
                             src="/about/WikiGenes.png"
                             alt="Gene Info"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>NIH page of the AQP4 gene.</i>
                           </figcaption>
                         </div>
@@ -249,7 +244,7 @@ export const About = () => {
                 </Accordion.Item>
                 <Accordion.Item eventKey="3">
                   <Accordion.Header>
-                    <h2>Mandatory information & Intellectual property</h2>
+                    <h2>Mandatory information and intellectual property</h2>
                   </Accordion.Header>
                   <Accordion.Body>
                     <h3>Mandatory information</h3>
@@ -266,14 +261,12 @@ export const About = () => {
                     <h3>Intellectual property</h3>
                     <ul>
                       <li>
-                        Flag Logo:{" "}
+                        Union Jack Logo:{" "}
                         <a href="https://purecatamphetamine.github.io/country-flag-icons/3x2/index.html">
                           purecatamphetamine.github.io
                         </a>
                       </li>
-                      <li>Favicon: Property of the University of Bordeaux</li>
-                    </ul>
-                    <ul>
+                      <li>Favicon: Property of the University of Bordeaux.</li>
                       <li>
                         JavaScript Libraries: Property of their respective
                         authors.
@@ -364,13 +357,12 @@ export const About = () => {
                             src="/about/Import.png"
                             alt="Submit"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>
                               Bouton d'import d'un fichier sur l'acceuil de
-                              l'application
+                              l'application.
                             </i>
                           </figcaption>
-
                           <p>
                             Si le fichier n'est pas au bon format, l'application
                             détaillera la ou les erreurs sur le contenu du
@@ -381,9 +373,9 @@ export const About = () => {
                             src="/about/Errors.png"
                             alt="Error"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>
-                              Exemple d'erreur lors de l'import d'un fichier
+                              Exemple d'erreur lors de l'import d'un fichier.
                             </i>
                           </figcaption>
                         </div>
@@ -400,15 +392,14 @@ export const About = () => {
                             src="/about/Graphs.png"
                             alt="Sankey Diagram"
                           />
-                          <figcaption>
-                            <i>Exemple d'affichage des résultats</i>
+                          <figcaption className="mb-4">
+                            <i>Exemple d'affichage des résultats.</i>
                           </figcaption>
                           <p>
                             Le résultat est intéractif et permet à l'utilisateur
                             d'explorer les données en détail.
                           </p>
                         </div>
-
                         <li className="features">Exporter les résultats</li>
                         <div style={{ textAlign: "center" }}>
                           <p>
@@ -420,8 +411,8 @@ export const About = () => {
                             src="/about/Export.png"
                             alt="Export"
                           />
-                          <figcaption>
-                            <i>Menu d'export des résultats</i>
+                          <figcaption className="mb-4">
+                            <i>Menu d'export des résultats.</i>
                           </figcaption>
                           <Alert variant="warning">
                             L'export en pdf produit un affichage noirci au
@@ -429,7 +420,6 @@ export const About = () => {
                             lisible que l'export en svg.
                           </Alert>
                         </div>
-
                         <li className="features">
                           <b> Afficher un chiffre défini de gênes</b>
                         </li>
@@ -446,9 +436,9 @@ export const About = () => {
                             src="/about/GenesDisplay.png"
                             alt="Genes"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>
-                              Menu de sélection du nombre de gênes à afficher
+                              Menu de sélection du nombre de gênes à afficher.
                             </i>
                           </figcaption>
                         </div>
@@ -466,11 +456,10 @@ export const About = () => {
                             src="/about/FullHistogram.png"
                             alt="FullHistogram"
                           />
-                          <figcaption>
-                            <i>Exemple d'affichage des histogrammes complets</i>
+                          <figcaption className="mb-4">
+                            <i>Exemple d'affichage des histogrammes complets.</i>
                           </figcaption>
                         </div>
-
                         <li className="features">
                           <b>Accéder aux informations détaillées d'un gêne</b>
                         </li>
@@ -485,10 +474,10 @@ export const About = () => {
                             src="/about/GeneLink.png"
                             alt="Gene hover"
                           />
-                          <figcaption>
+                          <figcaption className="mb-4">
                             <i>
                               Exemple d'affichage des informations d'un gêne au
-                              survol d'une barre
+                              survol d'une barre.
                             </i>
                           </figcaption>
                           <p>
@@ -501,8 +490,8 @@ export const About = () => {
                             src="/about/WikiGenes.png"
                             alt="Gene Info"
                           />
-                          <figcaption>
-                            <i>Page NIH du gène AQP4</i>
+                          <figcaption className="mb-4">
+                            <i>Page NIH du gène AQP4.</i>
                           </figcaption>
                         </div>
                       </ul>
@@ -511,7 +500,7 @@ export const About = () => {
                 </Accordion.Item>
                 <Accordion.Item eventKey="3">
                   <Accordion.Header id="technologies">
-                    <h2>Mentions obligatoires & Propriété Intellectuelle</h2>
+                    <h2>Mentions obligatoires et propriété intellectuelle</h2>
                   </Accordion.Header>
                   <Accordion.Body>
                     <h3>Mentions obligatoires</h3>
@@ -530,17 +519,14 @@ export const About = () => {
                     <h3>Propriété Intellectuelle</h3>
                     <ul>
                       <li>
-                        Logo Drapeau :{" "}
+                        Logo Union Jack :{" "}
                         <a href="https://purecatamphetamine.github.io/country-flag-icons/3x2/index.html">
                           purecatamphetamine.github.io
                         </a>
                       </li>
-                      <li>Favicon : Propriété de l'Université de Bordeaux</li>
-                    </ul>
-                    <ul>
+                      <li>Favicon : Propriété de l'Université de Bordeaux.</li>
                       <li>
-                        Bibliothèques JavaScript : Propriété de leurs auteurs
-                        respectifs.
+                        Bibliothèques JavaScript : Propriété de leurs auteurs respectifs.
                       </li>
                     </ul>
                   </Accordion.Body>

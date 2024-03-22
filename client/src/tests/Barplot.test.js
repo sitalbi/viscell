@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Barplot from '../components/Barplot';
 
-
 describe('Barplot component', () => {
     const genesMap = new Map([
         ['Gene1', 10],
@@ -42,7 +41,7 @@ describe('Barplot component', () => {
     });
 
     it('renders with only 3 genes initially', () => {
-        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={500} height={300} cellName="Example" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay} />);
 
         // Check that only 3 genes are rendered initially
         expect(screen.queryByText('Gene5')).toBeInTheDocument();
@@ -68,7 +67,7 @@ describe('Barplot component', () => {
     });
 
     it('renders with all genes after clicking the title', async () => {
-        render(<Barplot width={500} height={300} cellName="C6" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={500} height={300} cellName="C6" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay} />);
 
         // Click on the svg
         fireEvent.click(screen.getByTestId('barplot-svg'));
@@ -90,9 +89,8 @@ describe('Barplot component', () => {
         expect(await screen.findByText('Gene1')).toBeInTheDocument();
     });
 
-
     it('closes the modal when "Close" button is clicked', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={new Map()} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay} />);
 
         // Click on the svg
         fireEvent.click(screen.getByTestId('barplot-svg'));
@@ -109,7 +107,7 @@ describe('Barplot component', () => {
     });
 
     it('renders the correct information on mouseover on a bar and reset style on mouseout', () => {
-        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay}/>);
+        render(<Barplot width={400} height={200} cellName="TestCell" genes={genesMap} colorMap={colorMap} cellMapColor={cellMapColor} numberOfGenes={numberOfGenesToDisplay} />);
 
         // Get a reference to the rectangle element
         const barElement = screen.getByTestId('bar-Gene5');
@@ -132,7 +130,6 @@ describe('Barplot component', () => {
         // Check if the tooltip is removed
         expect(document.querySelector('.tooltip')).not.toBeInTheDocument();
     });
-
 
     it('clicking on a bar opens the correct hyperlink', () => {
         const width = 300;

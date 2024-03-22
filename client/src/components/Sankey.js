@@ -95,8 +95,12 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       });
     }
 
+    // ===================
+    //        ALERT
+    // ===================
+
     // If there are more than 20 populations or 2000 genes, show an alert
-    if (sankeyStructure !==null && (sankeyStructure.getSize() > 20 || sankeyStructure.getNumberOfGenes() > 2000)) {
+    if (sankeyStructure !== null && (sankeyStructure.getSize() > 20 || sankeyStructure.getNumberOfGenes() > 2000)) {
       setAlert(true);
     }
 
