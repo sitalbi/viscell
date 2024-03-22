@@ -40,9 +40,10 @@ export const About = () => {
             <>
               {/* English Version */}
               <strong>Imagined by :</strong> Asloudj Yanis
-              (yasloudj@u-bordeaux.fr)<br />
-              <strong>Developers :</strong> Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre,
-                Valentin Leroy, Yusuf Senel, Simon Talbi
+              (yasloudj@u-bordeaux.fr)
+              <br />
+              <strong>Developers :</strong> Nikolaï Amossé, Martin Ithurbide,
+              Adrien Le Corre, Valentin Leroy, Yusuf Senel, Simon Talbi
               <br />
               <h2 id="context" className="mt-2">
                 Context
@@ -137,6 +138,7 @@ export const About = () => {
                           <p>
                             Once the file is submitted, the application displays
                             the analysis results in the form of barplots.
+                            The consensus display can be changed via the "Opacity" switch above the diagram.
                           </p>
                           <img
                             className="featuresImg"
@@ -151,7 +153,9 @@ export const About = () => {
                             explore the data in detail.
                           </p>
                         </div>
-                        <li className="features">Export the results</li>
+                        <li className="features">
+                          <b>Export the results</b>
+                        </li>
                         <div style={{ textAlign: "center" }}>
                           <p>
                             The user can export the data rendering as svg or
@@ -289,8 +293,8 @@ export const About = () => {
               {/* French Version */}
               <strong>Superviseur :</strong> Asloudj Yanis
               (yasloudj@u-bordeaux.fr) <br />
-              <strong>Développeurs :</strong> Nikolaï Amossé, Martin Ithurbide, Adrien Le Corre,
-                Valentin Leroy, Yusuf Senel, Simon Talbi
+              <strong>Développeurs :</strong> Nikolaï Amossé, Martin Ithurbide,
+              Adrien Le Corre, Valentin Leroy, Yusuf Senel, Simon Talbi
               <h2 id="contexte" className="mt-2">
                 Contexte
               </h2>
@@ -393,7 +397,8 @@ export const About = () => {
                         <div style={{ textAlign: "center" }}>
                           <p>
                             Une fois le fichier soumis, l'application affiche
-                            les résultats de l'analyse sous forme de barplots.
+                            les résultats de l'analyse sous forme de barplots. 
+                            L'affichage de l'indice de confiance peut être changé via l'interrupteur "Opacity" au dessus du diagramme.
                           </p>
                           <img
                             className="featuresImg"
@@ -409,7 +414,9 @@ export const About = () => {
                           </p>
                         </div>
 
-                        <li className="features">Exporter les résultats</li>
+                        <li className="features">
+                          <b>Exporter les résultats</b>
+                        </li>
                         <div style={{ textAlign: "center" }}>
                           <p>
                             L'utilisateur peut exporter le rendu des données
