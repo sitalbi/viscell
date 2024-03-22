@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from "react";
-import { BsDownload } from 'react-icons/bs';
-import { Button } from 'react-bootstrap';
+import React, { useRef, useEffect, useState, useMemo } from "react";
+import { BsDownload, BsInfoCircle } from 'react-icons/bs';
+import { Container, Row, Col, Button, OverlayTrigger, Tooltip, Form, Alert } from 'react-bootstrap';
 import ReactDOM from "react-dom/client";
 
 import * as d3 from "d3";
@@ -9,11 +9,16 @@ import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
-import { color } from "../utils/Color.js";
+import { Color } from "../utils/Color.js";
 
 import {
   NODE_WIDTH,
   NODE_PADDING,
+  MINIMUM_OPACITY_STROKE,
+  MAXIMUM_OPACITY_STROKE,
+  NODE_TO_LINK_BOTTOM,
+  BARPLOT_MINIMUM_HEIGHT,
+  LINK_MIN_WIDTH,
   HORIZONTAL_PADDING,
   VERTICAL_PADDING,
   LAYOUT_WIDTH,
@@ -21,8 +26,11 @@ import {
   ROOT_WIDTH,
   TOOLTIP_WIDTH,
   TOOLTIP_HEIGHT,
+  TOOLTIP_FONT_SIZE,
   EXPORT_MARGIN_WIDTH,
-  EXPORT_MARGIN_HEIGHT
+  EXPORT_MARGIN_HEIGHT,
+  EXPORT_ORIGIN_X,
+  TOOLTIP_TRANSITON_DURATION
 } from "../utils/Constants.js";
 
 /**
@@ -30,19 +38,28 @@ import {
  * 
  * @param {Object} sankeyStructure The sankeyStructure object
  * @param {String} title The title of the file
+ * @param {Number} numberOfGenes The number of genes to display in the barplots
  * 
  * @returns {JSX.Element}
  */
 export function Sankey({ sankeyStructure, title, numberOfGenes }) {
+  // useRef hook to get the svg element
   const svgRef = useRef();
+
   // Moving the two maps inside the useEffect makes links and cellsMap not defined
   // We need to keep them outside of the useEffect
-  const cellMapColor = new Map();
-  const geneMapColor = new Map();
+  const cellMapColor = useMemo(() => new Map(), []);
+  const geneMapColor = useMemo(() => new Map(), []);
 
+  const [opacity, setOpacity] = useState(false); // useState hook to toggle the opacity of the links
+  const [alert, setAlert] = useState(false); // useState hook to show an alert if there are too many genes or populations
 
-  color(sankeyStructure, cellMapColor, geneMapColor);
+  // Fill the maps with the colors
+  Color(sankeyStructure, cellMapColor, geneMapColor);
 
+  /**
+   * useEffect hook to draw the Sankey diagram
+   */
   useEffect(() => {
     // =====================
     //        SANKEY
@@ -56,6 +73,36 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
     // Create the nodes and links for the sankey diagram
     sankeyStructure.createNodesAndLinks(structure);
+
+    // =====================
+    //  OPACITY AND SCALING
+    // =====================
+
+    if (opacity) {
+      // Links have a consensus value, ranging from 0 to 1
+      // We need to find the maximum consensus value and use it to scale the stroke width of the links
+      const maxConsensus = d3.max(structure.links, d => d.consensus);
+      const minConsensus = d3.min(structure.links, d => d.consensus);
+      const scale = d3.scaleLinear().domain([minConsensus, maxConsensus]).range([MINIMUM_OPACITY_STROKE, MAXIMUM_OPACITY_STROKE]);
+
+      // We add a stroke attribute to the links to use it in the mouseover event
+      structure.links.forEach(link => {
+        link.stroke = scale(link.consensus);
+      });
+    } else {
+      structure.links.forEach(link => {
+        link.stroke = 1;
+      });
+    }
+
+    // ===================
+    //        ALERT
+    // ===================
+
+    // If there are more than 20 populations or 2000 genes, show an alert
+    if (sankeyStructure !== null && (sankeyStructure.getSize() > 20 || sankeyStructure.getNumberOfGenes() > 2000)) {
+      setAlert(true);
+    }
 
     // ===================
     //       LAYOUT
@@ -81,11 +128,12 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       .data(nodes.slice(1))
       .join("g")
       .attr("class", "node")
+      .attr("data-testid", "node")
       .each(function (d) {
         const nodeWidth = d.x1 - d.x0;
-        const nodeHeight = d.y1 - d.y0 + 5;
+        const nodeHeight = d.y1 - d.y0 + NODE_TO_LINK_BOTTOM;
         const barplotWidth = nodeWidth;
-        const barplotHeight = Math.max(nodeHeight, 50); // Ensure minimum height
+        const barplotHeight = Math.max(nodeHeight, BARPLOT_MINIMUM_HEIGHT); // Ensure minimum height
 
         // Calculate position for Barplot
         const barplotX = d.x0; // Adjust as needed
@@ -102,10 +150,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
         const div = foreignObject.append("xhtml:div");
 
-        const cellName = structure.nodes
-          .find((node) =>
-            node.x0 === d.x0 && node.y0 === d.y0
-          ).name;
+        const cellName = structure.nodes.find((node) => node.x0 === d.x0 && node.y0 === d.y0).name;
 
         const component = (
           <Barplot
@@ -114,6 +159,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
             cellName={cellName}
             genes={sankeyStructure.get(cellName).geneMap}
             colorMap={geneMapColor}
+            cellMapColor={cellMapColor}
             numberOfGenes={numberOfGenes}
           />
         );
@@ -153,7 +199,8 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         return cellMapColor.get(d.target.name);
       })
       .attr("stroke-opacity", d => d.stroke)
-      .attr("stroke-width", d => Math.max(2, d.width)) // Width of the link is a value between 2 and the width of the link
+      .attr("data-testid", "link")
+      .attr("stroke-width", d => Math.max(d.width, LINK_MIN_WIDTH)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
           .attr("stroke-opacity", 1)
@@ -161,32 +208,64 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
         const [x, y] = d3.pointer(event);
 
-        // Show tooltip
+        // ===================
+        //       TOOLTIP
+        // ===================
+
+        // We also need to resize the tooltip according to the zoom level
+        // We're not using svg.on("wheel") because it would get overwritten by the following lines
         const tooltip = d3.select(this.parentNode)
           .append("foreignObject")
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
-          .attr("width", TOOLTIP_WIDTH)
-          .attr("height", TOOLTIP_HEIGHT)
+          .attr("data-testid", "tooltip")
+          .attr("width", (TOOLTIP_WIDTH / svg.node().getScreenCTM().a) + "px")
+          .attr("height", (TOOLTIP_HEIGHT / svg.node().getScreenCTM().d) + "px")
+          .style("font-size", TOOLTIP_FONT_SIZE / svg.node().getScreenCTM().a + "px")
           .style("text-align", "center")
           .style("background-color", "white")
           .style("border", "1px solid black")
           .style("padding", "5px")
           .style("border-radius", "5px")
-          .style("opacity", 1);
+          .style("opacity", 0);
 
-        tooltip.append("xhtml:div")
-          .html(`${d.source.name} -> ${d.target.name} <br>
-          Population: ${d.value} <br>
-          Consensus : ${d.consensus.toFixed(2)}`);
+        let tooltipContent = `<strong>${d.source.name} &rarr; ${d.target.name} </strong> <br>
+          <strong>Population: </strong> ${d.value} <br>
+          <strong>Consensus : </strong> ${d.consensus.toFixed(2)}`;
+
+        tooltip.html(tooltipContent)
+          .transition()
+          .duration(TOOLTIP_TRANSITON_DURATION)
+          .style("opacity", 1);
       })
       .on("mouseout", function () {
         d3.select(this).attr("stroke-opacity", d => d.stroke);
         // Remove tooltip
         d3.select(this.parentNode).selectAll(".tooltip").remove();
       });
-  });
+  }, [sankeyStructure, opacity, geneMapColor, cellMapColor, numberOfGenes]);
+
+  /**
+   * Alert content if there are too many genes or populations
+   * 
+   * @param {*} totalGenes The number of genes in the diagram
+   * @param {*} totalPopulations The number of populations in the diagram
+   * 
+   * @returns {JSX.Element} The alert content
+   */
+  const alertContent = (totalPopulations, totalGenes) => (
+    <Alert variant="warning">
+      You are about to visualize a diagram with <strong>{totalPopulations}</strong> populations and <strong>{totalGenes}</strong> genes. Colors might not be distinguishable.
+    </Alert>
+  );
+
+  /**
+   * Toggle the opacity of the links or not
+   */
+  const toggleOpacity = () => {
+    setOpacity(!opacity);
+  }
 
   /**
    * Handle the diagram's download as SVG
@@ -311,7 +390,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
     const doc = new jsPDF("landscape", "pt", [width, height]);
 
     // Add the links to the document
-    await doc.addSvgAsImage(serializedLinks, -100, 0, width, height); // Asynchronous
+    await doc.addSvgAsImage(serializedLinks, EXPORT_ORIGIN_X, 0, width, height); // Asynchronous
 
     // Add the barplots to the document
     // Do not use forEach because it brings problems with async/await
@@ -327,21 +406,55 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   }
 
   return (
-    <div className="mt-2">
-      <h3 className="mt-4 selected-diagram text-center">Selected diagram: <span className="filename-span">{title}</span></h3>
+    <div data-testid="sankey">
+      <Container className="toolbar-container">
+        <Row className="align-items-center">
 
-      <div className="download-buttons-container">
-        <Button onClick={handleDownloadSVG}>
-          <BsDownload className="bs-download" /> Download SVG
-        </Button>
-        <Button onClick={handleDownloadPDF} variant="warning">
-          <BsDownload className="bs-download" /> Download PDF
-        </Button>
+          <Col className="text-center">
+            <h5 className="mt-2">Selected diagram <span className="filename-span">{title}</span></h5>
+          </Col>
+
+          <Col className="text-center">
+            <div className="download-buttons-container">
+              <Button onClick={handleDownloadSVG} className="p-2 mr-2">
+                <BsDownload className="bs-download" /> Download SVG
+              </Button>
+              <OverlayTrigger
+                placement="bottom"
+                overlay={
+                  <Tooltip id="pdf-tooltip">
+                    <BsInfoCircle className="info-icon" />
+                    Please note that transparency is not supported in PDFs. The background will be white and barplots will be rasterized.
+                  </Tooltip>
+                }
+              >
+                <Button onClick={handleDownloadPDF} variant="warning">
+                  <BsDownload className="bs-download" /> Download PDF
+                </Button>
+              </OverlayTrigger>
+            </div>
+          </Col>
+
+          <Col className="text-center">
+            <h5 className="mt-2">Opacity</h5>
+            <Form data-testid="toggle">
+              <Form.Check
+                onClick={toggleOpacity}
+                type="switch"
+              />
+            </Form>
+          </Col>
+
+        </Row>
+      </Container>
+
+      <div className="alert-container" data-testid="alert">
+        {alert && alertContent(sankeyStructure.getSize(), sankeyStructure.getNumberOfGenes())}
       </div>
 
       <TransformWrapper>
         <TransformComponent>
-          <svg ref={svgRef} className="mt-4 sankey-svg"></svg>
+          <svg ref={svgRef} className="mt-2 sankey-svg"></svg>
         </TransformComponent>
       </TransformWrapper>
     </div>

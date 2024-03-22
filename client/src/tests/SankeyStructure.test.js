@@ -1,4 +1,4 @@
-const { SankeyStructure, Pop } = require('../utils/SankeyStructure.js');
+const { SankeyStructure, Population } = require('../utils/SankeyStructure.js');
 
 describe('SankeyStructure', () => {
     describe('constructor', () => {
@@ -27,9 +27,10 @@ describe('SankeyStructure', () => {
                 ["meta", []],
                 ["markers", []]
             ]);
-            expect(() => new SankeyStructure(emptyWorksheets)).toThrowError('No root found');
+            expect(() => new SankeyStructure(emptyWorksheets)).toThrowError('Root not found');
         });
-        it('should sort genes in descending order when creating a Pop', () => {
+
+        it('should sort genes in descending order when creating a Population', () => {
             const worksheetsMock = new Map([
                 ["meta", [{ "parent": null, "": "Root" }]],
                 ["markers", [{ "": "Root", "Gene1": 20, "Gene2": 10 }]]
@@ -40,6 +41,7 @@ describe('SankeyStructure', () => {
             expect(rootPop.geneMap.get("Gene2")).toBe(10);
         });
     });
+
     describe('print', () => {
         it('should print the SankeyStructure', () => {
             // Spy on console.log to capture its output
@@ -74,18 +76,20 @@ describe('SankeyStructure', () => {
             consoleLogSpy.mockRestore();
         });
     });
+
     describe('getRoot', () => {
-        it('should return the root Pop', () => {
+        it('should return the root Population', () => {
             const worksheetsMock = new Map([
                 ["meta", [{ "parent": null, "": "Root" }]],
                 ["markers", [{ "": "Root" }]]
             ]);
             const sankeyStructure = new SankeyStructure(worksheetsMock);
-            expect(sankeyStructure.getRoot()).toBeInstanceOf(Pop);
+            expect(sankeyStructure.getRoot()).toBeInstanceOf(Population);
         });
     });
+
     describe('get', () => {
-        it('should return the Pop with the given name', () => {
+        it('should return the Population with the given name', () => {
             // huge mock
             const worksheetsMock = new Map([
                 ["meta", [
@@ -100,11 +104,11 @@ describe('SankeyStructure', () => {
                 ]]
             ]);
             const sankeyStructure = new SankeyStructure(worksheetsMock);
-            expect(sankeyStructure.get("Root")).toBeInstanceOf(Pop);
-            expect(sankeyStructure.get("Child")).toBeInstanceOf(Pop);
-            expect(sankeyStructure.get("Grandchild")).toBeInstanceOf(Pop);
+            expect(sankeyStructure.get("Root")).toBeInstanceOf(Population);
+            expect(sankeyStructure.get("Child")).toBeInstanceOf(Population);
+            expect(sankeyStructure.get("Grandchild")).toBeInstanceOf(Population);
         });
-        it('should return null if the Pop with the given name does not exist', () => {
+        it('should return null if the Population with the given name does not exist', () => {
             const worksheetsMock = new Map([
                 ["meta", [{ "parent": null, "": "Root" }]],
                 ["markers", [{ "": "Root" }]]
@@ -114,28 +118,27 @@ describe('SankeyStructure', () => {
         }
         );
     });
-
 });
 
-describe('Pop', () => {
+describe('Population', () => {
     describe('constructor', () => {
-        it('should create a Pop object', () => {
-            const parentPop = new Pop(null, "Parent", new Map(), 0, 0);
-            expect(parentPop).toBeInstanceOf(Pop);
+        it('should create a Population object', () => {
+            const parentPop = new Population(null, "Parent", new Map(), 0, 0);
+            expect(parentPop).toBeInstanceOf(Population);
         });
     });
 
     describe('addChild', () => {
-        it('should add a child to the parent Pop', () => {
-            const parentPop = new Pop(null, "Parent", new Map(), 0, 0);
+        it('should add a child to the parent Population', () => {
+            const parentPop = new Population(null, "Parent", new Map(), 0, 0);
             parentPop.addChild("Child", new Map());
             expect(parentPop.children.length).toBe(1);
         });
     });
 
     describe('createAllChildren', () => {
-        it('should create all child Pops recursively', () => {
-            const parentPop = new Pop(null, "Root", new Map(), 0, 0);
+        it('should create all child populations recursively', () => {
+            const parentPop = new Population(null, "Root", new Map(), 0, 0);
             const worksheetsMock = new Map([
                 ["meta", [
                     { "parent": "Root", "": "Child" },
@@ -154,8 +157,8 @@ describe('Pop', () => {
     });
 
     describe('getName', () => {
-        it('should return the name of the Pop', () => {
-            const pop = new Pop(null, "Name", new Map(), 0, 0);
+        it('should return the name of the Population', () => {
+            const pop = new Population(null, "Name", new Map(), 0, 0);
             expect(pop.getName()).toBe("Name");
         });
     });
