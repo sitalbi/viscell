@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { FileImport, processSheets } from '../components/FileImport.js';
+import { FileImport } from '../components/FileImport.js';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { TOAST_MESSAGES, Validation } from '../utils/Validation.js';
-import { XLSX } from 'xlsx/xlsx.mjs';
 
 describe('FileImport', () => {
     it('renders without crashing', () => {
