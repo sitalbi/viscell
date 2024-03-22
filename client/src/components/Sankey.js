@@ -9,7 +9,7 @@ import { sankey, sankeyLinkHorizontal } from "d3-sankey";
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 import Barplot from "./Barplot.js";
-import { color } from "../utils/Color.js";
+import { Color } from "../utils/Color.js";
 
 import {
   NODE_WIDTH,
@@ -55,7 +55,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   const [alert, setAlert] = useState(false); // useState hook to show an alert if there are too many genes or populations
 
   // Fill the maps with the colors
-  color(sankeyStructure, cellMapColor, geneMapColor);
+  Color(sankeyStructure, cellMapColor, geneMapColor);
 
   /**
    * useEffect hook to draw the Sankey diagram
@@ -95,8 +95,12 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       });
     }
 
+    // ===================
+    //        ALERT
+    // ===================
+
     // If there are more than 20 populations or 2000 genes, show an alert
-    if (sankeyStructure.getSize() > 20 || sankeyStructure.getNumberOfGenes() > 2000) {
+    if (sankeyStructure !== null && (sankeyStructure.getSize() > 20 || sankeyStructure.getNumberOfGenes() > 2000)) {
       setAlert(true);
     }
 
@@ -124,8 +128,8 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
       .data(nodes.slice(1))
       .join("g")
       .attr("class", "node")
+      .attr("data-testid", "node")
       .each(function (d) {
-        console.log(d);
         const nodeWidth = d.x1 - d.x0;
         const nodeHeight = d.y1 - d.y0 + NODE_TO_LINK_BOTTOM;
         const barplotWidth = nodeWidth;
@@ -195,6 +199,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         return cellMapColor.get(d.target.name);
       })
       .attr("stroke-opacity", d => d.stroke)
+      .attr("data-testid", "link")
       .attr("stroke-width", d => Math.max(d.width, LINK_MIN_WIDTH)) // Width of the link is a value between 2 and the width of the link
       .on("mouseover", function (event, d) {
         d3.select(this)
@@ -214,6 +219,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
           .attr("class", "tooltip")
           .attr("x", x)
           .attr("y", y)
+          .attr("data-testid", "tooltip")
           .attr("width", (TOOLTIP_WIDTH / svg.node().getScreenCTM().a) + "px")
           .attr("height", (TOOLTIP_HEIGHT / svg.node().getScreenCTM().d) + "px")
           .style("font-size", TOOLTIP_FONT_SIZE / svg.node().getScreenCTM().a + "px")
@@ -400,7 +406,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
   }
 
   return (
-    <div>
+    <div data-testid="sankey">
       <Container className="toolbar-container">
         <Row className="align-items-center">
 
@@ -431,7 +437,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
 
           <Col className="text-center">
             <h5 className="mt-2">Opacity</h5>
-            <Form>
+            <Form data-testid="toggle">
               <Form.Check
                 onClick={toggleOpacity}
                 type="switch"
@@ -442,7 +448,7 @@ export function Sankey({ sankeyStructure, title, numberOfGenes }) {
         </Row>
       </Container>
 
-      <div className="alert-container">
+      <div className="alert-container" data-testid="alert">
         {alert && alertContent(sankeyStructure.getSize(), sankeyStructure.getNumberOfGenes())}
       </div>
 
